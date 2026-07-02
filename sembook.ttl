@@ -1,0 +1,175 @@
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sembook: <https://sembook.example.org/vocab#> .
+
+# ─────────────────────────────────────────────────────────────
+# Ontology Declaration
+# ─────────────────────────────────────────────────────────────
+
+<https://sembook.example.org/vocab>
+    a owl:Ontology ;
+    rdfs:label "Semantic Notebook Vocabulary"@en ;
+    rdfs:comment
+        "Vocabulary for defining browser-based semantic teaching notebooks. A notebook is an ordered collection of labs, each occupying the full viewport. Each lab contains panels that are projections of a shared named graph. Designed for use as conference teaching tools and book companion material."@en ;
+    dcterms:creator <https://mago.co/performers/michael-carducci> ;
+    dcterms:description
+        "The Semantic Notebook vocabulary provides terms for describing interactive RDF teaching environments. Notebooks are serialized as JSON-LD and interpreted by a browser-based runtime that manages a quad store, SPARQL query engine, and graph visualization layer."@en ;
+    owl:versionIRI <https://sembook.example.org/vocab/0.1> ;
+    owl:versionInfo "0.1"^^xsd:string .
+
+
+# ─────────────────────────────────────────────────────────────
+# Classes
+# ─────────────────────────────────────────────────────────────
+
+sembook:Notebook
+    a owl:Class ;
+    rdfs:label "Notebook"@en ;
+    rdfs:comment
+        "A named, ordered collection of Labs. Serialized as a JSON-LD file and fetched by the browser runtime on page load. The notebook is a first-class resource with its own IRI."@en .
+
+sembook:Lab
+    a owl:Class ;
+    rdfs:label "Lab"@en ;
+    rdfs:comment
+        "The fundamental teaching unit. A lab occupies the full viewport and is identified by a fragment identifier on the notebook URL. Each lab owns exactly one named graph in the quad store. The lab IRI is the named graph IRI. Labs are rendered lazily via Intersection Observer and initialized eagerly at page load."@en .
+
+sembook:Panel
+    a owl:Class ;
+    rdfs:label "Panel"@en ;
+    rdfs:comment
+        "An abstract base class for all panel types. A panel is a web component that is a projection of a lab's named graph. All panels share a common lifecycle: connectedCallback, initialize, render, update, disconnectedCallback. Panels query the quad store via a SPARQL query declared in their definition."@en .
+
+sembook:JsonLdPanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:Panel ;
+    rdfs:label "JSON-LD Panel"@en ;
+    rdfs:comment
+        "An interactive JSON-LD editor panel. Provides a text editing surface, a fetch affordance for loading a resource by URI, and a Parse button that commits the editor contents to the lab's named graph via a graph:upsertFragment event. Editing does not update the graph — only the Parse button does. The panel's document is the source of truth for its fragment of the named graph."@en .
+
+sembook:GraphPanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:Panel ;
+    rdfs:label "Graph Panel"@en ;
+    rdfs:comment
+        "A Cytoscape.js graph visualization panel. Renders the results of its SPARQL query as a node-edge diagram. Visually distinguishes asserted triples (solid), inferred triples (dashed), and externally fetched triples (dotted). The Cytoscape instance is created on first intersection and kept alive thereafter."@en .
+
+sembook:EntityPanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:Panel ;
+    rdfs:label "Entity Panel"@en ;
+    rdfs:comment
+        "A list-based panel that displays named entities or vocabulary terms. Filtered by the panel's SPARQL query — typically either class instances (entities) or class/property definitions (vocabulary). Supports displaying both asserted and inferred type information."@en .
+
+sembook:TabsPanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:Panel ;
+    rdfs:label "Tabs Panel"@en ;
+    rdfs:comment
+        "A layout container panel that presents its child panels as switchable tabs. Owns the tab chrome and active-tab state. Child panels are standard Panel instances and have no knowledge of their tab context."@en .
+
+sembook:SparqlPanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:Panel ;
+    rdfs:label "SPARQL Panel"@en ;
+    rdfs:comment
+        "An interactive SPARQL query panel. Provides a query editing surface and executes queries against the current quad store state. Deferred — not implemented in v1."@en .
+
+
+# ─────────────────────────────────────────────────────────────
+# Notebook Properties
+# ─────────────────────────────────────────────────────────────
+
+sembook:title
+    a owl:DatatypeProperty ;
+    rdfs:label "title"@en ;
+    rdfs:comment "The display title of a Notebook."@en ;
+    rdfs:domain sembook:Notebook ;
+    rdfs:range xsd:string .
+
+sembook:labs
+    a owl:ObjectProperty ;
+    rdfs:label "labs"@en ;
+    rdfs:comment
+        "Ordered list of Labs in a Notebook. Order determines scroll position and initialization sequence."@en ;
+    rdfs:domain sembook:Notebook ;
+    rdfs:range sembook:Lab .
+
+
+# ─────────────────────────────────────────────────────────────
+# Lab Properties
+# ─────────────────────────────────────────────────────────────
+
+sembook:label
+    a owl:DatatypeProperty ;
+    rdfs:label "label"@en ;
+    rdfs:comment
+        "A human-readable display label for a Lab or Panel. Used in the navigation strip for Labs and as the tab label for Panels within a TabsPanel."@en ;
+    rdfs:domain [
+        a owl:Class ;
+        owl:unionOf ( sembook:Lab sembook:Panel )
+    ] ;
+    rdfs:range xsd:string .
+
+sembook:init
+    a owl:ObjectProperty ;
+    rdfs:label "init"@en ;
+    rdfs:comment
+        "Seed data for a Lab, expressed as an embedded JSON-LD graph. Loaded into the lab's named graph during the eager initialization phase at page load, before any Intersection Observer triggers. Provides the starting state of the graph before the user makes any edits."@en ;
+    rdfs:domain sembook:Lab ;
+    rdfs:range rdfs:Resource .
+
+sembook:panels
+    a owl:ObjectProperty ;
+    rdfs:label "panels"@en ;
+    rdfs:comment
+        "Ordered list of Panels within a Lab or TabsPanel. Order determines rendering sequence and, for TabsPanel, tab order."@en ;
+    rdfs:domain [
+        a owl:Class ;
+        owl:unionOf ( sembook:Lab sembook:TabsPanel )
+    ] ;
+    rdfs:range sembook:Panel .
+
+sembook:cssClass
+    a owl:DatatypeProperty ;
+    rdfs:label "CSS class"@en ;
+    rdfs:comment
+        "Tailwind CSS utility classes to apply to the rendered component element. Controls layout, sizing, overflow, and spacing. Applied directly as the HTML class attribute — no mapping or interpretation. Different labs and panels carry different class strings to achieve different layouts without any framework assumptions."@en ;
+    rdfs:domain [
+        a owl:Class ;
+        owl:unionOf ( sembook:Lab sembook:Panel )
+    ] ;
+    rdfs:range xsd:string .
+
+
+# ─────────────────────────────────────────────────────────────
+# Panel Properties
+# ─────────────────────────────────────────────────────────────
+
+sembook:sparql
+    a owl:DatatypeProperty ;
+    rdfs:label "SPARQL query"@en ;
+    rdfs:comment
+        "A SPARQL SELECT query string that determines what data a panel renders. The panel executes this query against the quad store when it renders. Different panels use different queries to project different views of the same underlying graph — local graph, full graph, entity list, vocabulary list."@en ;
+    rdfs:domain sembook:Panel ;
+    rdfs:range xsd:string .
+
+
+# ─────────────────────────────────────────────────────────────
+# Named Graph Convention (informative)
+# ─────────────────────────────────────────────────────────────
+#
+# The following naming convention is not enforced by this ontology
+# but is required by the runtime:
+#
+#   Lab named graph:          <lab-iri>
+#   Lab inferred graph:       <lab-iri-inferred>
+#   Panel fragment identity:  <panel-iri>   (used as graph key in upsertFragment)
+#
+# The default graph contains the notebook and lab definitions
+# as loaded from the JSON-LD file at bootstrap time.
+#
+# ─────────────────────────────────────────────────────────────

@@ -196,8 +196,18 @@
         pane.className = i === 0 ? 'p-3 h-full' : 'p-3 h-full hidden';
 
         if (child['@type'] === 'sembook:GraphPanel') {
+          let sparql = child['sembook:sparql'];
+
+          // Full Graph is cumulative across labs; replace the static single-lab
+          // VALUES clause from the definition with the live lab order.
+          if (child['sembook:label'] === 'Full Graph') {
+            const graphs = this._notebook.graphsUpTo(this.uri);
+            const valuesClause = `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
+            sparql = sparql.replace(/VALUES \?g \{[^}]*\}/, valuesClause);
+          }
+
           const el = document.createElement('sem-panel-graph');
-          el.setAttribute('sparql', child['sembook:sparql']);
+          el.setAttribute('sparql', sparql);
           el.setAttribute('label', child['sembook:label'] || '');
           el.setAttribute('uri', child['@id'] || '');
           pane.appendChild(el);

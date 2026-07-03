@@ -52,19 +52,19 @@
               "@id": "https://sembook.example.org/intro#identity-full-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Full Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { ?s ?p ?o }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#identity> } }"
             },
             {
               "@id": "https://sembook.example.org/intro#identity-entities",
               "@type": "sembook:EntityPanel",
               "sembook:label": "Entities",
-              "sembook:sparql": "SELECT DISTINCT ?entity ?type WHERE { GRAPH <https://sembook.example.org/intro#identity> { ?entity a ?type . FILTER(!isBlank(?entity)) } }"
+              "sembook:sparql": "SELECT DISTINCT ?entity ?type WHERE { GRAPH ?g { ?entity a ?type . FILTER(!isBlank(?entity)) FILTER(!STRSTARTS(STR(?type), \"https://sembook.example.org/vocab#\")) } VALUES ?g { <https://sembook.example.org/intro#identity> } }"
             },
             {
               "@id": "https://sembook.example.org/intro#identity-vocabulary",
               "@type": "sembook:EntityPanel",
               "sembook:label": "Vocabulary",
-              "sembook:sparql": "SELECT DISTINCT ?term ?type WHERE { GRAPH <https://sembook.example.org/intro#identity> { { ?term a <http://www.w3.org/2002/07/owl#Class> } UNION { ?term a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> } BIND(IF(EXISTS { ?term a <http://www.w3.org/2002/07/owl#Class> }, <http://www.w3.org/2002/07/owl#Class>, <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property>) AS ?type) } }"
+              "sembook:sparql": "SELECT DISTINCT ?term ?termType WHERE { GRAPH ?g { { ?term a <http://www.w3.org/2000/01/rdf-schema#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> BIND(\"property\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#ObjectProperty> BIND(\"property\" AS ?termType) } FILTER(!STRSTARTS(STR(?term), \"https://sembook.example.org/vocab#\")) } VALUES ?g { <https://sembook.example.org/intro#identity> } }"
             }
           ]
         }

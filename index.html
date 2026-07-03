@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Semantic Notebook — Introduction to Linked Data</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100">
+
+<!-- Page-level throbber: present in static HTML from the start, removed once sem-lab has registered. -->
+<div id="page-throbber" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900">
+  <div class="h-12 w-12 rounded-full border-4 border-slate-600 border-t-white animate-spin"></div>
+</div>
+
+<sem-notebook uri="https://sembook.example.org/intro" class="block">
+
+  <nav class="fixed top-0 inset-x-0 z-40 h-12 flex items-center gap-6 px-4 bg-slate-900/95 text-slate-100 text-sm backdrop-blur">
+    <span class="font-semibold tracking-wide">Introduction to Linked Data</span>
+    <a href="#identity" class="text-slate-300 hover:text-white">Identity and Connection</a>
+  </nav>
+
+  <sem-lab
+    id="identity"
+    uri="https://sembook.example.org/intro#identity"
+    class="grid grid-rows-[40vh_60vh] grid-cols-2 h-screen w-full pt-12 box-border scroll-mt-12">
+  </sem-lab>
+
+</sem-notebook>
+
+<script type="module">
+  // sem-lab: owns one named graph (not yet wired — no triplestore in this build target),
+  // owns its Intersection Observer, and manages the skeleton -> content transition.
+  // Panel content below is static placeholder markup, not yet sem-panel-jsonld / sem-panel-tabs
+  // custom elements — those are separate components built in a later step.
+  class SemLab extends HTMLElement {
+    connectedCallback() {
+      this._rendered = false;
+      this.renderSkeleton();
+      this._observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting && !this._rendered) {
+              this._rendered = true;
+              this.render();
+            }
+          }
+        },
+        { threshold: 0.15 }
+      );
+      this._observer.observe(this);
+    }
+
+    disconnectedCallback() {
+      this._observer?.disconnect();
+    }
+
+    renderSkeleton() {
+      this.innerHTML = `
+        <div class="col-span-1 border-r border-slate-300 bg-slate-200 animate-pulse"></div>
+        <div class="col-span-1 bg-slate-200 animate-pulse"></div>
+        <div class="col-span-2 border-t border-slate-300 bg-slate-100 animate-pulse"></div>
+      `;
+    }
+
+    render() {
+      this.innerHTML = `
+        ${this._jsonLdPanelHTML('Document A')}
+        ${this._jsonLdPanelHTML('Document B')}
+        <div class="col-span-2 overflow-hidden border-t border-slate-300 flex flex-col bg-white">
+          <div class="flex items-center gap-1 px-3 pt-2 border-b border-slate-300 bg-slate-50">
+            <button class="px-3 py-1.5 text-sm rounded-t bg-white border border-b-0 border-slate-300 text-slate-900">Local Graph</button>
+            <button class="px-3 py-1.5 text-sm rounded-t text-slate-500 hover:text-slate-700">Full Graph</button>
+            <button class="px-3 py-1.5 text-sm rounded-t text-slate-500 hover:text-slate-700">Entities</button>
+            <button class="px-3 py-1.5 text-sm rounded-t text-slate-500 hover:text-slate-700">Vocabulary</button>
+          </div>
+          <div class="flex-1 flex items-center justify-center text-slate-400 text-sm">
+            Local Graph — placeholder content
+          </div>
+        </div>
+      `;
+    }
+
+    _jsonLdPanelHTML(label) {
+      return `
+        <div class="col-span-1 overflow-hidden border-r border-slate-300 flex flex-col bg-white">
+          <div class="flex flex-col gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50">
+            <span class="text-sm font-medium text-slate-700">${label}</span>
+            <div class="flex items-center gap-2">
+              <input type="text" placeholder="IRI…"
+                class="flex-1 min-w-0 text-xs font-mono border border-slate-300 rounded px-2 py-1" />
+              <button class="shrink-0 text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300">Fetch</button>
+            </div>
+          </div>
+          <textarea placeholder="// JSON-LD"
+            class="flex-1 w-full resize-none font-mono text-xs p-3 outline-none"></textarea>
+          <div class="flex items-center justify-end gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
+            <button class="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700">Parse</button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  customElements.define('sem-lab', SemLab);
+
+  // Stand-in for `notebook:ready` — there is no event bus yet in this build target.
+  // The throbber covers the eager init phase; once sem-lab is registered and has
+  // done its initial (skeleton) render, that phase is complete.
+  customElements.whenDefined('sem-lab').then(() => {
+    requestAnimationFrame(() => {
+      document.getElementById('page-throbber')?.remove();
+    });
+  });
+</script>
+
+</body>
+</html>

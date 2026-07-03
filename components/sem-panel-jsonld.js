@@ -1,5 +1,62 @@
 // jsonld.js and N3 are loaded globally via <script> tags in index.html — no module import needed.
 
+// jsdelivr's +esm builder bundles each package independently, producing two
+// separate copies of @codemirror/state (one pulled in by codemirror, one by
+// lang-json) whose instanceof checks don't match across bundles — this throws
+// "Unrecognized extension value" the moment json() is added to the extension
+// list. esm.sh resolves shared dependencies to a single instance instead.
+import { EditorView, basicSetup } from 'https://esm.sh/codemirror@6.0.1';
+import { json } from 'https://esm.sh/@codemirror/lang-json@6.0.1';
+// basicSetup deliberately leaves Tab unbound (so keyboard users can still tab
+// out of the editor) — indentWithTab opts back into indent-on-Tab, which is
+// the behavior this swap was for.
+import { keymap } from 'https://esm.sh/@codemirror/view@6';
+import { indentWithTab } from 'https://esm.sh/@codemirror/commands@6';
+
+function createEditor(parent, initialContent, onChange) {
+  const view = new EditorView({
+    doc: initialContent,
+    extensions: [
+      basicSetup,
+      json(),
+      keymap.of([indentWithTab]),
+      EditorView.theme({
+        '&': {
+          height: '100%',
+          fontSize: '13px',
+          fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace'
+        },
+        '.cm-scroller': {
+          overflow: 'auto',
+          lineHeight: '1.6'
+        },
+        '.cm-content': {
+          padding: '8px 0'
+        },
+        '.cm-gutters': {
+          backgroundColor: '#f8fafc',
+          borderRight: '1px solid #e2e8f0',
+          color: '#94a3b8',
+          fontSize: '11px'
+        },
+        '.cm-activeLineGutter': {
+          backgroundColor: '#f1f5f9'
+        },
+        '.cm-activeLine': {
+          backgroundColor: '#f8fafc'
+        }
+      }),
+      EditorView.updateListener.of(update => {
+        if (update.docChanged) {
+          onChange(view.state.doc.toString());
+        }
+      })
+    ],
+    parent
+  });
+  return view;
+}
+
 function findPanelNode(panels, uri) {
   for (const p of panels || []) {
     if (p['@id'] === uri) return p;
@@ -81,8 +138,15 @@ async function parseToQuads(jsonString, fragmentUri, labUri) {
 export class SemPanelJsonLd extends HTMLElement {
   connectedCallback() {
     this.notebook = null;
+    this._editorContent = '';
+    this._editorView = null;
     this._render();
     this._bindEvents();
+    this._editorView = createEditor(
+      this._editorContainer,
+      this._editorContent,
+      (content) => { this._editorContent = content; }
+    );
   }
 
   // Called by sem-lab immediately after appending this element — sem-lab already
@@ -103,23 +167,21 @@ export class SemPanelJsonLd extends HTMLElement {
         <span class="text-sm font-medium text-slate-700">${this.label}</span>
         <div class="flex items-center gap-2">
           <input type="text" placeholder="IRI…"
-            class="flex-1 min-w-0 text-xs font-mono border border-slate-300 rounded px-2 py-1"
+            class="flex-1 min-w-0 ml-3.5 text-xs font-mono border border-slate-300 rounded px-2 py-1"
             data-role="fetch-input" />
           <button class="shrink-0 text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300"
             data-role="fetch-btn">Fetch</button>
         </div>
         <div data-role="fetch-error" class="hidden text-xs text-red-600"></div>
       </div>
-      <textarea placeholder="// paste JSON or JSON-LD here"
-        class="flex-1 w-full resize-none font-mono text-[18pt] p-3 outline-none"
-        data-role="editor"></textarea>
+      <div style="flex:1;overflow:hidden;min-height:0;" data-role="editor"></div>
       <div data-role="error" class="hidden px-3 py-2 text-xs text-red-600 bg-red-50 border-t border-red-200"></div>
       <div class="flex items-center justify-end gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
         <button class="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700"
           data-role="parse-btn">Parse</button>
       </div>
     `;
-    this._textarea = this.querySelector('[data-role="editor"]');
+    this._editorContainer = this.querySelector('[data-role="editor"]');
     this._errorEl = this.querySelector('[data-role="error"]');
     this._fetchInput = this.querySelector('[data-role="fetch-input"]');
     this._fetchButton = this.querySelector('[data-role="fetch-btn"]');
@@ -138,7 +200,17 @@ export class SemPanelJsonLd extends HTMLElement {
     if (!lab) return;
     const panelNode = findPanelNode(lab['sembook:panels'], this.uri);
     const initialContent = panelNode?.['sembook:initialContent'];
-    if (initialContent) this._textarea.value = initialContent;
+    if (!initialContent) return;
+    this._editorContent = initialContent;
+    if (this._editorView) {
+      this._editorView.dispatch({
+        changes: {
+          from: 0,
+          to: this._editorView.state.doc.length,
+          insert: initialContent
+        }
+      });
+    }
   }
 
   _clearError() {
@@ -184,7 +256,14 @@ export class SemPanelJsonLd extends HTMLElement {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       const text = await response.text();
-      this._textarea.value = text;
+      this._editorView.dispatch({
+        changes: {
+          from: 0,
+          to: this._editorView.state.doc.length,
+          insert: text
+        }
+      });
+      this._editorContent = text;
       this._setFetchState('idle');
       this._clearFetchError();
     } catch (err) {
@@ -194,7 +273,7 @@ export class SemPanelJsonLd extends HTMLElement {
   }
 
   async onParse() {
-    const jsonString = this._textarea.value.trim();
+    const jsonString = this._editorContent.trim();
     if (!jsonString) return;
 
     this._clearError();

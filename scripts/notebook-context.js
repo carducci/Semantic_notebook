@@ -10,6 +10,7 @@ export class NotebookContext extends EventTarget {
     this._subscribers = new Map();       // labUri → Set<SemPanel>
     this._labOrder = [];                 // ordered lab IRIs
     this._fragmentOwnership = new Map(); // fragmentUri → quad[]
+    this._prefixes = new Map();          // labUri → merged prefix object
   }
 
   // Query the quad store with SPARQL
@@ -30,14 +31,27 @@ export class NotebookContext extends EventTarget {
   }
 
   // Upsert a graph fragment — replace all triples previously contributed by fragmentUri
-  async upsertFragment(labUri, fragmentUri, quads) {
+  async upsertFragment(labUri, fragmentUri, quads, prefixes = {}) {
     const prev = this._fragmentOwnership.get(fragmentUri) || [];
     for (const q of prev) this.store.removeQuad(q);
 
     this.store.addQuads(quads);
     this._fragmentOwnership.set(fragmentUri, quads);
 
+    // Merge new prefixes into lab's prefix map
+    if (!this._prefixes.has(labUri)) {
+      this._prefixes.set(labUri, {});
+    }
+    Object.assign(this._prefixes.get(labUri), prefixes);
+
     this._notifySubscribers(labUri);
+  }
+
+  // Temporary — remove in step 3
+  getPrefixes(labUri) {
+    const p = this._prefixes.get(labUri) || {};
+    console.log('getPrefixes', labUri, p);
+    return p;
   }
 
   // Remove all triples contributed by a fragment (does not notify — caller decides)

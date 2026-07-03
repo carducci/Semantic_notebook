@@ -80,6 +80,27 @@ function scopeBlankNode(term, fragmentUri) {
   return N3.DataFactory.blankNode(`${safePrefix}-${term.value}`);
 }
 
+function extractPrefixes(doc) {
+  const prefixes = {};
+  const ctx = doc['@context'];
+  if (!ctx) return prefixes;
+
+  // Handle array context
+  const contexts = Array.isArray(ctx) ? ctx : [ctx];
+
+  for (const c of contexts) {
+    if (typeof c !== 'object') continue;
+    for (const [key, value] of Object.entries(c)) {
+      // Skip @-keywords and non-string values that aren't simple IRI mappings
+      if (key.startsWith('@')) continue;
+      if (typeof value === 'string' && value.match(/^https?:\/\//)) {
+        prefixes[key] = value;
+      }
+    }
+  }
+  return prefixes;
+}
+
 async function parseToQuads(jsonString, fragmentUri, labUri) {
   let doc;
   try {
@@ -87,6 +108,8 @@ async function parseToQuads(jsonString, fragmentUri, labUri) {
   } catch (e) {
     throw new Error(`Invalid JSON: ${e.message}`);
   }
+
+  const prefixes = extractPrefixes(doc);
 
   const hasContext = doc['@context'] && typeof doc['@context'] === 'object' && !Array.isArray(doc['@context']);
 
@@ -125,7 +148,7 @@ async function parseToQuads(jsonString, fragmentUri, labUri) {
     base: 'https://sembook.example.org/data/'
   });
   const parser = new N3.Parser({ format: 'N-Quads' });
-  return parser.parse(nquads).map(q =>
+  const quads = parser.parse(nquads).map(q =>
     new N3.Quad(
       scopeBlankNode(q.subject, fragmentUri),
       q.predicate,
@@ -133,6 +156,7 @@ async function parseToQuads(jsonString, fragmentUri, labUri) {
       N3.DataFactory.namedNode(labUri)
     )
   );
+  return { quads, prefixes };
 }
 
 export class SemPanelJsonLd extends HTMLElement {
@@ -279,8 +303,8 @@ export class SemPanelJsonLd extends HTMLElement {
     this._clearError();
 
     try {
-      const quads = await parseToQuads(jsonString, this.uri, this.labUri);
-      await this.notebook.upsertFragment(this.labUri, this.uri, quads);
+      const { quads, prefixes } = await parseToQuads(jsonString, this.uri, this.labUri);
+      await this.notebook.upsertFragment(this.labUri, this.uri, quads, prefixes);
     } catch (err) {
       this._showError(err.message);
     }

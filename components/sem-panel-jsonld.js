@@ -11,6 +11,18 @@ function findPanelNode(panels, uri) {
   return null;
 }
 
+// jsonld.js issues its own blank node labels (_:b0, _:b1, ...) starting fresh on every
+// independent toRDF() call. Two fragments parsed separately (e.g. Document A and
+// Document B) can both produce "_:b0" — and since their quads land in the same named
+// graph, an unscoped label would silently merge two unrelated entities. Prefix every
+// blank node with something derived from the fragment's own IRI so labels from
+// different fragments can never collide once merged.
+function scopeBlankNode(term, fragmentUri) {
+  if (term.termType !== 'BlankNode') return term;
+  const safePrefix = fragmentUri.split(/[/#]/).pop().replace(/[^A-Za-z0-9_-]/g, '');
+  return N3.DataFactory.blankNode(`${safePrefix}-${term.value}`);
+}
+
 async function parseToQuads(jsonString, fragmentUri, labUri) {
   let doc;
   try {
@@ -19,9 +31,12 @@ async function parseToQuads(jsonString, fragmentUri, labUri) {
     throw new Error(`Invalid JSON: ${e.message}`);
   }
 
-  // If no @context, inject a minimal one that maps plain JSON
-  // to blank nodes with literal properties
-  if (!doc['@context']) {
+  const hasContext = doc['@context'] && typeof doc['@context'] === 'object' && !Array.isArray(doc['@context']);
+
+  if (!hasContext) {
+    // Case 1 — no context at all: everything becomes a blank node with literal
+    // properties under an implied vocabulary, so the audience sees *something*
+    // in the graph even though it isn't semantically useful yet.
     doc = {
       '@context': { '@vocab': 'urn:sembook:implied:' },
       ...doc
@@ -35,12 +50,31 @@ async function parseToQuads(jsonString, fragmentUri, labUri) {
         delete doc.id;
       }
     }
+  } else if (doc['@context']['@vocab'] === undefined) {
+    // The user supplied their own context (e.g. mapping id -> @id) but didn't
+    // define a vocabulary for the remaining plain keys. Without a fallback,
+    // JSON-LD expansion silently drops any property it can't map to an IRI —
+    // this is why triples vanish the moment a partial context is introduced.
+    doc['@context']['@vocab'] = 'urn:sembook:implied:';
   }
 
-  const nquads = await jsonld.toRDF(doc, { format: 'application/n-quads' });
+  // Fallback base for relative @id values (e.g. "id": "441") when the user's
+  // own context doesn't declare @base — automatically overridden by an
+  // explicit @base in the document's context, per JSON-LD resolution rules.
+  // This also means two documents that both omit @base still resolve a
+  // shared bare id (e.g. "872") to the same IRI.
+  const nquads = await jsonld.toRDF(doc, {
+    format: 'application/n-quads',
+    base: 'https://sembook.example.org/data/'
+  });
   const parser = new N3.Parser({ format: 'N-Quads' });
   return parser.parse(nquads).map(q =>
-    new N3.Quad(q.subject, q.predicate, q.object, N3.DataFactory.namedNode(labUri))
+    new N3.Quad(
+      scopeBlankNode(q.subject, fragmentUri),
+      q.predicate,
+      scopeBlankNode(q.object, fragmentUri),
+      N3.DataFactory.namedNode(labUri)
+    )
   );
 }
 
@@ -49,16 +83,14 @@ export class SemPanelJsonLd extends HTMLElement {
     this.notebook = null;
     this._render();
     this._bindEvents();
-
-    this._onNotebookReady = (e) => {
-      this.notebook = e.detail.notebook;
-      this._populateInitialContent(e.detail.notebookDoc);
-    };
-    document.addEventListener('notebook:ready', this._onNotebookReady);
   }
 
-  disconnectedCallback() {
-    document.removeEventListener('notebook:ready', this._onNotebookReady);
+  // Called by sem-lab immediately after appending this element — sem-lab already
+  // holds the notebook context by the time it constructs panels (it only builds
+  // children once notebook:ready has fired), so there is no event to listen for here.
+  init(notebook, notebookDoc) {
+    this.notebook = notebook;
+    this._populateInitialContent(notebookDoc);
   }
 
   get uri() { return this.getAttribute('uri'); }

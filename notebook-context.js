@@ -15,7 +15,11 @@ export class NotebookContext extends EventTarget {
   // Query the quad store with SPARQL
   async query(sparql) {
     const bindingsStream = await this.engine.queryBindings(sparql, {
-      sources: [this.store]
+      sources: [this.store],
+      // Without this, a query with no GRAPH clause only matches the store's true
+      // default graph (the notebook/lab definition triples) — named-graph data
+      // like lab fragments would be invisible to queries like SELECT * WHERE { ?s ?p ?o }.
+      unionDefaultGraph: true
     });
     return bindingsStream.toArray();
   }

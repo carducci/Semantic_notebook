@@ -20,7 +20,7 @@
       "@id": "https://sembook.example.org/intro#identity",
       "@type": "sembook:Lab",
       "sembook:label": "Identity and Connection",
-      "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[40vh_60vh] h-screen w-full",
       "sembook:init": {},
       "sembook:panels": [
         {

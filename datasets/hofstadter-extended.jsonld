@@ -1,0 +1,13 @@
+{
+  "@context": {
+    "@base": "http://example.org/",
+    "schema": "http://schema.org/",
+    "id": "@id"
+  },
+  "id": "/Author/Id/872",
+  "schema:birthDate": "1945-02-15",
+  "schema:birthPlace": "New York City",
+  "schema:award": "Pulitzer Prize",
+  "schema:affiliation": "Indiana University",
+  "schema:sameAs": "https://dbpedia.org/resource/Douglas_Hofstadter"
+}

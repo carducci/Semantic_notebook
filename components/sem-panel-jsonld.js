@@ -108,9 +108,10 @@ export class SemPanelJsonLd extends HTMLElement {
           <button class="shrink-0 text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300"
             data-role="fetch-btn">Fetch</button>
         </div>
+        <div data-role="fetch-error" class="hidden text-xs text-red-600"></div>
       </div>
       <textarea placeholder="// paste JSON or JSON-LD here"
-        class="flex-1 w-full resize-none font-mono text-xs p-3 outline-none"
+        class="flex-1 w-full resize-none font-mono text-[18pt] p-3 outline-none"
         data-role="editor"></textarea>
       <div data-role="error" class="hidden px-3 py-2 text-xs text-red-600 bg-red-50 border-t border-red-200"></div>
       <div class="flex items-center justify-end gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
@@ -120,11 +121,15 @@ export class SemPanelJsonLd extends HTMLElement {
     `;
     this._textarea = this.querySelector('[data-role="editor"]');
     this._errorEl = this.querySelector('[data-role="error"]');
+    this._fetchInput = this.querySelector('[data-role="fetch-input"]');
+    this._fetchButton = this.querySelector('[data-role="fetch-btn"]');
+    this._fetchErrorEl = this.querySelector('[data-role="fetch-error"]');
   }
 
   _bindEvents() {
     this.querySelector('[data-role="parse-btn"]')
       .addEventListener('click', () => this.onParse());
+    this._fetchButton.addEventListener('click', () => this.onFetch());
   }
 
   _populateInitialContent(notebookDoc) {
@@ -144,6 +149,48 @@ export class SemPanelJsonLd extends HTMLElement {
   _showError(message) {
     this._errorEl.textContent = message;
     this._errorEl.classList.remove('hidden');
+  }
+
+  _clearFetchError() {
+    this._fetchErrorEl.textContent = '';
+    this._fetchErrorEl.classList.add('hidden');
+  }
+
+  _showFetchError(message) {
+    this._fetchErrorEl.textContent = message;
+    this._fetchErrorEl.classList.remove('hidden');
+  }
+
+  _setFetchState(state) {
+    const btn = this._fetchButton;
+    if (state === 'loading') {
+      btn.disabled = true;
+      btn.textContent = 'Fetching…';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Fetch';
+    }
+  }
+
+  async onFetch() {
+    const url = this._fetchInput.value.trim();
+    if (!url) return;
+
+    this._setFetchState('loading');
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const text = await response.text();
+      this._textarea.value = text;
+      this._setFetchState('idle');
+      this._clearFetchError();
+    } catch (err) {
+      this._setFetchState('idle');
+      this._showFetchError(`Fetch failed: ${err.message}`);
+    }
   }
 
   async onParse() {

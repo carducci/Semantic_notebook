@@ -47,11 +47,8 @@ export class NotebookContext extends EventTarget {
     this._notifySubscribers(labUri);
   }
 
-  // Temporary — remove in step 3
   getPrefixes(labUri) {
-    const p = this._prefixes.get(labUri) || {};
-    console.log('getPrefixes', labUri, p);
-    return p;
+    return this._prefixes.get(labUri) || {};
   }
 
   // Remove all triples contributed by a fragment (does not notify — caller decides)

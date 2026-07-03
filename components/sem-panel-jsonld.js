@@ -187,8 +187,8 @@ export class SemPanelJsonLd extends HTMLElement {
 
   _render() {
     this.innerHTML = `
-      <div class="flex flex-col gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50">
-        <span class="text-sm font-medium text-slate-700">${this.label}</span>
+      <div class="sem-panel-bar sem-panel-bar--header flex flex-col gap-2">
+        <span class="sem-panel-label">${this.label}</span>
         <div class="flex items-center gap-2">
           <input type="text" placeholder="IRI…"
             class="flex-1 min-w-0 ml-3.5 text-xs font-mono border border-slate-300 rounded px-2 py-1"
@@ -200,7 +200,7 @@ export class SemPanelJsonLd extends HTMLElement {
       </div>
       <div style="flex:1;overflow:hidden;min-height:0;" data-role="editor"></div>
       <div data-role="error" class="hidden px-3 py-2 text-xs text-red-600 bg-red-50 border-t border-red-200"></div>
-      <div class="flex items-center justify-end gap-2 px-3 py-2 border-t border-slate-200 bg-slate-50">
+      <div class="sem-panel-bar sem-panel-bar--footer flex items-center justify-end gap-2">
         <button class="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700"
           data-role="parse-btn">Parse</button>
       </div>

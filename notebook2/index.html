@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Semantic Notebook — JSON-LD and Turtle</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/n3@1.17.2/browser/n3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsonld@8.3.1/dist/jsonld.min.js"></script>
+
+<!-- Cytoscape.js -->
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.28.1/dist/cytoscape.min.js" integrity="sha384-J7Q85oZE4GJ/e7+n2aOQsLXfDwwfnA8S2nZAL5BpFsfpCF84zQD7LroZ/dMnLgex" crossorigin="anonymous"></script>
+
+<!-- Cola.js (peer dependency of cytoscape-cola) — must load before cytoscape-cola.js -->
+<script src="https://cdn.jsdelivr.net/npm/webcola@3.4.0/WebCola/cola.js" integrity="sha384-ncqkFbqiVwIGuPfC5tAvtag3HJXVPssYe1NbzJhJ4c36808OhRLsWzHk8GuqKNAD" crossorigin="anonymous"></script>
+
+<script>
+  // webcola's UMD build only exposes itself as window.cola, but cytoscape-cola's
+  // browser build looks for window.webcola — without this alias, cytoscape-cola
+  // silently binds its internal cola reference to undefined and only fails later,
+  // inside a running layout, with "Cannot read properties of undefined (reading 'adaptor')".
+  window.webcola = window.cola;
+</script>
+
+<!-- Cytoscape Cola layout — for cluster-aware force-directed layout -->
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-cola@2.5.1/cytoscape-cola.js" integrity="sha384-hS0F3AnUYl+EBC3wCT4+d6MKdLR27UlifwZZYJi5oRCNhKA1ptaEWExH6BqyfMeW" crossorigin="anonymous"></script>
+
+<script>
+  cytoscape.use(cytoscapeCola);
+</script>
+<link rel="stylesheet" href="../styles/tokens.css">
+</head>
+<body class="bg-slate-100">
+
+<!-- Page-level throbber: present in static HTML from the start, removed by bootstrap.js once notebook:ready fires. -->
+<div id="page-throbber" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900">
+  <div class="h-12 w-12 rounded-full border-4 border-slate-600 border-t-white animate-spin"></div>
+</div>
+
+<sem-notebook uri="https://sembook.example.org/turtle" class="block">
+
+  <nav class="fixed top-0 inset-x-0 z-40 h-12 flex items-center gap-6 px-4 bg-slate-900/95 text-slate-100 text-sm backdrop-blur">
+    <span class="font-semibold tracking-wide">JSON-LD and Turtle</span>
+    <a href="#side-by-side" class="text-slate-300 hover:text-white">Two Syntaxes, One Graph</a>
+  </nav>
+
+  <!-- No panel children here — sem-lab reads its panel config from the notebook definition
+       (via notebook:ready) and constructs its own child elements. The grid/sizing classes
+       come entirely from the definition's sembook:cssClass, applied at runtime; the classes
+       below are page-chrome concerns the definition has no business knowing about
+       (fixed-nav offset, box-sizing, anchor scroll margin). -->
+  <sem-lab
+    id="side-by-side"
+    uri="https://sembook.example.org/turtle#side-by-side"
+    class="pt-12 box-border scroll-mt-12">
+  </sem-lab>
+
+</sem-notebook>
+
+<script type="module" src="../components/sem-lab.js"></script>
+<script type="module" src="../components/sem-panel-jsonld.js"></script>
+<script type="module" src="../components/sem-panel-graph.js"></script>
+<script type="module" src="../components/sem-panel-entity.js"></script>
+<script type="module" src="../components/sem-panel-turtle.js"></script>
+<script type="module">
+  import { bootstrap } from '../scripts/bootstrap.js';
+
+  bootstrap('../notebooks/turtle.jsonld');
+</script>
+
+</body>
+</html>

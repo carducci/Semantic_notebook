@@ -10,3 +10,35 @@
   --color-purple:   #7c3aed;
   --color-purple-50: #ede9fe;
 }
+
+/* Shared panel chrome — keeps CodeMirror panels (JSON-LD, Turtle, ...) framed by
+   equal-height header/footer bars so their editors align top and bottom, and
+   ensures every panel label renders in the same font. */
+.sem-panel-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+}
+
+.sem-panel-bar {
+  padding: 0.5rem 0.75rem;
+  background: #f8fafc;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* Fixed (not min-) height, in px rather than rem: the JSON-LD header's natural
+   content (label + fetch row) renders 1px taller than a clean rem value would
+   round to, so both bars are pinned to that exact measured height — this is
+   what makes the two editors' tops/bottoms coincide pixel-for-pixel. */
+.sem-panel-bar--header {
+  border-bottom: 1px solid #e2e8f0;
+  height: 71.4px;
+  overflow: hidden;
+}
+
+.sem-panel-bar--footer {
+  border-top: 1px solid #e2e8f0;
+  height: 44.8px;
+  overflow: hidden;
+}

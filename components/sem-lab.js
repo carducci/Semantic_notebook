@@ -80,6 +80,9 @@ export class SemLab extends HTMLElement {
       this.appendChild(el);
       if (panelDef['@type'] === 'sembook:JsonLdPanel') {
         el.init(this._notebook, this._notebookDoc);
+      } else if (panelDef['@type'] === 'sembook:TurtlePanel') {
+        el.init(this._notebook, this._notebookDoc);
+        this._notebook.subscribe(this.uri, el);
       }
     }
   }
@@ -97,6 +100,15 @@ export class SemLab extends HTMLElement {
 
     if (type === 'sembook:TabsPanel') {
       return this._buildTabs(panelDef);
+    }
+
+    if (type === 'sembook:TurtlePanel') {
+      const el = document.createElement('sem-panel-turtle');
+      el.setAttribute('uri', panelDef['@id'] || '');
+      el.setAttribute('label', panelDef['sembook:label'] || '');
+      el.setAttribute('sparql', panelDef['sembook:sparql'] || '');
+      if (panelDef['sembook:cssClass']) el.className = panelDef['sembook:cssClass'];
+      return el;
     }
 
     // Unhandled panel types render as an empty placeholder container this iteration.

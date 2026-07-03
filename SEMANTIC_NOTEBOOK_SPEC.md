@@ -131,6 +131,70 @@ Init data, editor contents, and fetched resources all live in the same named gra
 
 **Inferred triples** go into a companion named graph: `<lab-iri-inferred>`. This keeps asserted and inferred triples distinct for visualization purposes without complicating the core model.
 
+### Graph Scoping Rules
+
+The quad store contains two categories of data that must be kept visually separate:
+
+**Infrastructure data** — the notebook definition (labs, panels, SPARQL queries, CSS classes). Loaded into the **default graph** at bootstrap time. Never shown in any panel visualization.
+
+**Teaching data** — the content loaded by the user via JSON-LD panels and init data. Lives in **named graphs** (one per lab). This is the only data panels should visualize.
+
+All panel SPARQL queries must scope to named graphs only. Never query the default graph in a panel.
+
+### Standard Panel Query Patterns
+
+**Local Graph** — triples in this lab's named graph only:
+```sparql
+SELECT ?s ?p ?o WHERE {
+  GRAPH <lab-iri> { ?s ?p ?o }
+}
+```
+
+**Full Graph** — triples across all lab named graphs up to and including this lab (populated via `notebook.graphsUpTo(labUri)`):
+```sparql
+SELECT ?s ?p ?o WHERE {
+  GRAPH ?g { ?s ?p ?o }
+  VALUES ?g { <lab1-iri> <lab2-iri> }
+}
+```
+
+**Entity panel** — named entities with types, excluding infrastructure:
+```sparql
+SELECT DISTINCT ?entity ?type WHERE {
+  GRAPH ?g { 
+    ?entity a ?type .
+    FILTER(!isBlank(?entity))
+    FILTER(!STRSTARTS(STR(?type), "https://sembook.example.org/vocab#"))
+  }
+  VALUES ?g { <lab-iri> }
+}
+```
+
+**Vocabulary panel** — class and property definitions, excluding infrastructure:
+```sparql
+SELECT DISTINCT ?term ?termType WHERE {
+  GRAPH ?g {
+    { ?term a <http://www.w3.org/2000/01/rdf-schema#Class> BIND("class" AS ?termType) }
+    UNION
+    { ?term a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> BIND("property" AS ?termType) }
+    UNION
+    { ?term a <http://www.w3.org/2002/07/owl#Class> BIND("class" AS ?termType) }
+    UNION
+    { ?term a <http://www.w3.org/2002/07/owl#ObjectProperty> BIND("property" AS ?termType) }
+    FILTER(!STRSTARTS(STR(?term), "https://sembook.example.org/vocab#"))
+  }
+  VALUES ?g { <lab-iri> }
+}
+```
+
+### The sembook: Namespace Exclusion
+
+Anything in the `https://sembook.example.org/vocab#` namespace is infrastructure. All panel queries must filter it out. This applies to both subjects and types — a node typed as `sembook:Lab` should never appear in an entity or vocabulary panel.
+
+### `unionDefaultGraph` Setting
+
+`NotebookContext.query()` sets `unionDefaultGraph: true` for Comunica. This is required for Full Graph queries (no explicit `GRAPH` clause fallback). However, panel queries must still use explicit `GRAPH` clauses or `VALUES ?g { ... }` to scope to teaching data only — `unionDefaultGraph: true` does not replace explicit scoping, it just ensures named graph data is reachable.
+
 ---
 
 ## URI Scheme
@@ -486,6 +550,16 @@ Load identity lab → edit Document A → click Parse → assert Cytoscape updat
 4. **Book artifact export format** — deferred pending production format decision.
 5. **NL→SPARQL panel** — deferred until base stack is stable.
 6. **CodeMirror vs. textarea** — textarea for v1, CodeMirror deferred.
+7. **Entity and vocabulary panel UI** — deferred pending teaching requirements. These panels will show structured lists (not Cytoscape graphs) but the exact visual design depends on which concepts are being taught in each lab. SPARQL query patterns are defined; rendering is not.
+
+## Architectural Decisions Log
+
+Decisions made during implementation that are not obvious from the spec:
+
+- **`init(notebook, notebookDoc)` pattern** — panels created dynamically by `sem-lab` receive their notebook context via an explicit `init()` call immediately after `appendChild`, not via `notebook:ready` event listening. Event-based init is only for static components present at parse time. Dynamic components always use `init()`.
+- **`unionDefaultGraph: true`** — set on all `NotebookContext.query()` calls so named graph data is reachable by queries without explicit `GRAPH` clauses. Panel queries must still use explicit scoping to exclude default graph infrastructure data.
+- **Blank node scoping** — `jsonld.js` resets blank node labels (`_:b0`, `_:b1`...) on every independent `toRDF()` call. Each panel's blank nodes are prefixed with a slug derived from the panel's fragment URI before being added to the store, preventing collisions between documents parsed in separate calls.
+- **Layout classes** — applied additively. `sem-lab` applies page-chrome classes (`pt-12 box-border scroll-mt-12`) as static attributes; grid/sizing classes come from `sembook:cssClass` in the notebook definition and are merged at runtime via `_applyLayoutClass()`.
 
 ---
 

@@ -60,6 +60,7 @@
   import { bootstrap } from './bootstrap.js';
   import './components/sem-panel-jsonld.js';
   import './components/sem-panel-graph.js';
+  import './components/sem-panel-entity.js';
 
   class SemLab extends HTMLElement {
     connectedCallback() {
@@ -208,6 +209,14 @@
 
           const el = document.createElement('sem-panel-graph');
           el.setAttribute('sparql', sparql);
+          el.setAttribute('label', child['sembook:label'] || '');
+          el.setAttribute('uri', child['@id'] || '');
+          pane.appendChild(el);
+          el.init(this._notebook, this._notebookDoc);
+          this._notebook.subscribe(this.uri, el);
+        } else if (child['@type'] === 'sembook:EntityPanel') {
+          const el = document.createElement('sem-panel-entity');
+          el.setAttribute('sparql', child['sembook:sparql']);
           el.setAttribute('label', child['sembook:label'] || '');
           el.setAttribute('uri', child['@id'] || '');
           pane.appendChild(el);

@@ -67,6 +67,11 @@ export class NotebookContext extends EventTarget {
     this._labOrder = labIris;
   }
 
+  // Fire a scoped event on the notebook context (e.g. explorer:selected)
+  emit(eventName, detail) {
+    this.dispatchEvent(new CustomEvent(eventName, { detail }));
+  }
+
   _notifySubscribers(labUri) {
     const panels = this._subscribers.get(labUri) || new Set();
     for (const panel of panels) {

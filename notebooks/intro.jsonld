@@ -58,7 +58,7 @@
               "@id": "https://sembook.example.org/intro#identity-entities",
               "@type": "sembook:EntityPanel",
               "sembook:label": "Entities",
-              "sembook:sparql": "SELECT DISTINCT ?entity ?type WHERE { GRAPH ?g { ?entity a ?type . FILTER(!isBlank(?entity)) FILTER(!STRSTARTS(STR(?type), \"https://sembook.example.org/vocab#\")) } VALUES ?g { <https://sembook.example.org/intro#identity> } }"
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://sembook.example.org/intro#identity> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://sembook.example.org/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://sembook.example.org/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
             },
             {
               "@id": "https://sembook.example.org/intro#identity-vocabulary",

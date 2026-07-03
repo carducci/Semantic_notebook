@@ -1,0 +1,74 @@
+{
+  "@context": {
+    "sembook": "https://sembook.example.org/vocab#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "sembook:labs": { "@container": "@list" },
+    "sembook:panels": { "@container": "@list" }
+  },
+  "@graph": [
+    {
+      "@id": "https://sembook.example.org/intro",
+      "@type": "sembook:Notebook",
+      "sembook:title": "Introduction to Linked Data",
+      "sembook:labs": [
+        { "@id": "https://sembook.example.org/intro#identity" }
+      ]
+    },
+    {
+      "@id": "https://sembook.example.org/intro#identity",
+      "@type": "sembook:Lab",
+      "sembook:label": "Identity and Connection",
+      "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://sembook.example.org/intro#identity-doc-a",
+          "@type": "sembook:JsonLdPanel",
+          "sembook:label": "Document A",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:initialContent": "{\n  \"id\": \"441\",\n  \"title\": \"G\\u00f6del, Escher, Bach\",\n  \"author_id\": \"872\",\n  \"published\": 1979\n}"
+        },
+        {
+          "@id": "https://sembook.example.org/intro#identity-doc-b",
+          "@type": "sembook:JsonLdPanel",
+          "sembook:label": "Document B",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:initialContent": "{\n  \"id\": \"872\",\n  \"name\": \"Douglas Hofstadter\",\n  \"affiliation_id\": \"34\"\n}"
+        },
+        {
+          "@id": "https://sembook.example.org/intro#identity-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "col-span-2 overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://sembook.example.org/intro#identity-local-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Local Graph",
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH <https://sembook.example.org/intro#identity> { ?s ?p ?o } }"
+            },
+            {
+              "@id": "https://sembook.example.org/intro#identity-full-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Full Graph",
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { ?s ?p ?o }"
+            },
+            {
+              "@id": "https://sembook.example.org/intro#identity-entities",
+              "@type": "sembook:EntityPanel",
+              "sembook:label": "Entities",
+              "sembook:sparql": "SELECT DISTINCT ?entity ?type WHERE { GRAPH <https://sembook.example.org/intro#identity> { ?entity a ?type . FILTER(!isBlank(?entity)) } }"
+            },
+            {
+              "@id": "https://sembook.example.org/intro#identity-vocabulary",
+              "@type": "sembook:EntityPanel",
+              "sembook:label": "Vocabulary",
+              "sembook:sparql": "SELECT DISTINCT ?term ?type WHERE { GRAPH <https://sembook.example.org/intro#identity> { { ?term a <http://www.w3.org/2002/07/owl#Class> } UNION { ?term a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> } BIND(IF(EXISTS { ?term a <http://www.w3.org/2002/07/owl#Class> }, <http://www.w3.org/2002/07/owl#Class>, <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property>) AS ?type) } }"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

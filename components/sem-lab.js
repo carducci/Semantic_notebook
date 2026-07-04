@@ -83,7 +83,8 @@ export class SemLab extends HTMLElement {
     const rowRatios = this._parseRowRatios(lab['sembook:cssClass']);
 
     if (rowRatios && panelDefs.length > 1) {
-      this._buildResizableRows(panelDefs, rowRatios);
+      const colCount = this._parseColCount(lab['sembook:cssClass']);
+      this._buildResizableRows(panelDefs, rowRatios, colCount);
       return;
     }
 
@@ -110,8 +111,19 @@ export class SemLab extends HTMLElement {
     return [a, b];
   }
 
+  // Reads the lab's own explicit column count (e.g. "grid-cols-2") so the
+  // resizable-rows layout below can span exactly that many columns rather
+  // than a hardcoded 2 — a single-column lab (no grid-cols-N at all, e.g. a
+  // full-width lab with one top panel) would otherwise ask its wrapper to
+  // span a second column track that was never declared.
+  _parseColCount(cssClass) {
+    if (!cssClass) return 1;
+    const match = cssClass.match(/grid-cols-(\d+)/);
+    return match ? parseInt(match[1], 10) : 1;
+  }
+
   _initPanelEl(el, panelDef) {
-    if (panelDef['@type'] === 'sembook:JsonLdPanel') {
+    if (panelDef['@type'] === 'sembook:JsonLdPanel' || panelDef['@type'] === 'sembook:JsonLdContextPanel') {
       el.init(this._notebook, this._notebookDoc);
     } else if (panelDef['@type'] === 'sembook:TurtlePanel') {
       el.init(this._notebook, this._notebookDoc);
@@ -124,12 +136,15 @@ export class SemLab extends HTMLElement {
   // occupy row 1 (side by side, matching the lab's own column count), the last
   // panel occupies row 2. A resizer bar sits between them; dragging it near
   // either edge and releasing snaps that row to a thin, clickable strip.
-  _buildResizableRows(panelDefs, rowRatios) {
+  _buildResizableRows(panelDefs, rowRatios, colCount = 2) {
     const topDefs = panelDefs.slice(0, -1);
     const bottomDef = panelDefs[panelDefs.length - 1];
 
     const topWrapper = document.createElement('div');
-    topWrapper.className = 'row-start-1 col-span-2 grid grid-cols-2 overflow-hidden min-h-0';
+    // col-span-${colCount} spans the lab's own declared column count (outer
+    // grid); grid-cols-${topDefs.length} arranges the top panels side by side
+    // within topWrapper's own nested grid — two independent column counts.
+    topWrapper.className = `row-start-1 col-span-${colCount} grid grid-cols-${topDefs.length} overflow-hidden min-h-0`;
 
     const topPairs = [];
     const topLabels = [];
@@ -147,10 +162,10 @@ export class SemLab extends HTMLElement {
       .filter(Boolean);
 
     const handle = document.createElement('div');
-    handle.className = 'row-start-2 col-span-2 flex items-center justify-center bg-slate-200 hover:bg-slate-300 cursor-row-resize select-none border-y border-slate-300';
+    handle.className = `row-start-2 col-span-${colCount} flex items-center justify-center bg-slate-200 hover:bg-slate-300 cursor-row-resize select-none border-y border-slate-300`;
     handle.innerHTML = '<div class="w-10 h-1 rounded-full bg-slate-400"></div>';
 
-    const stripBase = 'col-span-2 flex w-full items-center justify-center gap-2 text-xs text-slate-500 bg-slate-100 hover:bg-slate-200 border-y border-slate-300 cursor-pointer hidden';
+    const stripBase = `col-span-${colCount} flex w-full items-center justify-center gap-2 text-xs text-slate-500 bg-slate-100 hover:bg-slate-200 border-y border-slate-300 cursor-pointer hidden`;
     const topStrip = document.createElement('button');
     topStrip.type = 'button';
     topStrip.className = `row-start-1 ${stripBase}`;
@@ -253,6 +268,14 @@ export class SemLab extends HTMLElement {
 
     if (type === 'sembook:JsonLdPanel') {
       const el = document.createElement('sem-panel-jsonld');
+      el.setAttribute('uri', panelDef['@id']);
+      el.setAttribute('label', panelDef['sembook:label'] || '');
+      if (panelDef['sembook:cssClass']) el.className = panelDef['sembook:cssClass'];
+      return el;
+    }
+
+    if (type === 'sembook:JsonLdContextPanel') {
+      const el = document.createElement('sem-panel-jsonld-split');
       el.setAttribute('uri', panelDef['@id']);
       el.setAttribute('label', panelDef['sembook:label'] || '');
       if (panelDef['sembook:cssClass']) el.className = panelDef['sembook:cssClass'];

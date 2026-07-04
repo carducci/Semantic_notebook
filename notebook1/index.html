@@ -66,32 +66,50 @@
   <div class="h-12 w-12 rounded-full border-4 border-slate-600 border-t-white animate-spin"></div>
 </div>
 
-<sem-notebook uri="https://sembook.example.org/intro" class="block">
+<!-- snap-y/snap-mandatory + overflow-y-scroll turns the stack of 100vh labs below
+     into scroll-snap pages: a scroll gesture always lands on one full lab, never
+     half of two. The fixed nav is unaffected — fixed positioning escapes this
+     element's scroll flow entirely. -->
+<sem-notebook uri="https://sembook.example.org/intro" class="block h-screen overflow-y-scroll snap-y snap-mandatory">
 
-  <nav class="fixed top-0 inset-x-0 z-40 h-12 flex items-center gap-6 px-4 bg-slate-900/95 text-slate-100 text-sm backdrop-blur">
+  <nav id="lab-nav" class="fixed top-0 inset-x-0 z-40 h-12 flex items-center gap-6 px-4 bg-slate-900/95 text-slate-100 text-sm backdrop-blur">
     <span class="font-semibold tracking-wide">Introduction to Linked Data</span>
-    <a href="#identity" class="text-slate-300 hover:text-white">Identity and Connection</a>
+    <!-- Anchor links are generated at runtime by scripts/build-nav.js from the
+         notebook definition's sembook:labs list — do not hand-author them here,
+         that's exactly the drift this was built to avoid. -->
   </nav>
 
   <!-- No panel children here — sem-lab reads its panel config from the notebook definition
        (via notebook:ready) and constructs its own child elements. The grid/sizing classes
        come entirely from the definition's sembook:cssClass, applied at runtime; the classes
        below are page-chrome concerns the definition has no business knowing about
-       (fixed-nav offset, box-sizing, anchor scroll margin). -->
+       (fixed-nav offset, box-sizing, anchor scroll margin, scroll-snap participation). -->
   <sem-lab
     id="identity"
     uri="https://sembook.example.org/intro#identity"
-    class="pt-12 box-border scroll-mt-12">
+    class="pt-12 box-border scroll-mt-12 snap-start snap-always">
+  </sem-lab>
+
+  <sem-lab
+    id="data-in-context"
+    uri="https://sembook.example.org/intro#data-in-context"
+    class="pt-12 box-border scroll-mt-12 snap-start snap-always">
   </sem-lab>
 
 </sem-notebook>
 
 <script type="module" src="../components/sem-lab.js"></script>
 <script type="module" src="../components/sem-panel-jsonld.js"></script>
+<script type="module" src="../components/sem-panel-jsonld-split.js"></script>
 <script type="module" src="../components/sem-panel-graph.js"></script>
 <script type="module" src="../components/sem-panel-entity.js"></script>
 <script type="module">
   import { bootstrap } from '../scripts/bootstrap.js';
+  import { buildNav } from '../scripts/build-nav.js';
+
+  document.addEventListener('notebook:ready', (e) => {
+    buildNav(document.getElementById('lab-nav'), e.detail.notebookDoc);
+  });
 
   bootstrap('../notebooks/intro.jsonld');
 </script>

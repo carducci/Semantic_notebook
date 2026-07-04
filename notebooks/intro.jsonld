@@ -13,7 +13,8 @@
       "@type": "sembook:Notebook",
       "sembook:title": "Introduction to Linked Data",
       "sembook:labs": [
-        { "@id": "https://sembook.example.org/intro#identity" }
+        { "@id": "https://sembook.example.org/intro#identity" },
+        { "@id": "https://sembook.example.org/intro#data-in-context" }
       ]
     },
     {
@@ -65,6 +66,54 @@
               "@type": "sembook:EntityPanel",
               "sembook:label": "Vocabulary",
               "sembook:sparql": "SELECT DISTINCT ?term ?termType WHERE { GRAPH ?g { { ?term a <http://www.w3.org/2000/01/rdf-schema#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> BIND(\"property\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#ObjectProperty> BIND(\"property\" AS ?termType) } FILTER(!STRSTARTS(STR(?term), \"https://sembook.example.org/vocab#\")) } VALUES ?g { <https://sembook.example.org/intro#identity> } }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "https://sembook.example.org/intro#data-in-context",
+      "@type": "sembook:Lab",
+      "sembook:label": "Data and Context",
+      "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://sembook.example.org/intro#data-in-context-editor",
+          "@type": "sembook:JsonLdContextPanel",
+          "sembook:label": "Book Record",
+          "sembook:cssClass": "overflow-hidden flex flex-col",
+          "sembook:initialContent": "{\n  \"id\": \"URN:ISBN:0812979796\",\n  \"title\": \"Elizabeth the Queen: The Life of a Modern Monarch\",\n  \"about\": {\n    \"id\": \"https://dbpedia.org/resource/Elizabeth_II\",\n    \"name\": \"Elizabeth Windsor\",\n    \"title\": \"Queen of the United Kingdom\"\n  },\n  \"author\": {\n    \"id\": \"https://example.com/person/id/35626\",\n    \"name\": \"Sally Bedell Smith\",\n    \"title\": \"Biographer\"\n  }\n}",
+          "sembook:initialContext": "{\n  \"@context\": {\n    \"id\": \"@id\",\n    \"title\": \"http://purl.org/dc/terms/title\",\n    \"about\": {\n      \"@id\": \"http://schema.org/about\",\n      \"@context\": {\n        \"title\": \"http://www.wikidata.org/prop/direct/P39\"\n      }\n    },\n    \"author\": {\n      \"@id\": \"http://schema.org/author\",\n      \"@context\": {\n        \"title\": \"http://schema.org/jobTitle\"\n      }\n    }\n  }\n}"
+        },
+        {
+          "@id": "https://sembook.example.org/intro#data-in-context-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://sembook.example.org/intro#data-in-context-local-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Local Graph",
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH <https://sembook.example.org/intro#data-in-context> { ?s ?p ?o } }"
+            },
+            {
+              "@id": "https://sembook.example.org/intro#data-in-context-full-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Full Graph",
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#data-in-context> } }"
+            },
+            {
+              "@id": "https://sembook.example.org/intro#data-in-context-entities",
+              "@type": "sembook:EntityPanel",
+              "sembook:label": "Entities",
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://sembook.example.org/intro#data-in-context> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://sembook.example.org/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://sembook.example.org/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
+            },
+            {
+              "@id": "https://sembook.example.org/intro#data-in-context-vocabulary",
+              "@type": "sembook:EntityPanel",
+              "sembook:label": "Vocabulary",
+              "sembook:sparql": "SELECT DISTINCT ?term ?termType WHERE { GRAPH ?g { { ?term a <http://www.w3.org/2000/01/rdf-schema#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> BIND(\"property\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#ObjectProperty> BIND(\"property\" AS ?termType) } FILTER(!STRSTARTS(STR(?term), \"https://sembook.example.org/vocab#\")) } VALUES ?g { <https://sembook.example.org/intro#data-in-context> } }"
             }
           ]
         }

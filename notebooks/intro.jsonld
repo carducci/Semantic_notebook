@@ -14,7 +14,8 @@
       "sembook:title": "Introduction to Linked Data",
       "sembook:labs": [
         { "@id": "https://sembook.example.org/intro#identity" },
-        { "@id": "https://sembook.example.org/intro#data-in-context" }
+        { "@id": "https://sembook.example.org/intro#data-in-context" },
+        { "@id": "https://sembook.example.org/intro#introducing-turtle" }
       ]
     },
     {
@@ -116,6 +117,29 @@
               "sembook:sparql": "SELECT DISTINCT ?term ?termType WHERE { GRAPH ?g { { ?term a <http://www.w3.org/2000/01/rdf-schema#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> BIND(\"property\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#ObjectProperty> BIND(\"property\" AS ?termType) } FILTER(!STRSTARTS(STR(?term), \"https://sembook.example.org/vocab#\")) } VALUES ?g { <https://sembook.example.org/intro#data-in-context> } }"
             }
           ]
+        }
+      ]
+    },
+    {
+      "@id": "https://sembook.example.org/intro#introducing-turtle",
+      "@type": "sembook:Lab",
+      "sembook:label": "Two Syntaxes, One Graph",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[1fr] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://sembook.example.org/intro#introducing-turtle-jsonld",
+          "@type": "sembook:JsonLdPanel",
+          "sembook:label": "JSON-LD",
+          "sembook:cssClass": "overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"http://example.org/\",\n    \"schema\": \"http://schema.org/\",\n    \"id\": \"@id\",\n    \"type\": \"@type\"\n  },\n  \"id\": \"/Person/1\",\n  \"type\": \"schema:Person\",\n  \"schema:name\": \"Ada Lovelace\",\n  \"schema:birthDate\": \"1815-12-10\"\n}"
+        },
+        {
+          "@id": "https://sembook.example.org/intro#introducing-turtle-turtle",
+          "@type": "sembook:TurtlePanel",
+          "sembook:label": "Turtle",
+          "sembook:cssClass": "overflow-hidden flex flex-col",
+          "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH <https://sembook.example.org/intro#introducing-turtle> { ?s ?p ?o } }"
         }
       ]
     }

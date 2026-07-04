@@ -123,7 +123,7 @@ export class SemLab extends HTMLElement {
   }
 
   _initPanelEl(el, panelDef) {
-    if (panelDef['@type'] === 'sembook:JsonLdPanel' || panelDef['@type'] === 'sembook:JsonLdContextPanel') {
+    if (panelDef['@type'] === 'sembook:JsonLdPanel' || panelDef['@type'] === 'sembook:JsonLdContextPanel' || panelDef['@type'] === 'sembook:TurtleWriterPanel') {
       el.init(this._notebook, this._notebookDoc);
     } else if (panelDef['@type'] === 'sembook:TurtlePanel') {
       el.init(this._notebook, this._notebookDoc);
@@ -291,6 +291,14 @@ export class SemLab extends HTMLElement {
       el.setAttribute('uri', panelDef['@id'] || '');
       el.setAttribute('label', panelDef['sembook:label'] || '');
       el.setAttribute('sparql', panelDef['sembook:sparql'] || '');
+      if (panelDef['sembook:cssClass']) el.className = panelDef['sembook:cssClass'];
+      return el;
+    }
+
+    if (type === 'sembook:TurtleWriterPanel') {
+      const el = document.createElement('sem-panel-turtle-writer');
+      el.setAttribute('uri', panelDef['@id'] || '');
+      el.setAttribute('label', panelDef['sembook:label'] || '');
       if (panelDef['sembook:cssClass']) el.className = panelDef['sembook:cssClass'];
       return el;
     }

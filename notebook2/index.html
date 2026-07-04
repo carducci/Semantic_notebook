@@ -29,6 +29,35 @@
   cytoscape.use(cytoscapeCola);
 </script>
 <link rel="stylesheet" href="../styles/tokens.css">
+
+<!-- CodeMirror and its dependency graph, vendored locally under /vendor/codemirror/
+     (see that directory's provenance comments for exact source versions) rather than
+     loaded from esm.sh at runtime — esm.sh's on-the-fly bundling was an intermittent
+     single point of failure during conference-critical demos. -->
+<script type="importmap">
+{
+  "imports": {
+    "codemirror": "../vendor/codemirror/codemirror.js",
+    "@codemirror/autocomplete": "../vendor/codemirror/codemirror-autocomplete.js",
+    "@codemirror/commands": "../vendor/codemirror/codemirror-commands.js",
+    "@codemirror/language": "../vendor/codemirror/codemirror-language.js",
+    "@codemirror/lint": "../vendor/codemirror/codemirror-lint.js",
+    "@codemirror/search": "../vendor/codemirror/codemirror-search.js",
+    "@codemirror/state": "../vendor/codemirror/codemirror-state.js",
+    "@codemirror/view": "../vendor/codemirror/codemirror-view.js",
+    "@codemirror/lang-json": "../vendor/codemirror/codemirror-lang-json.js",
+    "@codemirror/legacy-modes/mode/turtle": "../vendor/codemirror/codemirror-legacy-modes-turtle.js",
+    "@lezer/common": "../vendor/codemirror/lezer-common.js",
+    "@lezer/highlight": "../vendor/codemirror/lezer-highlight.js",
+    "@lezer/lr": "../vendor/codemirror/lezer-lr.js",
+    "@lezer/json": "../vendor/codemirror/lezer-json.js",
+    "style-mod": "../vendor/codemirror/style-mod.js",
+    "crelt": "../vendor/codemirror/crelt.js",
+    "w3c-keyname": "../vendor/codemirror/w3c-keyname.js",
+    "@marijn/find-cluster-break": "../vendor/codemirror/marijn-find-cluster-break.js"
+  }
+}
+</script>
 </head>
 <body class="bg-slate-100">
 

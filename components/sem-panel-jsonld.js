@@ -1,17 +1,18 @@
 // jsonld.js and N3 are loaded globally via <script> tags in index.html — no module import needed.
 
-// jsdelivr's +esm builder bundles each package independently, producing two
-// separate copies of @codemirror/state (one pulled in by codemirror, one by
-// lang-json) whose instanceof checks don't match across bundles — this throws
-// "Unrecognized extension value" the moment json() is added to the extension
-// list. esm.sh resolves shared dependencies to a single instance instead.
-import { EditorView, basicSetup } from 'https://esm.sh/codemirror@6.0.1';
-import { json } from 'https://esm.sh/@codemirror/lang-json@6.0.1';
+// CodeMirror and its dependency graph are vendored locally under /vendor/codemirror/
+// and resolved via the import map in index.html — see that directory for exact
+// versions. All panels resolve @codemirror/state (etc.) to the same vendored file,
+// so there's no risk of the duplicate-instance/"Unrecognized extension value"
+// failure mode that an on-the-fly CDN bundler (e.g. esm.sh) can produce when it
+// bundles each package independently.
+import { EditorView, basicSetup } from 'codemirror';
+import { json } from '@codemirror/lang-json';
 // basicSetup deliberately leaves Tab unbound (so keyboard users can still tab
 // out of the editor) — indentWithTab opts back into indent-on-Tab, which is
 // the behavior this swap was for.
-import { keymap } from 'https://esm.sh/@codemirror/view@6';
-import { indentWithTab } from 'https://esm.sh/@codemirror/commands@6';
+import { keymap } from '@codemirror/view';
+import { indentWithTab } from '@codemirror/commands';
 
 function createEditor(parent, initialContent, onChange) {
   const view = new EditorView({

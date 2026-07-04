@@ -1,16 +1,11 @@
-// jsdelivr's +esm builder bundles each package independently, producing duplicate
-// copies of @codemirror/state whose instanceof checks don't match across bundles —
-// this throws "Unrecognized extension value" the moment StreamLanguage.define() is
-// added to the extension list (same failure mode documented in sem-panel-jsonld.js).
-// esm.sh resolves shared dependencies to a single instance instead.
-import { EditorView, basicSetup } from 'https://esm.sh/codemirror@6.0.1';
-// Pinning this to an exact patch (e.g. 6.0.0) resolves to a second, separate
-// @codemirror/language bundle alongside the one codemirror@6.0.1 already pulls in —
-// the editor doesn't throw, but @lezer/highlight tag identities mismatch across the
-// two bundles, so tokens parse fine yet render with zero color. Leaving the version
-// unpinned lets esm.sh dedupe against codemirror's own copy.
-import { StreamLanguage } from 'https://esm.sh/@codemirror/language@6';
-import { turtle } from 'https://esm.sh/@codemirror/legacy-modes@6.3.3/mode/turtle';
+// CodeMirror and its dependency graph are vendored locally under /vendor/codemirror/
+// and resolved via the import map in index.html (same vendored files sem-panel-jsonld.js
+// resolves to, so there's a single shared @codemirror/state instance — no risk of the
+// duplicate-bundle "Unrecognized extension value" / mismatched-tag-identity failure
+// modes an on-the-fly CDN bundler like esm.sh could produce).
+import { EditorView, basicSetup } from 'codemirror';
+import { StreamLanguage } from '@codemirror/language';
+import { turtle } from '@codemirror/legacy-modes/mode/turtle';
 
 // N3 is loaded globally via <script src=".../n3.min.js"> in index.html — no module import needed.
 

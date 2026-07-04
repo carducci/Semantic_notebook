@@ -196,6 +196,18 @@ Fit with the organizational constraint: this is an independent project with no C
 - CDN availability is a dependency (mitigated by pre-baked datasets for offline use)
 - Module import paths are relative or CDN URLs
 
+### Reconsideration Triggers (added after vendoring CodeMirror, iteration 10)
+`esm.sh` intermittently failed to serve `@codemirror/view` during a live session, which silently broke `sem-panel-jsonld`/`sem-panel-turtle` (the custom element never upgrades, and there's no error surfaced to the user). The fix was to vendor CodeMirror's full dependency graph (18 files) under `/vendor/codemirror/` and resolve it via a native `<script type="importmap">` — still zero build step, per ADR-006, since the files are unmodified ESM copies and the import map is a browser platform feature, not a bundler.
+
+This decision (no build step) still holds, but should be actively revisited — not silently worked around again — if any of the following happen:
+- **Vendoring becomes a recurring chore.** This session's resolution was manual: fetch each package's `package.json` from the registry, read its `exports`/`module` field, grep its actual `import` statements to verify the transitive closure, `curl` each file. That's tolerable once. If a second or third dependency needs the same treatment, the manual process doesn't scale and a minimal fetch-only tool (not a bundler — just something to script what was done by hand here) is worth introducing.
+- **A future dependency has a messier dependency graph than CodeMirror's** (dynamic imports, non-ESM packages, circular re-exports) such that flat-file vendoring + an import map can't represent it cleanly.
+- **A second contributor joins.** The Tailor-Made "team fit" for this ADR assumes one person; standard tooling (npm + a bundler) has a real onboarding-cost argument once that's no longer true.
+- **TypeScript or JSX genuinely becomes desired** for a component, not just hypothetically nice-to-have — the "no build step" constraint is the only thing currently ruling this out.
+- **The conference/offline deployment constraint loosens** (e.g., the notebook moves to an always-hosted environment with CI as ADR-027's future backend arrives) — the "zero ops, must never fail on stage" argument for no build step weakens once there's a deploy pipeline anyway.
+
+None of these are true yet — this is a flag for the architect, not a pending action.
+
 ---
 
 ## ADR-007 — N3.js as In-Browser Quad Store

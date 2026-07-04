@@ -1,3 +1,10 @@
+// Row-resizer tuning for labs whose sembook:cssClass declares a two-value
+// grid-rows-[A_B] track (e.g. "40vh_60vh"). Single-value labs (e.g. "[1fr]")
+// never match _parseRowRatios and fall through to the plain, non-resizable path.
+const HANDLE_PX = 10;
+const STRIP_PX = 36;
+const SNAP_PX = 60; // release within this distance of an edge snaps to collapsed
+
 export class SemLab extends HTMLElement {
   connectedCallback() {
     this._intersected = false;
@@ -72,19 +79,173 @@ export class SemLab extends HTMLElement {
     this.innerHTML = '';
     if (!lab) return;
 
-    for (const panelDef of lab['sembook:panels'] || []) {
+    const panelDefs = lab['sembook:panels'] || [];
+    const rowRatios = this._parseRowRatios(lab['sembook:cssClass']);
+
+    if (rowRatios && panelDefs.length > 1) {
+      this._buildResizableRows(panelDefs, rowRatios);
+      return;
+    }
+
+    for (const panelDef of panelDefs) {
       const el = this._buildPanel(panelDef);
       // Single append site for every panel type — appending an already-appended
       // node a second time triggers a disconnect/reconnect cycle, which previously
       // reset sem-panel-jsonld's notebook reference back to null after init().
       this.appendChild(el);
-      if (panelDef['@type'] === 'sembook:JsonLdPanel') {
-        el.init(this._notebook, this._notebookDoc);
-      } else if (panelDef['@type'] === 'sembook:TurtlePanel') {
-        el.init(this._notebook, this._notebookDoc);
-        this._notebook.subscribe(this.uri, el);
-      }
+      this._initPanelEl(el, panelDef);
     }
+  }
+
+  // Matches a two-value grid-rows-[A_B] track (e.g. "40vh_60vh") in the lab's
+  // cssClass. Single-value tracks (e.g. "[1fr]") return null so those labs keep
+  // the plain, non-resizable build path.
+  _parseRowRatios(cssClass) {
+    if (!cssClass) return null;
+    const match = cssClass.match(/grid-rows-\[([\d.]+)[a-z%]*_([\d.]+)[a-z%]*\]/i);
+    if (!match) return null;
+    const a = parseFloat(match[1]);
+    const b = parseFloat(match[2]);
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+    return [a, b];
+  }
+
+  _initPanelEl(el, panelDef) {
+    if (panelDef['@type'] === 'sembook:JsonLdPanel') {
+      el.init(this._notebook, this._notebookDoc);
+    } else if (panelDef['@type'] === 'sembook:TurtlePanel') {
+      el.init(this._notebook, this._notebookDoc);
+      this._notebook.subscribe(this.uri, el);
+    }
+    // sembook:TabsPanel's nested panels are init'd inside _buildTabs.
+  }
+
+  // Builds a draggable/collapsible two-row layout: all panels but the last
+  // occupy row 1 (side by side, matching the lab's own column count), the last
+  // panel occupies row 2. A resizer bar sits between them; dragging it near
+  // either edge and releasing snaps that row to a thin, clickable strip.
+  _buildResizableRows(panelDefs, rowRatios) {
+    const topDefs = panelDefs.slice(0, -1);
+    const bottomDef = panelDefs[panelDefs.length - 1];
+
+    const topWrapper = document.createElement('div');
+    topWrapper.className = 'row-start-1 col-span-2 grid grid-cols-2 overflow-hidden min-h-0';
+
+    const topPairs = [];
+    const topLabels = [];
+    for (const panelDef of topDefs) {
+      const el = this._buildPanel(panelDef);
+      topWrapper.appendChild(el);
+      topPairs.push([el, panelDef]);
+      if (panelDef['sembook:label']) topLabels.push(panelDef['sembook:label']);
+    }
+
+    const bottomEl = this._buildPanel(bottomDef);
+    bottomEl.classList.add('row-start-3');
+    const bottomLabels = (bottomDef['sembook:panels'] || [bottomDef])
+      .map(p => p['sembook:label'])
+      .filter(Boolean);
+
+    const handle = document.createElement('div');
+    handle.className = 'row-start-2 col-span-2 flex items-center justify-center bg-slate-200 hover:bg-slate-300 cursor-row-resize select-none border-y border-slate-300';
+    handle.innerHTML = '<div class="w-10 h-1 rounded-full bg-slate-400"></div>';
+
+    const stripBase = 'col-span-2 flex w-full items-center justify-center gap-2 text-xs text-slate-500 bg-slate-100 hover:bg-slate-200 border-y border-slate-300 cursor-pointer hidden';
+    const topStrip = document.createElement('button');
+    topStrip.type = 'button';
+    topStrip.className = `row-start-1 ${stripBase}`;
+    topStrip.textContent = `▸ ${topLabels.join(' · ') || 'panel'} — click to expand`;
+
+    const bottomStrip = document.createElement('button');
+    bottomStrip.type = 'button';
+    bottomStrip.className = `row-start-3 ${stripBase}`;
+    bottomStrip.textContent = `▸ ${bottomLabels.join(' · ') || 'panel'} — click to expand`;
+
+    // Connect the whole subtree in one go, then init() each panel — matching
+    // the safe order in _build() above, where connectedCallback (which
+    // sem-panel-jsonld relies on to have already run) fires during this append,
+    // before any init() call.
+    this.append(topWrapper, topStrip, handle, bottomEl, bottomStrip);
+
+    for (const [el, panelDef] of topPairs) this._initPanelEl(el, panelDef);
+    this._initPanelEl(bottomEl, bottomDef);
+
+    const els = { topWrapper, topStrip, bottomEl, bottomStrip };
+    const state = { ratios: rowRatios, lastRatios: rowRatios, collapsed: null };
+
+    this._applyRowState(state, els);
+    this._wireResizer(handle, state, els);
+
+    const restore = () => {
+      state.collapsed = null;
+      state.ratios = state.lastRatios;
+      this._applyRowState(state, els);
+    };
+    topStrip.addEventListener('click', restore);
+    bottomStrip.addEventListener('click', restore);
+  }
+
+  _applyRowState(state, { topWrapper, topStrip, bottomEl, bottomStrip }) {
+    let rows;
+    if (state.collapsed === 'top') {
+      rows = `${STRIP_PX}px ${HANDLE_PX}px 1fr`;
+    } else if (state.collapsed === 'bottom') {
+      rows = `1fr ${HANDLE_PX}px ${STRIP_PX}px`;
+    } else {
+      rows = `${state.ratios[0]}fr ${HANDLE_PX}px ${state.ratios[1]}fr`;
+    }
+    this.style.gridTemplateRows = rows;
+
+    topWrapper.classList.toggle('hidden', state.collapsed === 'top');
+    topStrip.classList.toggle('hidden', state.collapsed !== 'top');
+    bottomEl.classList.toggle('hidden', state.collapsed === 'bottom');
+    bottomStrip.classList.toggle('hidden', state.collapsed !== 'bottom');
+  }
+
+  _wireResizer(handle, state, els) {
+    const onPointerMove = (e) => {
+      const rect = this.getBoundingClientRect();
+      const total = rect.height - HANDLE_PX;
+      let topPx = e.clientY - rect.top;
+      topPx = Math.max(0, Math.min(total, topPx));
+      const bottomPx = total - topPx;
+
+      this.style.gridTemplateRows = `${topPx}px ${HANDLE_PX}px ${bottomPx}px`;
+      els.topWrapper.classList.remove('hidden');
+      els.topStrip.classList.add('hidden');
+      els.bottomEl.classList.remove('hidden');
+      els.bottomStrip.classList.add('hidden');
+
+      this._dragTopPx = topPx;
+      this._dragBottomPx = bottomPx;
+    };
+
+    const onPointerUp = () => {
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+      document.body.classList.remove('select-none');
+
+      const topPx = this._dragTopPx;
+      const bottomPx = this._dragBottomPx;
+
+      if (topPx < SNAP_PX) {
+        state.collapsed = 'top';
+      } else if (bottomPx < SNAP_PX) {
+        state.collapsed = 'bottom';
+      } else {
+        state.collapsed = null;
+        state.ratios = [topPx, bottomPx];
+        state.lastRatios = state.ratios;
+      }
+      this._applyRowState(state, els);
+    };
+
+    handle.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      document.body.classList.add('select-none');
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+    });
   }
 
   _buildPanel(panelDef) {

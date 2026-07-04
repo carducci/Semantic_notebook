@@ -76,12 +76,37 @@
      element's scroll flow entirely. -->
 <sem-notebook uri="https://sembook.example.org/intro" class="block h-screen overflow-y-scroll snap-y snap-mandatory">
 
-  <nav id="lab-nav" class="fixed top-0 inset-x-0 z-40 h-12 flex items-center gap-6 px-4 bg-slate-900/95 text-slate-100 text-sm backdrop-blur">
+  <nav id="lab-nav" class="fixed top-0 inset-x-0 z-40 h-12 flex items-center gap-3 px-4 bg-slate-900/95 text-slate-100 text-sm backdrop-blur">
+    <button
+      id="lab-nav-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="lab-nav-drawer"
+      aria-label="Toggle lab navigation"
+      class="-ml-1 flex h-8 w-8 flex-col items-center justify-center gap-1 rounded hover:bg-white/10">
+      <span class="block h-0.5 w-4 bg-current"></span>
+      <span class="block h-0.5 w-4 bg-current"></span>
+      <span class="block h-0.5 w-4 bg-current"></span>
+    </button>
     <span class="font-semibold tracking-wide">Introduction to Linked Data</span>
+  </nav>
+
+  <!-- Backdrop and drawer sit below the fixed nav bar (top-12), not over it,
+       so the hamburger button stays clickable while the drawer is open. -->
+  <div
+    id="lab-nav-backdrop"
+    class="fixed inset-x-0 top-12 bottom-0 z-40 bg-slate-900/50 opacity-0 pointer-events-none transition-opacity duration-200">
+  </div>
+
+  <aside
+    id="lab-nav-drawer"
+    aria-hidden="true"
+    class="fixed left-0 top-12 bottom-0 z-50 w-64 -translate-x-full transform bg-slate-900 p-4 text-sm text-slate-100 transition-transform duration-200 overflow-y-auto">
     <!-- Anchor links are generated at runtime by scripts/build-nav.js from the
          notebook definition's sembook:labs list — do not hand-author them here,
          that's exactly the drift this was built to avoid. -->
-  </nav>
+    <nav id="lab-nav-links" class="flex flex-col gap-1"></nav>
+  </aside>
 
   <!-- No panel children here — sem-lab reads its panel config from the notebook definition
        (via notebook:ready) and constructs its own child elements. The grid/sizing classes
@@ -126,7 +151,7 @@
   import { buildNav } from '../scripts/build-nav.js';
 
   document.addEventListener('notebook:ready', (e) => {
-    buildNav(document.getElementById('lab-nav'), e.detail.notebookDoc);
+    buildNav(document.getElementById('lab-nav-links'), e.detail.notebookDoc);
   });
 
   bootstrap('../notebooks/intro.jsonld');

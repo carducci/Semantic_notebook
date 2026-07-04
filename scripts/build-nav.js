@@ -1,8 +1,13 @@
 // Generates the jump-to nav links from the notebook definition rather than
-// hand-authoring one <a> per lab in HTML — with two labs already, hand-sync
+// hand-authoring one <a> per lab in HTML — with several labs already, hand-sync
 // drift between the nav and sembook:labs is otherwise inevitable, and it breaks
 // the "fragment identifier is the single source of a lab's identity" rule
 // (ADR-011) the moment someone renames a lab's label without touching the nav.
+//
+// Links render inside a collapsible drawer (see #lab-nav-drawer in index.html)
+// rather than inline in the fixed bar — with four labs in notebook1, an inline
+// row of labels no longer fits the 48px strip. The hamburger toggle and drawer
+// chrome are static markup; this script only ever populates and highlights links.
 
 function findNotebookNode(notebookDoc) {
   const graph = notebookDoc['@graph'] || [];
@@ -12,10 +17,10 @@ function findNotebookNode(notebookDoc) {
   );
 }
 
-const INACTIVE_LINK_CLASS = 'text-slate-300 hover:text-white border-b-2 border-transparent';
-const ACTIVE_LINK_CLASS = 'text-white border-b-2 border-white';
+const INACTIVE_LINK_CLASS = 'block rounded px-3 py-2 border-l-2 border-transparent text-slate-300 hover:bg-white/10 hover:text-white';
+const ACTIVE_LINK_CLASS = 'block rounded px-3 py-2 border-l-2 border-white bg-white/10 text-white';
 
-export function buildNav(navEl, notebookDoc) {
+export function buildNav(linksEl, notebookDoc) {
   const notebookNode = findNotebookNode(notebookDoc);
   if (!notebookNode) return;
 
@@ -33,11 +38,13 @@ export function buildNav(navEl, notebookDoc) {
     a.href = slug;
     a.className = INACTIVE_LINK_CLASS;
     a.textContent = lab['sembook:label'] || labUri;
-    navEl.appendChild(a);
+    a.addEventListener('click', closeDrawer);
+    linksEl.appendChild(a);
     linksBySlug.set(slug.slice(1), a);
   }
 
   observeActiveLab(linksBySlug);
+  wireDrawerToggle();
 }
 
 // Highlights whichever nav link corresponds to the <sem-lab> currently
@@ -77,4 +84,37 @@ function observeActiveLab(linksBySlug) {
     const labEl = document.getElementById(slug);
     if (labEl) observer.observe(labEl);
   }
+}
+
+// Wires the hamburger button, backdrop, and Escape key to the drawer's open/
+// closed state. `dataset.wired` guards against double-binding if buildNav is
+// ever called more than once (it currently isn't — notebook:ready fires once).
+function wireDrawerToggle() {
+  const toggle = document.getElementById('lab-nav-toggle');
+  const drawer = document.getElementById('lab-nav-drawer');
+  const backdrop = document.getElementById('lab-nav-backdrop');
+  if (!toggle || !drawer || !backdrop || toggle.dataset.wired) return;
+  toggle.dataset.wired = 'true';
+
+  toggle.addEventListener('click', () => {
+    toggle.getAttribute('aria-expanded') === 'true' ? closeDrawer() : openDrawer();
+  });
+  backdrop.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDrawer();
+  });
+}
+
+function openDrawer() {
+  document.getElementById('lab-nav-drawer')?.classList.remove('-translate-x-full');
+  document.getElementById('lab-nav-backdrop')?.classList.remove('opacity-0', 'pointer-events-none');
+  document.getElementById('lab-nav-toggle')?.setAttribute('aria-expanded', 'true');
+  document.getElementById('lab-nav-drawer')?.setAttribute('aria-hidden', 'false');
+}
+
+function closeDrawer() {
+  document.getElementById('lab-nav-drawer')?.classList.add('-translate-x-full');
+  document.getElementById('lab-nav-backdrop')?.classList.add('opacity-0', 'pointer-events-none');
+  document.getElementById('lab-nav-toggle')?.setAttribute('aria-expanded', 'false');
+  document.getElementById('lab-nav-drawer')?.setAttribute('aria-hidden', 'true');
 }

@@ -130,7 +130,19 @@ export class SemPanelGraph extends HTMLElement {
     // GraphPanel built inside a hidden (inactive) tab is genuinely zero-size
     // until the tab is switched to. Either way, the fix is the same: resize
     // the Cytoscape canvas whenever this element's actual box size changes.
-    this._resizeObserver = new ResizeObserver(() => this._cy?.resize());
+    //
+    // resize() alone only updates the renderer's notion of the canvas
+    // dimensions — it does not recompute pan/zoom. If the initial layout's
+    // fit:true ran against that stale zero-size box, cola settles on
+    // zoom:1/pan:{0,0}, which leaves the (correctly spread-out) node
+    // positions rendered far outside the real viewport — most of the graph
+    // sits off-canvas and only a small off-center sliver is visible, which
+    // reads as an overlapping "rat's nest". Re-fitting on every resize keeps
+    // the view centered on the actual content once real dimensions land.
+    this._resizeObserver = new ResizeObserver(() => {
+      this._cy?.resize();
+      this._cy?.fit(undefined, layout.padding);
+    });
     this._resizeObserver.observe(this);
   }
 

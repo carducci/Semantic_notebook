@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- Belt-and-suspenders alongside styles/tokens.css's `color-scheme: light` — a
+     meta tag is parsed before any external stylesheet loads, so it's the earliest
+     possible signal to opt this (light-only) app out of browser forced-dark repaint. -->
+<meta name="color-scheme" content="light" />
 <title>Semantic Notebook — JSON-LD and Turtle</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/n3@1.17.2/browser/n3.min.js"></script>

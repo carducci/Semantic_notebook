@@ -36,6 +36,33 @@ function createTurtleViewer(parent, content) {
           borderRight: '1px solid #e2e8f0',
           color: '#94a3b8',
           fontSize: '11px'
+        },
+        '.cm-activeLineGutter': {
+          backgroundColor: '#cbd5e1'
+        },
+        // Per CodeMirror's own guidance (opaque line-decoration backgrounds
+        // "never worked" — https://discuss.codemirror.net/t/various-themes-activeline-selections-not-visible/7473):
+        // decoration backgrounds must be translucent, or they paint over and
+        // hide layers rendered underneath them, like the selection layer. An
+        // opaque activeLine background made text selected on the active line
+        // invisible even though it was technically still selected/copyable.
+        '.cm-activeLine': {
+          backgroundColor: 'rgba(37, 99, 235, 0.15)'
+        },
+        // CodeMirror's own selection layer has no default styling here, so it
+        // inherits whatever the browser's dark-mode remapping does to its
+        // near-transparent default — pin it to an explicit, solid, saturated
+        // color instead (this viewer is read-only but still selectable/copyable).
+        // !important because drawSelection's generated rule has matching
+        // specificity and can load after this theme.
+        '.cm-selectionBackground': {
+          backgroundColor: '#93c5fd !important'
+        },
+        '&.cm-focused .cm-selectionBackground': {
+          backgroundColor: '#60a5fa !important'
+        },
+        '.cm-content ::selection': {
+          backgroundColor: '#93c5fd !important'
         }
       })
     ],

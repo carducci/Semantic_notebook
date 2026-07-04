@@ -1,4 +1,10 @@
 :root {
+  /* This app has no dark theme yet — without this, OS-level dark mode triggers
+     the browser's forced-dark repaint heuristic, which crushes CodeMirror's
+     subtle same-hue active-line highlight (e.g. #f8fafc on a near-white editor
+     background) to indistinguishable. */
+  color-scheme: light;
+
   --color-teal-700: #0f766e;
   --color-teal-600: #0d9488;
   --color-teal-50:  #f0fdfa;

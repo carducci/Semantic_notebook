@@ -301,6 +301,14 @@ export class SemLab extends HTMLElement {
     return div;
   }
 
+  // The SPARQL VALUES ?g {...} clause spanning every lab's named graph up to
+  // and including this one — the cumulative scope shared by Full Graph and
+  // the entity/vocabulary panels.
+  _cumulativeGraphsValuesClause() {
+    const graphs = this._notebook.graphsUpTo(this.uri);
+    return `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
+  }
+
   _buildTabs(panelDef) {
     const container = document.createElement('div');
     container.className = panelDef['sembook:cssClass'] || '';
@@ -334,9 +342,7 @@ export class SemLab extends HTMLElement {
         // Full Graph is cumulative across labs; replace the static single-lab
         // VALUES clause from the definition with the live lab order.
         if (child['sembook:label'] === 'Full Graph') {
-          const graphs = this._notebook.graphsUpTo(this.uri);
-          const valuesClause = `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
-          sparql = sparql.replace(/VALUES \?g \{[^}]*\}/, valuesClause);
+          sparql = sparql.replace(/VALUES \?g \{[^}]*\}/, this._cumulativeGraphsValuesClause());
         }
 
         const el = document.createElement('sem-panel-graph');
@@ -347,8 +353,13 @@ export class SemLab extends HTMLElement {
         el.init(this._notebook, this._notebookDoc);
         this._notebook.subscribe(this.uri, el);
       } else if (child['@type'] === 'sembook:EntityPanel') {
+        // Entities/Vocabulary are cumulative across labs too — same reasoning
+        // as Full Graph: an entity introduced two labs ago is still known.
+        const sparql = child['sembook:sparql']
+          .replace(/VALUES \?g \{[^}]*\}/, this._cumulativeGraphsValuesClause());
+
         const el = document.createElement('sem-panel-entity');
-        el.setAttribute('sparql', child['sembook:sparql']);
+        el.setAttribute('sparql', sparql);
         el.setAttribute('label', child['sembook:label'] || '');
         el.setAttribute('uri', child['@id'] || '');
         pane.appendChild(el);

@@ -197,11 +197,19 @@ export class SemPanelEntity extends HTMLElement {
     this._renderPropertyPane();
   }
 
+  // The SPARQL VALUES ?g {...} clause spanning every lab's named graph up to
+  // and including this one — matches the cumulative scope the panel's own
+  // `sparql` attribute is given (see sem-lab.js _cumulativeGraphsValuesClause).
+  _cumulativeGraphsValuesClause() {
+    const graphs = this.notebook.graphsUpTo(this._labUri);
+    return `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
+  }
+
   async _renderClassMembers(classIri) {
     const sparql = `
       SELECT DISTINCT ?instance ?label WHERE {
         GRAPH ?g {
-          VALUES ?g { <${this._labUri}> }
+          ${this._cumulativeGraphsValuesClause()}
           ?instance a <${classIri}> .
           FILTER(!isBlank(?instance))
           OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?label }
@@ -238,7 +246,7 @@ export class SemPanelEntity extends HTMLElement {
     const sparql = `
       SELECT ?property ?value WHERE {
         GRAPH ?g {
-          VALUES ?g { <${this._labUri}> }
+          ${this._cumulativeGraphsValuesClause()}
           <${instanceIri}> ?property ?value .
           FILTER(!STRSTARTS(STR(?property), "https://sembook.example.org/vocab#"))
         }

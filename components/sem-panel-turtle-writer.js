@@ -1,12 +1,13 @@
-// See sem-panel-turtle.js for why these are pinned the way they are: leaving
-// @codemirror/language unpinned (not e.g. @6.0.0) lets esm.sh dedupe it against
-// the copy codemirror@6.0.1 already pulls in — pinning an exact patch produces a
-// second bundle whose @lezer/highlight tags don't match, silently killing highlighting.
-import { EditorView, basicSetup } from 'https://esm.sh/codemirror@6.0.1';
-import { StreamLanguage } from 'https://esm.sh/@codemirror/language@6';
-import { turtle } from 'https://esm.sh/@codemirror/legacy-modes@6.3.3/mode/turtle';
-import { keymap } from 'https://esm.sh/@codemirror/view@6';
-import { indentWithTab } from 'https://esm.sh/@codemirror/commands@6';
+// CodeMirror and its dependency graph are vendored locally under /vendor/codemirror/
+// and resolved via the import map in index.html — see that directory for exact
+// versions. This panel isn't wired into a lab yet (next iteration), but importing
+// it the same way as sem-panel-jsonld.js/sem-panel-turtle.js now means it won't
+// reintroduce the esm.sh single-point-of-failure the moment it is.
+import { EditorView, basicSetup } from 'codemirror';
+import { StreamLanguage } from '@codemirror/language';
+import { turtle } from '@codemirror/legacy-modes/mode/turtle';
+import { keymap } from '@codemirror/view';
+import { indentWithTab } from '@codemirror/commands';
 
 // N3 is loaded globally via <script src=".../n3.min.js"> in index.html — no module import needed.
 

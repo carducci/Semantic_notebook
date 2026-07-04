@@ -122,8 +122,19 @@ When a JSON-LD panel parses a document, it extracts `@context` prefix mappings a
 ### Viewport-Triggered Rendering
 Each lab occupies 100vh. Scrolling is the primary navigation. Intersection Observer triggers rendering when a lab enters the viewport. Labs initialize eagerly at page load (all init data loaded into named graphs before `notebook:ready` fires) but render lazily. This combination solves the deep linking problem: deep link to any lab, the graph is already populated, the rendering triggers on scroll. Sequential initialization isn't required.
 
+Now that notebook1 has two labs, CSS scroll-snap (`snap-y snap-mandatory` on the scroll container, `snap-start snap-always` on each lab) guarantees a scroll gesture always lands on one full lab, never half of two — this is what made "which lab is active" well-defined enough to drive nav highlighting (see Nav Generation, below).
+
 ### The `init()` Pattern
 Components created dynamically by `sem-lab` receive their notebook context via an explicit `init(notebook, notebookDoc)` call immediately after `appendChild`. This is different from static components (present at parse time) which can listen for `notebook:ready`. The distinction emerged from implementation — `notebook:ready` fires once, before dynamic components exist. The `init()` pattern is now canonical and documented.
+
+### Resizable, Collapsible Lab Rows
+Any lab whose `sembook:cssClass` declares a two-value `grid-rows-[A_B]` track gets a draggable resizer between its top row and bottom row automatically — no new vocabulary, the existing cssClass string is the trigger. Drag freely to repartition; drag within 60px of either edge and release to snap that row down to a thin labeled strip ("▸ Document A · Document B — click to expand"), which restores the last non-collapsed split on click. This gives the instructor a stage-ready way to give the graph (or the editors) the full screen mid-demo without losing the other panel's content. Labs with a single-value track (`[1fr]`, e.g. notebook2's side-by-side lab) are untouched by this mechanism.
+
+### Nav Generation
+The fixed nav strip's links are generated at runtime from the notebook definition's `sembook:labs` list (`scripts/build-nav.js`), not hand-authored per lab. This was necessary the moment a second lab existed: hand-syncing nav links against `sembook:labs` is exactly the kind of drift ADR-011's "fragment identifier is the single source of a lab's identity" rule exists to prevent. The same script also highlights whichever nav link corresponds to the lab currently dominating the viewport, driven by its own IntersectionObserver — deliberately independent of `sem-lab`'s own observer (which only triggers lazy-build), since nav active-state is page chrome, not teaching data, and has no business on the scoped event bus (C9).
+
+### Vendored Dependencies
+CodeMirror was originally loaded from `esm.sh` at runtime. Mid-session, `esm.sh` intermittently failed to serve `@codemirror/view`, which silently broke the JSON-LD and Turtle editor panels — the custom element just never upgrades, with nothing surfaced to the user. The fix: CodeMirror's full transitive dependency graph (18 files: `codemirror` itself plus `@codemirror/*`, `@lezer/*`, `style-mod`, `crelt`, `w3c-keyname`, `@marijn/find-cluster-break`) is vendored verbatim under `/vendor/codemirror/`, resolved via a native `<script type="importmap">` in each notebook's `index.html`. Still zero build step — the files are unmodified ESM copies and import maps are a browser platform feature, not a bundler. ADR-006 ("No Build Step") now carries an explicit set of reconsideration triggers logged after this incident, so the tradeoff gets revisited deliberately rather than worked around silently again.
 
 ---
 
@@ -133,6 +144,7 @@ Components created dynamically by `sem-lab` receive their notebook context via a
 |---|---|
 | `sem-lab` | One per lab, owns named graph, Intersection Observer, builds child panels from notebook definition |
 | `sem-panel-jsonld` | JSON-LD editor (CodeMirror), Parse button, Fetch affordance |
+| `sem-panel-jsonld-split` | Two side-by-side editors (body + `@context`) sharing one Parse button — teaches that `@context` is data too |
 | `sem-panel-graph` | Cytoscape force-directed graph, `sparql` attribute drives data |
 | `sem-panel-entity` | Split-pane entity explorer: compound node class hierarchy (left) + property viewer (right) |
 | `sem-panel-turtle` | Read-only Turtle serialization of current named graph, updates on `graph:updated` |
@@ -145,9 +157,9 @@ All panels share the same base contract. The `sparql` attribute is the universal
 
 ## The Teaching Arc (As Built So Far)
 
-### notebook1 — Identity and Connection
+### notebook1 — Introduction to Linked Data
 
-**Lab: "Identity and Connection"**
+**Lab 1: "Identity and Connection"**
 
 Two JSON-LD editors, side by side. Graph visualization below (tabbed: Local Graph, Full Graph, Entities, Vocabulary).
 
@@ -161,13 +173,17 @@ The demo has four states:
 
 4. **Fetch a richer dataset.** Load `hofstadter-extended.jsonld` into Document B. Properties explode on the Hofstadter node. Same IRI, new properties, no mapping required. This is semantic alignment, not ETL.
 
+**Lab 2: "Data and Context"**
+
+One full-width panel (`sem-panel-jsonld-split`) instead of two side-by-side editors: the JSON body on the left, its `@context` on the right, one shared Parse button. The teaching point is that `@context` is data, not metadata bolted on the side — separating it into its own visible, editable pane makes that legible. The example (a biography of Elizabeth II, authored by Sally Bedell Smith) maps `about` and `author` to nested contexts with different property mappings (`about.title` → a Wikidata property, `author.title` → `schema:jobTitle`) — the same key name, resolved differently depending on which nested context frames it.
+
 ### notebook2 — JSON-LD and Turtle
 
 **Lab 1: "Two Syntaxes, One Graph"**
 
 JSON-LD editor (left), Turtle Reader (right). Type JSON-LD, hit Parse, watch Turtle appear. `@context` prefixes become `@prefix` declarations. The correspondence is visible and immediate.
 
-**Lab 2: Turtle Writer + Graph** (next iteration)
+**Lab 2: Turtle Writer + Graph.** The component (`sem-panel-turtle-writer`) is built — same Parse-button pattern as the JSON-LD panel, editable CodeMirror with Turtle highlighting — but it isn't wired into a lab yet. Next iteration.
 
 ---
 
@@ -225,7 +241,7 @@ Things that were explicitly deferred and will need resolution:
 
 **Reasoning wiring.** The N3.js reasoner was selected (over EYE JS) for v1. It supports RDFS and OWL 2 RL — transitivity, inverse properties, property chains, domain/range inference. The architecture has a named graph slot for inferred triples (`<lab-iri-inferred>`). But the reasoner hasn't been wired yet. When it is, the trigger question remains: does reasoning run automatically on every Parse, or is it an explicit "Reason" button? The Parse button model suggests explicit is better — the instructor controls when the graph grows.
 
-**Multiple labs and scroll validation.** Only one lab has been built in each notebook. The Intersection Observer and scroll navigation haven't been tested with multiple labs visible simultaneously. There could be rendering performance surprises.
+**Multiple labs and scroll validation.** Partially resolved: notebook1 now has two labs, with CSS scroll-snap and IntersectionObserver-driven nav highlighting validated across them. Still open: this is two labs, not the full length of an eventual book chapter's worth — whether Cytoscape instance count, per-lab reasoning, or Full Graph queries spanning many named graphs hold up at that scale hasn't been tested.
 
 **Book artifact export.** What format does the book use for production? The answer determines what "export" means. SVG from Cytoscape is straightforward. A self-contained HTML page with frozen outputs is more work. A PDF is different work again. This is deferred pending the book production format decision.
 

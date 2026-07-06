@@ -149,14 +149,19 @@ export async function parseToQuads(jsonString, fragmentUri, labUri) {
       '@context': { '@vocab': 'urn:sembook:implied:' },
       ...doc
     };
-    // Map 'id' to '@id' if present — common convention
+    // Map 'id' to '@id' if present — common convention — but always as a blank
+    // node. Without an explicit @context (or @type: "@id"), an id value is a
+    // magic string with no identity, even when it happens to look like an IRI.
+    // Duck-typing "http…"-shaped values into real NamedNodes would hand them
+    // global identity the author never declared — spoiling the lesson that
+    // identity is something you assert, not something the tool infers from
+    // string shape (ADR: connection happens because the IRI resolves, not
+    // because a graph merged). Blank-node-scoping keeps these disconnected
+    // across fragments, which is the "raw JSON is islands" point of the lab.
     if (doc.id !== undefined) {
       doc['@context']['id'] = '@id';
-      // Make it a blank node if it looks like a plain string, not a URI
-      if (!doc.id.startsWith('http') && !doc.id.startsWith('/')) {
-        doc['@id'] = `_:${doc.id}`;
-        delete doc.id;
-      }
+      doc['@id'] = `_:${doc.id}`;
+      delete doc.id;
     }
   } else if (doc['@context']['@vocab'] === undefined) {
     // The user supplied their own context (e.g. mapping id -> @id) but didn't

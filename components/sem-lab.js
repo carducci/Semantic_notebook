@@ -355,7 +355,13 @@ export class SemLab extends HTMLElement {
       // h-full matters for sem-panel-graph, whose height:100% otherwise has
       // nothing to resolve against — contentArea has a real flex-computed
       // height, but pane itself is auto-height with no content to size from.
-      pane.className = i === 0 ? 'p-3 h-full' : 'p-3 h-full hidden';
+      // The entity/vocab explorers are full-bleed split-pane components (they carry
+      // their own borders and toolbar chrome and fill 100%×100%), so they sit flush in
+      // the well with no p-3 inset; graph panels keep the padding as breathing room.
+      const fullBleed = child['@type'] === 'sembook:EntityPanel'
+        || child['@type'] === 'sembook:VocabularyPanel';
+      const paneBase = fullBleed ? 'h-full' : 'p-3 h-full';
+      pane.className = i === 0 ? paneBase : `${paneBase} hidden`;
 
       if (child['@type'] === 'sembook:GraphPanel') {
         // Local Graph scopes to just this lab; Full Graph is cumulative across labs.

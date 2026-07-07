@@ -21,6 +21,13 @@ export const META_VOCAB_NAMESPACES = [
 // independent of any user-facing scope toggle.
 export const SEMBOOK_VOCAB_NS = 'https://sembook.example.org/vocab#';
 
+// Tool-synthesized fallback vocabulary (see jsonld-panel-shared.js parseToQuads): keys a
+// document's @context doesn't map are minted as urn:sembook:implied:<key> predicates so
+// raw JSON still renders as a proto-graph. Infrastructure in the C8 sense — the graph and
+// property views deliberately keep showing these (the "your keys aren't vocabulary yet"
+// state-1 beat), but nobody authored them, so they never earn vocabulary rows.
+export const SEMBOOK_IMPLIED_NS = 'urn:sembook:implied:';
+
 export function inNamespaces(iri, namespaces) {
   return !!iri && namespaces.some(ns => iri.startsWith(ns));
 }

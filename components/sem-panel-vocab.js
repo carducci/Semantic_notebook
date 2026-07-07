@@ -4,7 +4,8 @@ import {
   hierarchyToElements,
   localName,
   META_VOCAB_NAMESPACES,
-  SEMBOOK_VOCAB_NS
+  SEMBOOK_VOCAB_NS,
+  SEMBOOK_IMPLIED_NS
 } from '../scripts/parse-utils.js';
 
 // ── Namespaces ───────────────────────────────────────────────────────────────
@@ -16,6 +17,9 @@ import {
 //   (b) The RDF/OWL/SHACL/XSD meta-vocabulary — rdfs:label, rdfs:subPropertyOf,
 //       owl:ObjectProperty, xsd:string, etc. These are how you *assert* things about
 //       your terms, not terms you're authoring, so they'd be noise as rows.
+//   (c) urn:sembook:implied: — predicates the parser mints for JSON keys no @context
+//       maps (jsonld-panel-shared.js). Tool-synthesized placeholders, not authored
+//       vocabulary; they stay visible in the graph/property views but earn no row here.
 // schema: is deliberately NOT here: it's domain vocabulary the author writes with, so a
 // term's *use* of schema:name (or a reference to schema:bar) earns a row like any ex: term.
 // The deferred "schema.org inclusion" feature only adds schema.org's own *definitions*
@@ -23,7 +27,7 @@ import {
 // whether the author's own use of a schema: term shows up here.
 // The meta-vocabulary list is shared with the entity explorer via parse-utils
 // (META_VOCAB_NAMESPACES) so the two panels agree on what counts as machinery.
-const EXCLUDED_NS = [SEMBOOK_VOCAB_NS, ...META_VOCAB_NAMESPACES];
+const EXCLUDED_NS = [SEMBOOK_VOCAB_NS, SEMBOOK_IMPLIED_NS, ...META_VOCAB_NAMESPACES];
 
 const RDFS = 'http://www.w3.org/2000/01/rdf-schema#';
 const OWL  = 'http://www.w3.org/2002/07/owl#';

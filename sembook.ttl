@@ -17,8 +17,8 @@
     dcterms:creator <https://mago.co/performers/michael-carducci> ;
     dcterms:description
         "The Semantic Notebook vocabulary provides terms for describing interactive RDF teaching environments. Notebooks are serialized as JSON-LD and interpreted by a browser-based runtime that manages a quad store, SPARQL query engine, and graph visualization layer."@en ;
-    owl:versionIRI <https://sembook.example.org/vocab/0.1> ;
-    owl:versionInfo "0.1"^^xsd:string .
+    owl:versionIRI <https://sembook.example.org/vocab/0.2> ;
+    owl:versionInfo "0.2"^^xsd:string .
 
 
 # ─────────────────────────────────────────────────────────────
@@ -50,6 +50,13 @@ sembook:JsonLdPanel
     rdfs:comment
         "An interactive JSON-LD editor panel. Provides a text editing surface, a fetch affordance for loading a resource by URI, and a Parse button that commits the editor contents to the lab's named graph via a graph:upsertFragment event. Editing does not update the graph — only the Parse button does. The panel's document is the source of truth for its fragment of the named graph."@en .
 
+sembook:JsonLdContextPanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:JsonLdPanel ;
+    rdfs:label "JSON-LD Context Panel"@en ;
+    rdfs:comment
+        "A split-view JSON-LD editor: the document body and its @context are edited in two separate panes sharing one Parse button, making @context visible as data in its own right rather than metadata bolted onto the body. Same fetch affordance and Parse-commits-fragment behavior as JsonLdPanel."@en .
+
 sembook:GraphPanel
     a owl:Class ;
     rdfs:subClassOf sembook:Panel ;
@@ -64,12 +71,33 @@ sembook:EntityPanel
     rdfs:comment
         "A list-based panel that displays named entities or vocabulary terms. Filtered by the panel's SPARQL query — typically either class instances (entities) or class/property definitions (vocabulary). Supports displaying both asserted and inferred type information."@en .
 
+sembook:VocabularyPanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:Panel ;
+    rdfs:label "Vocabulary Panel"@en ;
+    rdfs:comment
+        "A vocabulary explorer distinct from EntityPanel: browses class and property definitions and their hierarchy (rdfs:subClassOf, rdfs:subPropertyOf) across the cumulative scope of a notebook's labs, rather than instance/class set membership. Visually distinguishes terms that are merely used or referenced (identity-only) from terms that carry their own describing assertions such as rdfs:label or rdfs:domain/range (described). Unlike other panel types it derives its own SPARQL scope internally rather than declaring sembook:sparql."@en .
+
 sembook:TabsPanel
     a owl:Class ;
     rdfs:subClassOf sembook:Panel ;
     rdfs:label "Tabs Panel"@en ;
     rdfs:comment
         "A layout container panel that presents its child panels as switchable tabs. Owns the tab chrome and active-tab state. Child panels are standard Panel instances and have no knowledge of their tab context."@en .
+
+sembook:TurtlePanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:Panel ;
+    rdfs:label "Turtle Panel"@en ;
+    rdfs:comment
+        "A read-only Turtle serialization viewer. Renders the panel's SPARQL-selected scope of the quad store as syntax-highlighted Turtle. Extracts and displays the @context prefix mappings synced from JSON-LD panels as @prefix declarations, making the JSON-LD/Turtle correspondence visible — the same graph, two syntaxes."@en .
+
+sembook:TurtleWriterPanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:Panel ;
+    rdfs:label "Turtle Writer Panel"@en ;
+    rdfs:comment
+        "An editable Turtle input panel, following the same Parse-button pattern as JsonLdPanel: editing the text does not update the lab's named graph until Parse commits it. Also extracts and syncs @prefix declarations into the lab's prefix map, mirroring JsonLdPanel's @context prefix sync."@en .
 
 sembook:SparqlPanel
     a owl:Class ;
@@ -155,6 +183,25 @@ sembook:sparql
     rdfs:comment
         "A SPARQL SELECT query string that determines what data a panel renders. The panel executes this query against the quad store when it renders. Different panels use different queries to project different views of the same underlying graph — local graph, full graph, entity list, vocabulary list."@en ;
     rdfs:domain sembook:Panel ;
+    rdfs:range xsd:string .
+
+sembook:initialContent
+    a owl:DatatypeProperty ;
+    rdfs:label "initial content"@en ;
+    rdfs:comment
+        "Seed text loaded into a panel's primary editing surface before the user makes any edits — the JSON-LD document body for JsonLdPanel and JsonLdContextPanel, or the Turtle text for TurtleWriterPanel. Distinct from sembook:init, which seeds the lab's named graph directly rather than an editor surface; this property only populates what the user sees until they hit Parse."@en ;
+    rdfs:domain [
+        a owl:Class ;
+        owl:unionOf ( sembook:JsonLdPanel sembook:TurtleWriterPanel )
+    ] ;
+    rdfs:range xsd:string .
+
+sembook:initialContext
+    a owl:DatatypeProperty ;
+    rdfs:label "initial context"@en ;
+    rdfs:comment
+        "Seed text loaded into a JsonLdContextPanel's separate @context editing pane before the user makes any edits, alongside sembook:initialContent for the document body."@en ;
+    rdfs:domain sembook:JsonLdContextPanel ;
     rdfs:range xsd:string .
 
 

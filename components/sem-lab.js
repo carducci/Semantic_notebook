@@ -82,20 +82,31 @@ export class SemLab extends HTMLElement {
     const panelDefs = lab['sembook:panels'] || [];
     const rowRatios = this._parseRowRatios(lab['sembook:cssClass']);
 
+    // Panels whose scope is the cumulative union of graphs (Full Graph, Entities,
+    // Vocabulary) get collected as they're built, then given an initial render below.
+    this._cumulativePanels = [];
+
     if (rowRatios && panelDefs.length > 1) {
       const colCount = this._parseColCount(lab['sembook:cssClass']);
       this._buildResizableRows(panelDefs, rowRatios, colCount);
-      return;
+    } else {
+      for (const panelDef of panelDefs) {
+        const el = this._buildPanel(panelDef);
+        // Single append site for every panel type — appending an already-appended
+        // node a second time triggers a disconnect/reconnect cycle, which previously
+        // reset sem-panel-jsonld's notebook reference back to null after init().
+        this.appendChild(el);
+        this._initPanelEl(el, panelDef);
+      }
     }
 
-    for (const panelDef of panelDefs) {
-      const el = this._buildPanel(panelDef);
-      // Single append site for every panel type — appending an already-appended
-      // node a second time triggers a disconnect/reconnect cycle, which previously
-      // reset sem-panel-jsonld's notebook reference back to null after init().
-      this.appendChild(el);
-      this._initPanelEl(el, panelDef);
-    }
+    // First-view render: a component showing the union of graphs must reflect data
+    // already in scope from earlier labs the moment this lab is viewed, not stay blank
+    // until a local Parse (cross-lab graph:updated doesn't propagate — events are
+    // lab-scoped, C9). Single-lab views (Local Graph, Turtle Reader) stay Parse-driven.
+    // Runs after the subtree is connected, so each panel's connectedCallback — which
+    // builds its render container — has already fired.
+    for (const el of this._cumulativePanels) el.onGraphUpdated(this.uri);
   }
 
   // Matches a two-value grid-rows-[A_B] track (e.g. "40vh_60vh") in the lab's
@@ -377,6 +388,9 @@ export class SemLab extends HTMLElement {
         pane.appendChild(el);
         el.init(this._notebook, this._notebookDoc);
         this._notebook.subscribe(this.uri, el);
+        // Full Graph shows the cumulative union of graphs, so it must render on first
+        // view (see the kick in _build). Local Graph is single-lab and stays Parse-driven.
+        if (child['sembook:label'] === 'Full Graph') this._cumulativePanels.push(el);
       } else if (child['@type'] === 'sembook:EntityPanel') {
         // Entities/Vocabulary are cumulative across labs too — same reasoning
         // as Full Graph: an entity introduced two labs ago is still known.
@@ -390,6 +404,7 @@ export class SemLab extends HTMLElement {
         pane.appendChild(el);
         el.init(this._notebook, this._notebookDoc);
         this._notebook.subscribe(this.uri, el);
+        this._cumulativePanels.push(el); // cumulative across labs — render on first view
       } else if (child['@type'] === 'sembook:VocabularyPanel') {
         // The Vocabulary Explorer derives its own cumulative scope in-component (via
         // notebook.graphsUpTo, like the entity panel's detail queries), so unlike Graph
@@ -400,6 +415,7 @@ export class SemLab extends HTMLElement {
         pane.appendChild(el);
         el.init(this._notebook, this._notebookDoc);
         this._notebook.subscribe(this.uri, el);
+        this._cumulativePanels.push(el); // cumulative across labs — render on first view
       } else {
         pane.innerHTML = `<p class="text-sm text-slate-400">${child['sembook:label']} — deferred to a future iteration.</p>`;
       }

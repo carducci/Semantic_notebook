@@ -85,6 +85,7 @@ export class SemPanelEntity extends HTMLElement {
     // you're modelling), but the toggle lets the instructor reveal it on demand.
     this._scope = 'mine';
     this._scopeButtons = {};
+    this._resizeObserver = null;
   }
 
   // Called by sem-lab after appendChild
@@ -125,6 +126,20 @@ export class SemPanelEntity extends HTMLElement {
     this._leftPane.appendChild(toolbar);
     this._leftPane.appendChild(this._graphContainer);
     this._syncScopeButtons();
+
+    // Cytoscape reads its container size once at construction and never re-checks it.
+    // The Entities tab is usually not the active tab when a Parse first renders this
+    // panel, so its cytoscape is built inside a display:none (0×0) pane — the layout's
+    // fit:true settles on zoom:1/pan:0 and the graph sits off-canvas. resize() updates
+    // the renderer's canvas dimensions; fit() re-centers on the real content once a true
+    // box lands (tab selected, scrolled into view, or Tailwind sizing resolves). Same
+    // mechanism the graph and vocab panels already rely on — this keeps the entity
+    // explorer consistent so it draws whenever it's observed, not only on Parse/toggle.
+    this._resizeObserver = new ResizeObserver(() => {
+      this._cy?.resize();
+      this._cy?.fit(undefined, entityLayout.padding);
+    });
+    this._resizeObserver.observe(this._graphContainer);
 
     // Right pane — property viewer
     this._rightPane = document.createElement('div');
@@ -391,6 +406,7 @@ export class SemPanelEntity extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._resizeObserver?.disconnect();
     this._cy?.destroy();
     this._cy = null;
   }

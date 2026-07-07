@@ -27,12 +27,16 @@ export function nodeLabel(term) {
 
 export function sparqlToElements(bindings) {
   const nodes = new Map(); // id → element
-  const edges = [];
+  const edges = new Map(); // edgeId → element (asserted precedence on collision)
 
   for (const binding of bindings) {
     const s = binding.get('s');
     const p = binding.get('p');
     const o = binding.get('o');
+    // ?g is bound when the query projects graph provenance (graph panels). A triple
+    // living in a <lab-iri>-inferred graph is inferred → dashed edge; otherwise asserted.
+    const g = binding.get('g');
+    const inferred = !!(g && g.value.endsWith('-inferred'));
 
     // Subject node
     const sId = s.termType === 'BlankNode'
@@ -70,9 +74,14 @@ export function sparqlToElements(bindings) {
       });
     }
 
-    // Edge
+    // Edge. The same triple can surface from both an asserted and an inferred graph
+    // (e.g. asserted in one lab, inferred in another, both in the Full view); assertion
+    // wins so it renders solid, and the shared edge id is deduped rather than added
+    // twice (Cytoscape rejects duplicate ids).
     const edgeId = `${sId}__${p.value}__${oId}`;
-    edges.push({
+    const existing = edges.get(edgeId);
+    if (existing && existing.classes === 'asserted') continue;
+    edges.set(edgeId, {
       data: {
         id: edgeId,
         source: sId,
@@ -80,11 +89,11 @@ export function sparqlToElements(bindings) {
         label: localName(p.value),
         fullLabel: p.value
       },
-      classes: 'asserted'
+      classes: inferred ? 'inferred' : 'asserted'
     });
   }
 
-  return [...nodes.values(), ...edges];
+  return [...nodes.values(), ...edges.values()];
 }
 
 export function hierarchyToElements(bindings) {

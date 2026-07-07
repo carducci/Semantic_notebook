@@ -205,6 +205,16 @@ export class SemPanelEntity extends HTMLElement {
     return `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
   }
 
+  // Same cumulative scope, but also spanning each lab graph's <lab-iri>-inferred
+  // companion — used only by the instance-property view, which distinguishes asserted
+  // vs inferred property rows (ADR-031). The class-hierarchy and class-member queries
+  // deliberately keep using the asserted-only clause above.
+  _cumulativeGraphsWithInferredValuesClause() {
+    const graphs = this.notebook.graphsUpTo(this._labUri)
+      .flatMap(g => [g, `${g}-inferred`]);
+    return `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
+  }
+
   async _renderClassMembers(classIri) {
     const sparql = `
       SELECT DISTINCT ?instance ?label WHERE {
@@ -244,9 +254,9 @@ export class SemPanelEntity extends HTMLElement {
 
   async _renderInstanceProperties(instanceIri) {
     const sparql = `
-      SELECT ?property ?value WHERE {
+      SELECT ?property ?value ?g WHERE {
         GRAPH ?g {
-          ${this._cumulativeGraphsValuesClause()}
+          ${this._cumulativeGraphsWithInferredValuesClause()}
           <${instanceIri}> ?property ?value .
           FILTER(!STRSTARTS(STR(?property), "https://sembook.example.org/vocab#"))
         }
@@ -256,24 +266,40 @@ export class SemPanelEntity extends HTMLElement {
     const bindings = await this.notebook.query(sparql);
     const label = localName(instanceIri);
 
+    // Dedup property/value pairs across the asserted and inferred graphs, with assertion
+    // winning: a pair that is both asserted and (re-)inferred reads as asserted (not
+    // italic). A pair present only in an <lab-iri>-inferred graph renders italic.
+    const rows = new Map(); // "propvalue" → { prop, val, inferred }
+    for (const b of bindings) {
+      const prop = b.get('property').value;
+      const val = b.get('value').value;
+      const g = b.get('g');
+      const inferred = !!(g && g.value.endsWith('-inferred'));
+      const key = `${prop}${val}`;
+      const existing = rows.get(key);
+      if (existing && !existing.inferred) continue; // asserted already recorded — keep it
+      rows.set(key, { prop, val, inferred });
+    }
+
     let html = `<h3 style="font-size:0.875rem;font-weight:600;color:#0f766e;margin-bottom:0.75rem;">
       ${label}
       <span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;">${instanceIri}</span>
     </h3>`;
 
-    if (bindings.length === 0) {
+    if (rows.size === 0) {
       html += '<p style="color:#94a3b8;font-size:0.875rem;">No properties asserted</p>';
     } else {
       html += '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">';
-      for (const b of bindings) {
-        const prop = b.get('property').value;
-        const val = b.get('value').value;
+      for (const { prop, val, inferred } of rows.values()) {
+        // Inferred rows (triple lives in sembook:inferred) render italic; everything
+        // else about the row is unchanged.
+        const italic = inferred ? 'font-style:italic;' : '';
         html += `
           <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:0.375rem 0.5rem 0.375rem 0;color:#64748b;white-space:nowrap;vertical-align:top;">
+            <td style="padding:0.375rem 0.5rem 0.375rem 0;color:#64748b;white-space:nowrap;vertical-align:top;${italic}">
               ${localName(prop)}
             </td>
-            <td style="padding:0.375rem 0;color:#1e293b;word-break:break-all;">
+            <td style="padding:0.375rem 0;color:#1e293b;word-break:break-all;${italic}">
               ${val}
             </td>
           </tr>`;

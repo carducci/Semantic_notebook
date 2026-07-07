@@ -37,6 +37,7 @@
 | ADR-028 | Per-notebook directory structure (`/notebook1/`, `/notebook2/`) | Accepted |
 | ADR-029 | CodeMirror 6 for all code editing surfaces | Accepted |
 | ADR-030 | Literals as nodes in graph visualization | Accepted |
+| ADR-031 | Materialization on Parse via N3.js Reasoner, RDFS/OWL2RL-BGP subset | Accepted |
 
 ---
 
@@ -820,6 +821,48 @@ The core teaching beat of the first demo requires showing that raw JSON is "alre
 - Literal nodes use `literalId(term)` (deterministic hash of value + datatype + language) for deduplication
 - The graph visualization is denser than it would be with literals suppressed
 - Long literal values are truncated to 20 characters with `…` in the node label; full value shown on hover
+
+---
+
+## ADR-031 — Materialization on Parse via N3.js Reasoner, RDFS/OWL2RL-BGP Subset
+
+**Status:** Accepted
+**Date:** Iteration 11
+**Refines:** ADR-009 (wires up the "not yet wired" inferred graph; narrows "RDFS and OWL 2 RL" — see §Ruleset)
+
+### Context
+ADR-009 chose the N3.js Reasoner and reserved a `<lab-iri-inferred>` named graph for reasoning output, but reasoning was never wired in. This iteration materializes inferred triples automatically on every Parse and renders them distinctly (dashed graph edges, italic entity-property rows).
+
+Investigation surfaced three facts that shaped the decision, none of which were true as the spec assumed:
+
+1. **The pinned `n3@1.17.2` has no Reasoner.** `N3Reasoner.js` first appears in the `n3` `1.x` line at **1.21.0**; 1.17.2 ships only Parser/Writer/Store/DataFactory.
+2. **N3.js bundles no ruleset.** `Reasoner.reason(rules)` takes a user-supplied dataset of N3 `{…} => {…}` rules.
+3. **The Reasoner is BGP-only** — "only rules with Basic Graph Patterns in premise and conclusion; built-ins and backward-chaining are not supported." It runs to a fixpoint (rules chain).
+
+### Decision
+
+**Trigger.** Materialization runs inside `NotebookContext.upsertFragment()` — the single chokepoint every Parse path (JSON-LD, JSON-LD-split, Turtle Writer) already funnels through — after the asserted quads land and before subscribers are notified. It is not a user-visible action: no "Reason" button, fires on every Parse.
+
+**Dependency.** Bump the global `n3` script from 1.17.2 to **1.26.0** (final 1.x — has the Reasoner, keeps the Store/Parser/Writer/DataFactory API the app already uses). Not the 2.x major bump.
+
+**Isolation + idempotency.** Reasoning runs in a throwaway `N3.Store` holding a copy of the lab's asserted triples in its *default graph* (the Reasoner adds conclusions to the graph it reasons over and mutates in place, so an isolated single-graph scratch keeps asserted+derived together and diffable). Newly-derived triples = scratch minus the asserted snapshot; those are written into `<lab-iri>-inferred`. The inferred graph is cleared and recomputed on every Parse, so repeated/overlapping parses never accumulate duplicates. Per-lab scope only — the reasoner sees one lab's own named graph, matching how that lab's asserted graph is scoped (not a cross-lab union). A full re-reason per Parse is synchronous and trivially fast at teaching-data scale; no incremental reasoning.
+
+**Ruleset (`scripts/reasoning-rules.js`).** Hand-authored N3 covering the BGP-expressible fragment: RDFS (subClass/subProperty transitivity + rdfs9/rdfs7 propagation, domain, range) and the relational OWL 2 RL axioms (inverseOf, Symmetric/TransitiveProperty, equivalentClass/Property, partial owl:sameAs). This **narrows ADR-009's "OWL 2 RL"**: the OWL2RL rules needing built-ins or rdf:Lists — cardinality, hasKey, propertyChainAxiom, intersectionOf/unionOf/someValuesFrom constructors, datatype checks — cannot be expressed in N3.js and are out of scope. Heavier reasoning remains the deferred EYE JS escalation (ADR-009).
+
+**Rendering.** Graph panels' queries are rewritten (in `sem-lab._inferredAwareGraphSparql`) to also span each in-scope lab graph's `-inferred` companion and project `?g`; `sparqlToElements` styles edges from an inferred graph as dashed (the pre-existing, unused `edge.inferred` style), asserted edges solid, deduping a triple seen in both graphs to solid. The entity explorer's `_renderInstanceProperties` (only) queries the inferred graphs too and italicizes property rows whose triple lives in `sembook:inferred`. The class-hierarchy/member queries and the vocab panel are untouched — the inferred graph is simply populated so a future vocab/SPARQL panel can query it without rework.
+
+### Alternatives Considered
+- **2.x major bump** — larger blast radius across Store/Parser/DataFactory usage for no gain over 1.26.0.
+- **Reason in place on the main store** — no clean asserted/inferred separation; mixing derived triples into the lab graph mid-computation risks silent duplication (the failure mode the handoff explicitly warned against).
+- **Blanket-including the inferred graphs via the shared cumulative-VALUES helper** — would leak inferred triples into the entity hierarchy, class-member, and vocab queries, exceeding the scoped change (C12).
+- **Incremental reasoning** — unnecessary at this scale; full re-reason is simpler and idempotent by construction.
+
+### Consequences
+- `n3` is pinned at 1.26.0; the existing parse/store/turtle-writer paths were smoke-tested after the bump.
+- The inferred graph naming convention `<lab-iri>-inferred` is now load-bearing in three places (materialization, `sem-lab` graph-query rewrite, entity/graph provenance checks via the `-inferred` suffix).
+- `owl:sameAs` value-replication can derive reflexive `?x owl:sameAs ?x`; those are dropped during materialization to keep the inferred graph clean.
+- RDFS `domain`/`range` on a datatype property can, per standard RDFS materialization, yield a literal-subject/object type triple; accepted (teaching datasets declare domain/range on object properties).
+- Bootstrap `sembook:init` data is not materialized (all current init blocks are empty); materialization is Parse-triggered per the handoff scope.
 
 ---
 

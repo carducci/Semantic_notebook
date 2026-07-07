@@ -49,7 +49,7 @@
               "@id": "https://sembook.example.org/intro#identity-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH <https://sembook.example.org/intro#identity> { ?s ?p ?o } }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#identity> } }"
             }
           ]
         }
@@ -79,7 +79,7 @@
               "@id": "https://sembook.example.org/intro#data-in-context-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH <https://sembook.example.org/intro#data-in-context> { ?s ?p ?o } }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#data-in-context> } }"
             },
             {
               "@id": "https://sembook.example.org/intro#data-in-context-full-graph",
@@ -95,9 +95,8 @@
             },
             {
               "@id": "https://sembook.example.org/intro#data-in-context-vocabulary",
-              "@type": "sembook:EntityPanel",
-              "sembook:label": "Vocabulary",
-              "sembook:sparql": "SELECT DISTINCT ?term ?termType WHERE { GRAPH ?g { { ?term a <http://www.w3.org/2000/01/rdf-schema#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> BIND(\"property\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#ObjectProperty> BIND(\"property\" AS ?termType) } FILTER(!STRSTARTS(STR(?term), \"https://sembook.example.org/vocab#\")) } VALUES ?g { <https://sembook.example.org/intro#data-in-context> } }"
+              "@type": "sembook:VocabularyPanel",
+              "sembook:label": "Vocabulary"
             }
           ]
         }
@@ -148,7 +147,7 @@
               "@id": "https://sembook.example.org/intro#asserting-triples-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH <https://sembook.example.org/intro#asserting-triples> { ?s ?p ?o } }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#asserting-triples> } }"
             },
             {
               "@id": "https://sembook.example.org/intro#asserting-triples-full-graph",
@@ -164,9 +163,8 @@
             },
             {
               "@id": "https://sembook.example.org/intro#asserting-triples-vocabulary",
-              "@type": "sembook:EntityPanel",
-              "sembook:label": "Vocabulary",
-              "sembook:sparql": "SELECT DISTINCT ?term ?termType WHERE { GRAPH ?g { { ?term a <http://www.w3.org/2000/01/rdf-schema#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> BIND(\"property\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#Class> BIND(\"class\" AS ?termType) } UNION { ?term a <http://www.w3.org/2002/07/owl#ObjectProperty> BIND(\"property\" AS ?termType) } FILTER(!STRSTARTS(STR(?term), \"https://sembook.example.org/vocab#\")) } VALUES ?g { <https://sembook.example.org/intro#asserting-triples> } }"
+              "@type": "sembook:VocabularyPanel",
+              "sembook:label": "Vocabulary"
             }
           ]
         }

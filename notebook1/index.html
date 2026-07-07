@@ -9,7 +9,10 @@
 <meta name="color-scheme" content="light" />
 <title>Semantic Notebook — Introduction to Linked Data</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/n3@1.17.2/browser/n3.min.js"></script>
+<!-- n3 1.26.0 (up from 1.17.2): the first release line that ships N3.Reasoner, which
+     materialization (scripts/notebook-context.js) needs. Stays within 1.x so the
+     Store/Parser/Writer/DataFactory API the rest of the app uses is unchanged. See ADR-031. -->
+<script src="https://cdn.jsdelivr.net/npm/n3@1.26.0/browser/n3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsonld@8.3.1/dist/jsonld.min.js"></script>
 
 <!-- Cytoscape.js -->
@@ -144,6 +147,7 @@
 <script type="module" src="../components/sem-panel-jsonld-split.js"></script>
 <script type="module" src="../components/sem-panel-graph.js"></script>
 <script type="module" src="../components/sem-panel-entity.js"></script>
+<script type="module" src="../components/sem-panel-vocab.js"></script>
 <script type="module" src="../components/sem-panel-turtle.js"></script>
 <script type="module" src="../components/sem-panel-turtle-writer.js"></script>
 <script type="module">

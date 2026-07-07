@@ -317,6 +317,19 @@ export class SemLab extends HTMLElement {
     return `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
   }
 
+  // Rewrites a GraphPanel's `GRAPH ?g { ?s ?p ?o } VALUES ?g { … }` query so it also
+  // spans each in-scope lab graph's <lab-iri>-inferred companion, and projects ?g so
+  // sparqlToElements can style asserted edges solid and inferred ones dashed (ADR-031).
+  // Deliberately separate from _cumulativeGraphsValuesClause (used by the entity/vocab
+  // panels): pulling the inferred graphs into scope is a graph-view concern only.
+  _inferredAwareGraphSparql(sparql, assertedGraphs) {
+    const graphs = assertedGraphs.flatMap(g => [g, `${g}-inferred`]);
+    const values = `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
+    return sparql
+      .replace(/SELECT\s+\?s\s+\?p\s+\?o/, 'SELECT ?s ?p ?o ?g')
+      .replace(/VALUES\s+\?g\s*\{[^}]*\}/, values);
+  }
+
   _buildTabs(panelDef) {
     const container = document.createElement('div');
     container.className = panelDef['sembook:cssClass'] || '';
@@ -345,13 +358,11 @@ export class SemLab extends HTMLElement {
       pane.className = i === 0 ? 'p-3 h-full' : 'p-3 h-full hidden';
 
       if (child['@type'] === 'sembook:GraphPanel') {
-        let sparql = child['sembook:sparql'];
-
-        // Full Graph is cumulative across labs; replace the static single-lab
-        // VALUES clause from the definition with the live lab order.
-        if (child['sembook:label'] === 'Full Graph') {
-          sparql = sparql.replace(/VALUES \?g \{[^}]*\}/, this._cumulativeGraphsValuesClause());
-        }
+        // Local Graph scopes to just this lab; Full Graph is cumulative across labs.
+        const assertedGraphs = child['sembook:label'] === 'Full Graph'
+          ? this._notebook.graphsUpTo(this.uri)
+          : [this.uri];
+        const sparql = this._inferredAwareGraphSparql(child['sembook:sparql'], assertedGraphs);
 
         const el = document.createElement('sem-panel-graph');
         el.setAttribute('sparql', sparql);
@@ -368,6 +379,16 @@ export class SemLab extends HTMLElement {
 
         const el = document.createElement('sem-panel-entity');
         el.setAttribute('sparql', sparql);
+        el.setAttribute('label', child['sembook:label'] || '');
+        el.setAttribute('uri', child['@id'] || '');
+        pane.appendChild(el);
+        el.init(this._notebook, this._notebookDoc);
+        this._notebook.subscribe(this.uri, el);
+      } else if (child['@type'] === 'sembook:VocabularyPanel') {
+        // The Vocabulary Explorer derives its own cumulative scope in-component (via
+        // notebook.graphsUpTo, like the entity panel's detail queries), so unlike Graph
+        // and Entity panels it carries no sparql attribute for _buildTabs to rewrite.
+        const el = document.createElement('sem-panel-vocab');
         el.setAttribute('label', child['sembook:label'] || '');
         el.setAttribute('uri', child['@id'] || '');
         pane.appendChild(el);

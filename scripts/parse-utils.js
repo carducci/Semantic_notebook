@@ -50,6 +50,94 @@ export function filterHierarchyBindings(bindings, namespaces) {
   return out;
 }
 
+// Group IRIs connected by equivalence assertions (owl:sameAs / owl:equivalentClass)
+// symmetric-transitively via union-find: A≡B plus B≡C puts all three in one group,
+// whichever direction each pair was asserted in. `pairs` is an array of [a, b] IRI
+// tuples. Returns Map<iri, string[]> from every grouped member to its shared, sorted
+// group array; IRIs with no equivalence partner are absent from the map entirely.
+export function equivalenceGroups(pairs) {
+  const parent = new Map();
+  const find = (x) => {
+    if (!parent.has(x)) parent.set(x, x);
+    let root = x;
+    while (parent.get(root) !== root) root = parent.get(root);
+    let cur = x; // path compression
+    while (parent.get(cur) !== root) { const next = parent.get(cur); parent.set(cur, root); cur = next; }
+    return root;
+  };
+  for (const [a, b] of pairs) parent.set(find(a), find(b));
+
+  const byRoot = new Map();
+  for (const iri of parent.keys()) {
+    const root = find(iri);
+    if (!byRoot.has(root)) byRoot.set(root, []);
+    byRoot.get(root).push(iri);
+  }
+  const byMember = new Map();
+  for (const members of byRoot.values()) {
+    if (members.length < 2) continue;
+    members.sort();
+    for (const m of members) byMember.set(m, members);
+  }
+  return byMember;
+}
+
+// Rewrite hierarchy bindings so ?class / ?parentClass IRIs collapse to one node per
+// equivalence group — `ex:Person owl:sameAs schema:Person` renders as a single set, and
+// members of either IRI land in it. Canonical representative = the group's
+// lexicographically-smallest member that actually appears as a ?class value in the
+// (already scope-filtered) bindings, so merging can never relabel a visible class to an
+// IRI the current scope excludes (e.g. an owl: partner while in 'Mine' scope). A parent
+// pointer that lands in its own group after merging is masked — this also neutralises
+// the containment cycle that mutual equivalentClass-derived subClassOf would create.
+// Returns { bindings, groupOf } where groupOf maps canonical IRI → full sorted group
+// (for expanding member/detail queries and hover labels). Same binding-adapter shape as
+// filterHierarchyBindings, so hierarchyToElements stays agnostic to merging.
+export function mergeHierarchyBindings(bindings, groupsByMember) {
+  if (groupsByMember.size === 0) return { bindings, groupOf: new Map() };
+
+  const candidates = new Set();
+  for (const b of bindings) {
+    const c = b.get('class')?.value;
+    if (c) candidates.add(c);
+  }
+  const canonOf = new Map();
+  for (const [member, group] of groupsByMember) {
+    canonOf.set(member, group.find(m => candidates.has(m)) ?? group[0]);
+  }
+  const canon = (iri) => (iri && canonOf.get(iri)) || iri;
+
+  const out = [];
+  for (const b of bindings) {
+    const cls = b.get('class')?.value;
+    const parentCls = b.get('parentClass')?.value;
+    const clsCanon = canon(cls);
+    const parentCanon = canon(parentCls);
+    const dropParent = !!parentCls && parentCanon === clsCanon;
+    if (clsCanon === cls && parentCanon === parentCls && !dropParent) {
+      out.push(b);
+      continue;
+    }
+    out.push({
+      get: (name) => {
+        if (name === 'class') return cls ? { value: clsCanon } : b.get(name);
+        if (name === 'parentClass') {
+          if (dropParent) return undefined;
+          return parentCls ? { value: parentCanon } : b.get(name);
+        }
+        return b.get(name);
+      }
+    });
+  }
+
+  const groupOf = new Map();
+  for (const [member, group] of groupsByMember) {
+    const c = canonOf.get(member);
+    if (!groupOf.has(c)) groupOf.set(c, group);
+  }
+  return { bindings: out, groupOf };
+}
+
 export function localName(iri) {
   const hash = iri.lastIndexOf('#');
   const slash = iri.lastIndexOf('/');

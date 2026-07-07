@@ -4,8 +4,12 @@ import {
   hierarchyToElements,
   localName,
   filterHierarchyBindings,
+  equivalenceGroups,
+  mergeHierarchyBindings,
   META_VOCAB_NAMESPACES
 } from '../scripts/parse-utils.js';
+
+const OWL = 'http://www.w3.org/2002/07/owl#';
 
 const entityStylesheet = [
   {
@@ -86,6 +90,10 @@ export class SemPanelEntity extends HTMLElement {
     this._scope = 'mine';
     this._scopeButtons = {};
     this._resizeObserver = null;
+    // canonical class IRI → full sorted equivalence group ([ex:Person, schema:Person]).
+    // Render-derived projection of the store, recomputed on every rebuild — never carried
+    // across graph updates (C7; same category as the Cytoscape instance ref).
+    this._classGroups = new Map();
   }
 
   // Called by sem-lab after appendChild
@@ -197,16 +205,50 @@ export class SemPanelEntity extends HTMLElement {
     if (!sparql || !this.notebook) return;
 
     try {
-      const bindings = await this.notebook.query(sparql);
+      const [bindings, equivBindings] = await Promise.all([
+        this.notebook.query(sparql),
+        this.notebook.query(this._equivalenceQuery())
+      ]);
       // 'mine' drops the meta-vocabulary; 'all' keeps every candidate. sembook infrastructure
       // is already excluded in the SPARQL itself (C8) regardless of scope.
       const scoped = this._scope === 'mine'
         ? filterHierarchyBindings(bindings, META_VOCAB_NAMESPACES)
         : bindings;
-      this._renderHierarchy(hierarchyToElements(scoped));
+      // Collapse equivalent classes (owl:sameAs / owl:equivalentClass) into one set each —
+      // scope-filter first so the canonical pick can't resurrect a filtered namespace.
+      const groups = equivalenceGroups(
+        equivBindings.map(b => [b.get('a').value, b.get('b').value])
+      );
+      const { bindings: merged, groupOf } = mergeHierarchyBindings(scoped, groups);
+      this._classGroups = groupOf;
+
+      const elements = hierarchyToElements(merged);
+      // A merged container's hover label enumerates every IRI it stands for.
+      for (const el of elements) {
+        const group = groupOf.get(el.data.id);
+        if (group) el.data.fullLabel = group.join(' ≡ ');
+      }
+      this._renderHierarchy(elements);
     } catch (err) {
       console.error('EntityPanel query failed:', err);
     }
+  }
+
+  // Equivalence assertions across the cumulative scope, inferred companions included
+  // (so reasoner-derived equivalences merge too). Direction and transitivity are
+  // handled in JS by equivalenceGroups — this just collects the raw pairs.
+  _equivalenceQuery() {
+    return `
+      SELECT DISTINCT ?a ?b WHERE {
+        GRAPH ?g {
+          ${this._cumulativeGraphsWithInferredValuesClause()}
+          { ?a <${OWL}sameAs> ?b } UNION { ?a <${OWL}equivalentClass> ?b }
+          FILTER(!isBlank(?a))
+          FILTER(!isBlank(?b))
+          FILTER(?a != ?b)
+        }
+      }
+    `;
   }
 
   _renderHierarchy(elements) {
@@ -298,11 +340,15 @@ export class SemPanelEntity extends HTMLElement {
   }
 
   async _renderClassMembers(classIri) {
+    // A merged container stands for its whole equivalence group — members of ANY of the
+    // grouped IRIs belong to the (single) set being shown.
+    const group = this._classGroups.get(classIri) || [classIri];
     const sparql = `
       SELECT DISTINCT ?instance ?label WHERE {
         GRAPH ?g {
           ${this._cumulativeGraphsValuesClause()}
-          ?instance a <${classIri}> .
+          ?instance a ?memberClass .
+          VALUES ?memberClass { ${group.map(c => `<${c}>`).join(' ')} }
           FILTER(!isBlank(?instance))
           OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?label }
         }
@@ -311,8 +357,12 @@ export class SemPanelEntity extends HTMLElement {
     const bindings = await this.notebook.query(sparql);
 
     const className = localName(classIri);
+    const groupNote = group.length > 1
+      ? `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${group.join(' ≡ ')}</span>`
+      : '';
     let html = `<h3 style="font-size:0.875rem;font-weight:600;color:#0f766e;margin-bottom:0.75rem;">
       Members of ${className}
+      ${groupNote}
     </h3>`;
 
     if (bindings.length === 0) {

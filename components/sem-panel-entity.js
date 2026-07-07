@@ -1,6 +1,11 @@
 // cytoscape is loaded globally via <script> tag in index.html — no module import needed.
 
-import { hierarchyToElements, localName } from '../scripts/parse-utils.js';
+import {
+  hierarchyToElements,
+  localName,
+  filterHierarchyBindings,
+  META_VOCAB_NAMESPACES
+} from '../scripts/parse-utils.js';
 
 const entityStylesheet = [
   {
@@ -70,9 +75,16 @@ export class SemPanelEntity extends HTMLElement {
     this._selectedIri = null;
     this._selectedType = null;
     this._leftPane = null;
+    this._graphContainer = null;
     this._rightPane = null;
     this.notebook = null;
     this._labUri = null;
+    // 'mine' hides the RDF/OWL/SHACL/XSD meta-vocabulary (the author's own classes only);
+    // 'all' shows it too. 'mine' is the default — the meta-vocab is noise for the core
+    // set-membership teaching moment (owl:Class/rdfs:Class are how you declare, not what
+    // you're modelling), but the toggle lets the instructor reveal it on demand.
+    this._scope = 'mine';
+    this._scopeButtons = {};
   }
 
   // Called by sem-lab after appendChild
@@ -94,9 +106,25 @@ export class SemPanelEntity extends HTMLElement {
     this.style.height = '100%';
     this.style.overflow = 'hidden';
 
-    // Left pane — Cytoscape container
+    // Left pane — a scope toolbar above the Cytoscape container (a flex column so the
+    // graph gets all remaining height; Cytoscape targets _graphContainer, not _leftPane,
+    // so a graph:updated rebuild that clears the graph never wipes the toolbar).
     this._leftPane = document.createElement('div');
-    this._leftPane.style.cssText = 'width:100%;height:100%;position:relative;border-right:1px solid #e2e8f0;';
+    this._leftPane.style.cssText = 'display:flex;flex-direction:column;width:100%;height:100%;border-right:1px solid #e2e8f0;';
+
+    const toolbar = document.createElement('div');
+    toolbar.style.cssText = 'flex:none;display:flex;align-items:center;gap:0.25rem;padding:0.25rem 0.5rem;background:#f8fafc;border-bottom:1px solid #e2e8f0;';
+    this._scopeButtons.mine = this._scopeButton('Mine', 'mine', 'Your own classes only');
+    this._scopeButtons.all = this._scopeButton('All', 'all', 'Include the RDF/RDFS/OWL/SHACL/XSD vocabulary');
+    toolbar.appendChild(this._scopeButtons.mine);
+    toolbar.appendChild(this._scopeButtons.all);
+
+    this._graphContainer = document.createElement('div');
+    this._graphContainer.style.cssText = 'flex:1;min-height:0;position:relative;';
+
+    this._leftPane.appendChild(toolbar);
+    this._leftPane.appendChild(this._graphContainer);
+    this._syncScopeButtons();
 
     // Right pane — property viewer
     this._rightPane = document.createElement('div');
@@ -107,21 +135,60 @@ export class SemPanelEntity extends HTMLElement {
     this.appendChild(this._rightPane);
   }
 
+  _scopeButton(label, scope, title) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = label;
+    btn.title = title;
+    btn.style.cssText = 'flex:none;padding:0.25rem 0.625rem;font-size:0.75rem;font-weight:600;letter-spacing:0.03em;border:1px solid #e2e8f0;border-radius:0.375rem;background:transparent;color:#64748b;cursor:pointer;';
+    btn.addEventListener('click', () => this._setScope(scope));
+    return btn;
+  }
+
+  _syncScopeButtons() {
+    for (const [scope, btn] of Object.entries(this._scopeButtons)) {
+      const active = scope === this._scope;
+      btn.style.background = active ? '#0d9488' : 'transparent';
+      btn.style.color = active ? '#ffffff' : '#64748b';
+      btn.style.borderColor = active ? '#0d9488' : '#e2e8f0';
+    }
+  }
+
+  async _setScope(scope) {
+    if (scope === this._scope) return;
+    this._scope = scope;
+    this._syncScopeButtons();
+    // Re-query the store (no cached bindings — C7) and rebuild the hierarchy in the new
+    // scope. Selection and the property pane are unaffected: scope only governs which
+    // class containers are shown, not what a selected entity's properties are.
+    await this._rebuildHierarchy();
+  }
+
   // Called by sem-lab when graph:updated fires for this lab
   async onGraphUpdated(labUri) {
+    await this._rebuildHierarchy();
+
+    // Re-render property pane if something is selected
+    // (graph change may have added new properties to selected entity)
+    if (this._selectedIri) {
+      await this._renderPropertyPane();
+    }
+  }
+
+  // Query the store and (re)draw the class hierarchy for the current scope. Runs on both
+  // graph:updated and scope-toggle; re-queries every time rather than caching bindings (C7).
+  async _rebuildHierarchy() {
     const sparql = this.getAttribute('sparql');
     if (!sparql || !this.notebook) return;
 
     try {
       const bindings = await this.notebook.query(sparql);
-      const elements = hierarchyToElements(bindings);
-      this._renderHierarchy(elements);
-
-      // Re-render property pane if something is selected
-      // (graph change may have added new properties to selected entity)
-      if (this._selectedIri) {
-        await this._renderPropertyPane();
-      }
+      // 'mine' drops the meta-vocabulary; 'all' keeps every candidate. sembook infrastructure
+      // is already excluded in the SPARQL itself (C8) regardless of scope.
+      const scoped = this._scope === 'mine'
+        ? filterHierarchyBindings(bindings, META_VOCAB_NAMESPACES)
+        : bindings;
+      this._renderHierarchy(hierarchyToElements(scoped));
     } catch (err) {
       console.error('EntityPanel query failed:', err);
     }
@@ -136,14 +203,14 @@ export class SemPanelEntity extends HTMLElement {
     }
 
     if (elements.length === 0) {
-      this._leftPane.innerHTML =
+      this._graphContainer.innerHTML =
         '<p style="color:#94a3b8;font-size:0.875rem;padding:1rem;">No classes defined yet</p>';
       return;
     }
 
-    this._leftPane.innerHTML = '';
+    this._graphContainer.innerHTML = '';
     this._cy = cytoscape({
-      container: this._leftPane,
+      container: this._graphContainer,
       elements,
       style: entityStylesheet,
       layout: entityLayout

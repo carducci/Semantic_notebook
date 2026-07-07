@@ -4,6 +4,45 @@ function classifyNode(term) {
   return null; // literals handled separately
 }
 
+// The RDF/OWL/SHACL/XSD "description machinery" namespaces — the vocabulary you use to
+// *assert things about* your terms (rdfs:label, owl:Class, xsd:string, …), not terms an
+// author is modelling. Both the entity explorer ("Mine" scope) and the vocabulary panel
+// hide these; keeping the list here is the single source both import so they can't drift.
+// schema: is deliberately absent — it's domain vocabulary an author writes with.
+export const META_VOCAB_NAMESPACES = [
+  'http://www.w3.org/1999/02/22-rdf-syntax-ns#', // rdf:
+  'http://www.w3.org/2000/01/rdf-schema#',       // rdfs:
+  'http://www.w3.org/2002/07/owl#',              // owl:
+  'http://www.w3.org/ns/shacl#',                 // shacl:
+  'http://www.w3.org/2001/XMLSchema#'            // xsd:
+];
+
+// sembook: infrastructure namespace — excluded from every panel unconditionally (C8),
+// independent of any user-facing scope toggle.
+export const SEMBOOK_VOCAB_NS = 'https://sembook.example.org/vocab#';
+
+export function inNamespaces(iri, namespaces) {
+  return !!iri && namespaces.some(ns => iri.startsWith(ns));
+}
+
+// Narrow a hierarchy binding set to the author's own vocabulary: drop rows whose ?class
+// falls in one of `namespaces`, and mask a ?parentClass that does (so a class parented to
+// e.g. owl:Thing roots cleanly instead of dangling at a pruned parent). Returns binding-like
+// adapters that preserve the `.get(name).value` shape hierarchyToElements expects, so the
+// builder stays agnostic to the toggle.
+export function filterHierarchyBindings(bindings, namespaces) {
+  const out = [];
+  for (const b of bindings) {
+    if (inNamespaces(b.get('class')?.value, namespaces)) continue;
+    if (inNamespaces(b.get('parentClass')?.value, namespaces)) {
+      out.push({ get: (name) => (name === 'parentClass' ? undefined : b.get(name)) });
+    } else {
+      out.push(b);
+    }
+  }
+  return out;
+}
+
 export function localName(iri) {
   const hash = iri.lastIndexOf('#');
   const slash = iri.lastIndexOf('/');

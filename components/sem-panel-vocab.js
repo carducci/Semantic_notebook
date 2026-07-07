@@ -1,6 +1,11 @@
 // cytoscape is loaded globally via <script> tag in index.html — no module import needed.
 
-import { hierarchyToElements, localName } from '../scripts/parse-utils.js';
+import {
+  hierarchyToElements,
+  localName,
+  META_VOCAB_NAMESPACES,
+  SEMBOOK_VOCAB_NS
+} from '../scripts/parse-utils.js';
 
 // ── Namespaces ───────────────────────────────────────────────────────────────
 // Row exclusion is about hiding the *description machinery*, not domain vocabulary.
@@ -16,15 +21,9 @@ import { hierarchyToElements, localName } from '../scripts/parse-utils.js';
 // The deferred "schema.org inclusion" feature only adds schema.org's own *definitions*
 // later (which would flip those rows from identity-only to described) — it does not gate
 // whether the author's own use of a schema: term shows up here.
-const SEMBOOK_NS = 'https://sembook.example.org/vocab#';
-const STD_VOCAB_NS = [
-  'http://www.w3.org/1999/02/22-rdf-syntax-ns#', // rdf:
-  'http://www.w3.org/2000/01/rdf-schema#',       // rdfs:
-  'http://www.w3.org/2002/07/owl#',              // owl:
-  'http://www.w3.org/ns/shacl#',                 // shacl:
-  'http://www.w3.org/2001/XMLSchema#'            // xsd:
-];
-const EXCLUDED_NS = [SEMBOOK_NS, ...STD_VOCAB_NS];
+// The meta-vocabulary list is shared with the entity explorer via parse-utils
+// (META_VOCAB_NAMESPACES) so the two panels agree on what counts as machinery.
+const EXCLUDED_NS = [SEMBOOK_VOCAB_NS, ...META_VOCAB_NAMESPACES];
 
 const RDFS = 'http://www.w3.org/2000/01/rdf-schema#';
 const OWL  = 'http://www.w3.org/2002/07/owl#';

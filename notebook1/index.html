@@ -125,29 +125,39 @@
        (via notebook:ready) and constructs its own child elements. The grid/sizing classes
        come entirely from the definition's sembook:cssClass, applied at runtime; the classes
        below are page-chrome concerns the definition has no business knowing about
-       (fixed-nav offset, box-sizing, anchor scroll margin, scroll-snap participation). -->
+       (fixed-nav offset, box-sizing, scroll-snap participation).
+       No scroll-mt-12 here — box-border + pt-12 already reserves 3rem of internal padding
+       at the top of each 100vh lab for the fixed nav to overlay, so the lab's own content
+       clears the nav without any scroll-position compensation. scroll-margin-top would
+       ADDITIONALLY shift every snap resting position 3rem short of the natural i*100vh
+       boundary — a lab is 100vh including its own pt-12, so with both pt-12 and
+       scroll-mt-12 applied, scroll-snap only ever travels 100vh-3rem per gesture, cutting
+       the destination lab's bottom 3rem off below the fold until a second, smaller scroll.
+       Snapping to the very first lab happened to look fine regardless (the negative
+       scroll-margin offset clamps to scrollTop 0), which is what made this easy to miss
+       in one direction and not the other. -->
   <sem-lab
     id="identity"
     uri="https://sembook.example.org/intro#identity"
-    class="pt-12 box-border scroll-mt-12 snap-start snap-always">
+    class="pt-12 box-border snap-start snap-always">
   </sem-lab>
 
   <sem-lab
     id="data-in-context"
     uri="https://sembook.example.org/intro#data-in-context"
-    class="pt-12 box-border scroll-mt-12 snap-start snap-always">
+    class="pt-12 box-border snap-start snap-always">
   </sem-lab>
 
   <sem-lab
     id="introducing-turtle"
     uri="https://sembook.example.org/intro#introducing-turtle"
-    class="pt-12 box-border scroll-mt-12 snap-start snap-always">
+    class="pt-12 box-border snap-start snap-always">
   </sem-lab>
 
   <sem-lab
     id="asserting-triples"
     uri="https://sembook.example.org/intro#asserting-triples"
-    class="pt-12 box-border scroll-mt-12 snap-start snap-always">
+    class="pt-12 box-border snap-start snap-always">
   </sem-lab>
 
 </sem-notebook>

@@ -118,11 +118,14 @@
        (via notebook:ready) and constructs its own child elements. The grid/sizing classes
        come entirely from the definition's sembook:cssClass, applied at runtime; the classes
        below are page-chrome concerns the definition has no business knowing about
-       (fixed-nav offset, box-sizing, anchor scroll margin). -->
+       (fixed-nav offset, box-sizing). No scroll-mt-12 — box-border + pt-12 already
+       reserves internal padding for the fixed nav, so no scroll-position compensation is
+       needed (see notebook1/index.html for the fuller rationale, including why
+       scroll-mt-12 alongside pt-12 broke scroll-snap there). -->
   <sem-lab
     id="side-by-side"
     uri="https://sembook.example.org/turtle#side-by-side"
-    class="pt-12 box-border scroll-mt-12">
+    class="pt-12 box-border">
   </sem-lab>
 
 </sem-notebook>

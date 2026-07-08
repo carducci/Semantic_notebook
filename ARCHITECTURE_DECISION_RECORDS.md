@@ -38,6 +38,8 @@
 | ADR-029 | CodeMirror 6 for all code editing surfaces | Accepted |
 | ADR-030 | Literals as nodes in graph visualization | Accepted |
 | ADR-031 | Materialization on Parse via N3.js Reasoner, RDFS/OWL2RL-BGP subset | Accepted |
+| ADR-032 | Entity explorer renders equivalence merges, inferred memberships, and class assertions | Accepted |
+| ADR-033 | Entity explorer scope toggle = lab vs cumulative; meta-vocabulary always hidden | Accepted |
 
 ---
 
@@ -863,6 +865,51 @@ Investigation surfaced three facts that shaped the decision, none of which were 
 - `owl:sameAs` value-replication can derive reflexive `?x owl:sameAs ?x`; those are dropped during materialization to keep the inferred graph clean.
 - RDFS `domain`/`range` on a datatype property can, per standard RDFS materialization, yield a literal-subject/object type triple; accepted (teaching datasets declare domain/range on object properties).
 - Bootstrap `sembook:init` data is not materialized (all current init blocks are empty); materialization is Parse-triggered per the handoff scope.
+
+---
+
+## ADR-032 — Entity Explorer Renders Equivalence Merges, Inferred Memberships, and Class Assertions
+
+**Status:** Accepted
+**Date:** Iteration 12
+**Refines:** ADR-031 (un-defers the entity-explorer queries it deliberately left asserted-only)
+
+### Context
+ADR-031 scoped the entity explorer's inferred-awareness to the instance property view only; the class hierarchy, member list, and class selection stayed asserted-only — scope control at the time, not a design verdict. The architect has since directed: (1) classes connected by `owl:sameAs` must render as one set, not two; (2) selecting a class must show the triples on the class — asserted roman, inferred italic — alongside its members; (3) inferred memberships must be visible in the explorer, italic.
+
+### Decision
+- **Equivalence merge.** Classes connected by `owl:sameAs` or `owl:equivalentClass` (asserted or inferred, either direction, transitively — union-find in `parse-utils.equivalenceGroups`) render as a single compound container. Canonical representative = the group's lexicographically-smallest member present in the scope-filtered candidate set, so merging never resurrects a scope-excluded IRI. Hover shows every grouped IRI joined with `≡`. Member/detail queries span the whole group. The merge map is recomputed on every rebuild (C7), never cached across graph updates.
+- **Class detail pane.** Class selection renders Assertions (`<class> ?p ?v` over asserted + `-inferred` graphs, across the equivalence group) above Members (same inferred-aware scope). Rows present only in a `-inferred` graph render italic; a row both asserted and re-derived renders roman (assertion wins — shared `dedupeInferredRows` precedence, matching `sparqlToElements`). Values are shown as asserted — NOT canonicalized to the group representative — so an inferred `subClassOf schema:Person` (pointing at a *different* merged class) shows as its own italic row. The one exception: *inferred* equivalence statements (`owl:sameAs`/`owl:equivalentClass`) whose object is another alias of the *same* merged class are dropped — in a node presented as one resource, the reasoner's symmetric/transitive `Author sameAs <another alias>` reads as "the same as itself" and multiplies with group size. The author's own (asserted) equivalence statements are always kept, however many — a class may carry several genuine `sameAs` assertions worth listing.
+- **Inferred membership dots.** Reasoner-derived `?instance a ?class` triples place the instance inside the additional class container — the "same dot in two circles" reveal — styled dashed/italic/muted teal. Memberships only, and only into classes that already have an asserted container: the class/parent *structure* query stays asserted-only, because inferred subClassOf transitive-closure triples would make the first-parent-wins nesting order-dependent (Author would flatten out of Person into a grandparent), and a class whose only presence is derived is not conjured as a container.
+
+### Consequences
+- The inference reveal the entity explorer was designed around (README §The Entity Explorer) now actually renders.
+- Inferred membership placement is canonicalized through the equivalence merge, so a membership derived against `schema:Person` lands in the merged Person set.
+- The vocabulary panel does not yet merge equivalent terms — queued as its own change.
+
+---
+
+## ADR-033 — Entity Explorer Scope Toggle Means Lab vs Cumulative; Meta-Vocabulary Always Hidden
+
+**Status:** Accepted
+**Date:** Iteration 12 — supersedes the Mine/All semantics introduced in "adding togglable scope to entity viewer"
+
+### Context
+The Mine/All toggle originally meant "hide vs show the RDF/RDFS/OWL/SHACL/XSD meta-vocabulary", with both states cumulative across labs. With teaching data that never types anything as `owl:Class`, the two states are indistinguishable on screen, and the architect's expectation was graph scoping: "mine isn't scoped to just what's in the lab."
+
+### Decision
+- **Mine** = this lab's named graph only. **All** = every lab's graph up to and including this one (the cumulative scope Full Graph uses). The toggle drives a single `_scopeGraphs()` source that every query in the panel — hierarchy, equivalence merge, inferred memberships, class detail, instance properties — derives its `VALUES ?g` clause from.
+- The meta-vocabulary is **always** filtered from the hierarchy, in both scopes. It's how you declare, not what you're modelling; the machinery reveal is dropped from this panel.
+- Default is Mine: start lab-local, widen to All as the instructor's reveal (e.g. lab 3's Ada joining the merged Person set the moment scope widens past the sameAs assertion).
+
+### Alternatives Considered
+- Two independent toggles (scope × meta-vocab) — most flexible, rejected by the architect for toolbar noise.
+- Single combined toggle (lab+clean vs cumulative+machinery) — loses the clean cumulative view, rejected.
+
+### Consequences
+- Scope switches re-render the detail pane too, not just the hierarchy — a selected class's members narrow to the lab in Mine.
+- The `sparql` attribute still arrives from sem-lab with the cumulative VALUES clause; the panel re-scopes it per query. Component contract unchanged.
+- No way to see owl:/rdfs: terms as containers in this panel anymore; the vocabulary explorer remains the place where declaration machinery is discussed.
 
 ---
 

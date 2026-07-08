@@ -10,6 +10,48 @@ import {
 } from '../scripts/parse-utils.js';
 
 const OWL = 'http://www.w3.org/2002/07/owl#';
+const RDFS = 'http://www.w3.org/2000/01/rdf-schema#';
+
+// Dedupe bindings that can surface from both an asserted graph and a <lab>-inferred
+// companion; assertion wins, so a row that is asserted AND re-derived renders roman,
+// not italic (same precedence rule as sparqlToElements' edge dedupe, ADR-031). Keeps
+// first-seen order; an asserted duplicate upgrades the row in place.
+function dedupeInferredRows(bindings, keyOf) {
+  const rows = new Map();
+  for (const b of bindings) {
+    const g = b.get('g');
+    const inferred = !!(g && g.value.endsWith('-inferred'));
+    const key = keyOf(b);
+    const existing = rows.get(key);
+    if (existing && !existing.inferred) continue; // asserted already recorded — keep it
+    rows.set(key, { b, inferred });
+  }
+  return [...rows.values()];
+}
+
+// Property/value table shared by the instance view and the class-assertions view.
+// Inferred rows render italic; everything else about the row is identical.
+function propertyTableHtml(rows) {
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">';
+  for (const { prop, val, inferred } of rows) {
+    const italic = inferred ? 'font-style:italic;' : '';
+    html += `
+      <tr style="border-bottom:1px solid #f1f5f9;">
+        <td style="padding:0.375rem 0.5rem 0.375rem 0;color:#64748b;white-space:nowrap;vertical-align:top;${italic}">
+          ${localName(prop)}
+        </td>
+        <td style="padding:0.375rem 0;color:#1e293b;word-break:break-all;${italic}">
+          ${val}
+        </td>
+      </tr>`;
+  }
+  html += '</table>';
+  return html;
+}
+
+function sectionLabelHtml(text) {
+  return `<h4 style="font-size:0.7rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:1rem 0 0.25rem;">${text}</h4>`;
+}
 
 const entityStylesheet = [
   {
@@ -42,6 +84,20 @@ const entityStylesheet = [
       'font-size': '10px',
       'width': 48,
       'height': 48
+    }
+  },
+  // Inferred membership — this instance is in this set because the reasoner derived it,
+  // not because anyone typed it. Muted fill + dashed border + italic label, matching the
+  // dashed-inferred visual grammar the graph panels already use (ADR-031).
+  {
+    selector: 'node.instance-node.inferred',
+    style: {
+      'background-color': '#99f6e4',
+      'border-width': 2,
+      'border-style': 'dashed',
+      'border-color': '#0d9488',
+      'color': '#0f766e',
+      'font-style': 'italic'
     }
   },
   {
@@ -83,17 +139,21 @@ export class SemPanelEntity extends HTMLElement {
     this._rightPane = null;
     this.notebook = null;
     this._labUri = null;
-    // 'mine' hides the RDF/OWL/SHACL/XSD meta-vocabulary (the author's own classes only);
-    // 'all' shows it too. 'mine' is the default — the meta-vocab is noise for the core
-    // set-membership teaching moment (owl:Class/rdfs:Class are how you declare, not what
-    // you're modelling), but the toggle lets the instructor reveal it on demand.
+    // 'mine' scopes every query to THIS lab's graph only; 'all' spans every lab's graph
+    // up to and including this one (cumulative — how an entity asserted two labs ago
+    // joins the view when the instructor widens scope). The RDF/RDFS/OWL/SHACL/XSD
+    // meta-vocabulary is always hidden here regardless of scope (ADR-033) — it's how you
+    // declare, not what you're modelling. 'mine' is the default: start lab-local, widen
+    // to 'all' as the reveal.
     this._scope = 'mine';
     this._scopeButtons = {};
     this._resizeObserver = null;
-    // canonical class IRI → full sorted equivalence group ([ex:Person, schema:Person]).
-    // Render-derived projection of the store, recomputed on every rebuild — never carried
-    // across graph updates (C7; same category as the Cytoscape instance ref).
+    // canonical class IRI → full sorted equivalence group ([ex:Person, schema:Person]),
+    // plus the inverse member → canonical map. Render-derived projections of the store,
+    // recomputed on every rebuild — never carried across graph updates (C7; same
+    // category as the Cytoscape instance ref).
     this._classGroups = new Map();
+    this._classCanon = new Map();
   }
 
   // Called by sem-lab after appendChild
@@ -123,8 +183,8 @@ export class SemPanelEntity extends HTMLElement {
 
     const toolbar = document.createElement('div');
     toolbar.style.cssText = 'flex:none;display:flex;align-items:center;gap:0.25rem;padding:0.25rem 0.5rem;background:#f8fafc;border-bottom:1px solid #e2e8f0;';
-    this._scopeButtons.mine = this._scopeButton('Mine', 'mine', 'Your own classes only');
-    this._scopeButtons.all = this._scopeButton('All', 'all', 'Include the RDF/RDFS/OWL/SHACL/XSD vocabulary');
+    this._scopeButtons.mine = this._scopeButton('Mine', 'mine', "This lab's data only");
+    this._scopeButtons.all = this._scopeButton('All', 'all', 'Everything asserted so far, across all labs up to this one');
     toolbar.appendChild(this._scopeButtons.mine);
     toolbar.appendChild(this._scopeButtons.all);
 
@@ -181,10 +241,11 @@ export class SemPanelEntity extends HTMLElement {
     if (scope === this._scope) return;
     this._scope = scope;
     this._syncScopeButtons();
-    // Re-query the store (no cached bindings — C7) and rebuild the hierarchy in the new
-    // scope. Selection and the property pane are unaffected: scope only governs which
-    // class containers are shown, not what a selected entity's properties are.
+    // Re-query the store (no cached bindings — C7) and rebuild BOTH panes in the new
+    // scope: the hierarchy, and the detail pane if something is selected — a selected
+    // class's members (or entity's properties) narrow to this lab in 'mine' too.
     await this._rebuildHierarchy();
+    if (this._selectedIri) await this._renderPropertyPane();
   }
 
   // Called by sem-lab when graph:updated fires for this lab
@@ -205,15 +266,18 @@ export class SemPanelEntity extends HTMLElement {
     if (!sparql || !this.notebook) return;
 
     try {
-      const [bindings, equivBindings] = await Promise.all([
-        this.notebook.query(sparql),
-        this.notebook.query(this._equivalenceQuery())
+      // The sparql attribute arrives with sem-lab's cumulative VALUES clause baked in;
+      // re-scope it to the current toggle (this lab only vs all labs so far).
+      const scopedSparql = sparql.replace(/VALUES\s+\?g\s*\{[^}]*\}/, this._graphsValuesClause());
+      const [bindings, equivBindings, inferredMembers] = await Promise.all([
+        this.notebook.query(scopedSparql),
+        this.notebook.query(this._equivalenceQuery()),
+        this.notebook.query(this._inferredMembershipQuery())
       ]);
-      // 'mine' drops the meta-vocabulary; 'all' keeps every candidate. sembook infrastructure
-      // is already excluded in the SPARQL itself (C8) regardless of scope.
-      const scoped = this._scope === 'mine'
-        ? filterHierarchyBindings(bindings, META_VOCAB_NAMESPACES)
-        : bindings;
+      // The meta-vocabulary is machinery, never modelling — always filtered here,
+      // whatever the scope (ADR-033). sembook infrastructure is already excluded in
+      // the SPARQL itself (C8).
+      const scoped = filterHierarchyBindings(bindings, META_VOCAB_NAMESPACES);
       // Collapse equivalent classes (owl:sameAs / owl:equivalentClass) into one set each —
       // scope-filter first so the canonical pick can't resurrect a filtered namespace.
       const groups = equivalenceGroups(
@@ -221,6 +285,10 @@ export class SemPanelEntity extends HTMLElement {
       );
       const { bindings: merged, groupOf } = mergeHierarchyBindings(scoped, groups);
       this._classGroups = groupOf;
+      this._classCanon = new Map();
+      for (const [canonIri, group] of groupOf) {
+        for (const member of group) this._classCanon.set(member, canonIri);
+      }
 
       const elements = hierarchyToElements(merged);
       // A merged container's hover label enumerates every IRI it stands for.
@@ -228,6 +296,11 @@ export class SemPanelEntity extends HTMLElement {
         const group = groupOf.get(el.data.id);
         if (group) el.data.fullLabel = group.join(' ≡ ');
       }
+      // The inference reveal: derived memberships place the same instance inside
+      // additional class containers, styled dashed/italic. Only memberships, never
+      // hierarchy structure — inferred subClassOf transitivity would make the
+      // first-parent-wins nesting order-dependent and flatten Author out of Person.
+      this._appendInferredMembers(elements, inferredMembers);
       this._renderHierarchy(elements);
     } catch (err) {
       console.error('EntityPanel query failed:', err);
@@ -241,7 +314,7 @@ export class SemPanelEntity extends HTMLElement {
     return `
       SELECT DISTINCT ?a ?b WHERE {
         GRAPH ?g {
-          ${this._cumulativeGraphsWithInferredValuesClause()}
+          ${this._graphsWithInferredValuesClause()}
           { ?a <${OWL}sameAs> ?b } UNION { ?a <${OWL}equivalentClass> ?b }
           FILTER(!isBlank(?a))
           FILTER(!isBlank(?b))
@@ -249,6 +322,60 @@ export class SemPanelEntity extends HTMLElement {
         }
       }
     `;
+  }
+
+  // The <lab-iri>-inferred companions only (scope-aware) — used to find memberships the
+  // reasoner derived, as opposed to the asserted memberships the hierarchy query returns.
+  _inferredGraphsValuesClause() {
+    const graphs = this._scopeGraphs().map(g => `${g}-inferred`);
+    return `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
+  }
+
+  _inferredMembershipQuery() {
+    return `
+      SELECT DISTINCT ?class ?instance ?instanceLabel WHERE {
+        GRAPH ?g {
+          ${this._inferredGraphsValuesClause()}
+          ?instance a ?class .
+          FILTER(!isBlank(?instance))
+          FILTER(!isBlank(?class))
+          OPTIONAL { ?instance <${RDFS}label> ?instanceLabel }
+        }
+      }
+    `;
+  }
+
+  // Place reasoner-derived memberships into the already-built compound hierarchy: the
+  // same instance appears inside each additional class container, dashed/italic. Rules:
+  //   • class is canonicalized through the equivalence map, so a membership inferred
+  //     against schema:Person lands in the merged Person container;
+  //   • only existing containers — a class with no asserted presence (hence no
+  //     container) doesn't get conjured by an inferred membership;
+  //   • asserted membership wins — if the dot is already there solid, no dashed twin.
+  _appendInferredMembers(elements, bindings) {
+    const have = new Set(elements.map(e => e.data.id));
+
+    for (const b of bindings) {
+      const rawClass = b.get('class')?.value;
+      const instance = b.get('instance')?.value;
+      if (!rawClass || !instance) continue;
+      const classIri = this._classCanon.get(rawClass) || rawClass;
+      if (!have.has(classIri)) continue;            // no asserted container for this class
+      const key = `${instance}__in__${classIri}`;
+      if (have.has(key)) continue;                  // asserted membership already renders solid
+      have.add(key);
+      elements.push({
+        data: {
+          id: key,
+          entityIri: instance,
+          label: b.get('instanceLabel')?.value || localName(instance),
+          fullLabel: instance,
+          parent: classIri,
+          nodeType: 'instance'
+        },
+        classes: 'instance-node inferred'
+      });
+    }
   }
 
   _renderHierarchy(elements) {
@@ -321,59 +448,121 @@ export class SemPanelEntity extends HTMLElement {
     this._renderPropertyPane();
   }
 
-  // The SPARQL VALUES ?g {...} clause spanning every lab's named graph up to
-  // and including this one — matches the cumulative scope the panel's own
-  // `sparql` attribute is given (see sem-lab.js _cumulativeGraphsValuesClause).
-  _cumulativeGraphsValuesClause() {
-    const graphs = this.notebook.graphsUpTo(this._labUri);
+  // Graphs in the current scope: 'mine' = this lab's named graph only, 'all' = every
+  // lab's graph up to and including this one (the same cumulative scope sem-lab gives
+  // Full Graph). Every query in this panel derives its VALUES clause from here, so the
+  // toggle uniformly narrows the hierarchy, equivalence merging, and the detail pane.
+  _scopeGraphs() {
+    return this._scope === 'mine'
+      ? [this._labUri]
+      : this.notebook.graphsUpTo(this._labUri);
+  }
+
+  _graphsValuesClause() {
+    return `VALUES ?g { ${this._scopeGraphs().map(g => `<${g}>`).join(' ')} }`;
+  }
+
+  // Same scope, but also spanning each lab graph's <lab-iri>-inferred companion — for
+  // the views that distinguish asserted vs inferred rows (ADR-031/032).
+  _graphsWithInferredValuesClause() {
+    const graphs = this._scopeGraphs().flatMap(g => [g, `${g}-inferred`]);
     return `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
   }
 
-  // Same cumulative scope, but also spanning each lab graph's <lab-iri>-inferred
-  // companion — used only by the instance-property view, which distinguishes asserted
-  // vs inferred property rows (ADR-031). The class-hierarchy and class-member queries
-  // deliberately keep using the asserted-only clause above.
-  _cumulativeGraphsWithInferredValuesClause() {
-    const graphs = this.notebook.graphsUpTo(this._labUri)
-      .flatMap(g => [g, `${g}-inferred`]);
-    return `VALUES ?g { ${graphs.map(g => `<${g}>`).join(' ')} }`;
-  }
-
-  async _renderClassMembers(classIri) {
-    // A merged container stands for its whole equivalence group — members of ANY of the
-    // grouped IRIs belong to the (single) set being shown.
+  // Class selection shows the class as a first-class resource: everything asserted (and
+  // inferred — italic) about it, then its members, inferred memberships italic too. A
+  // merged container stands for its whole equivalence group, so both queries span every
+  // grouped IRI: members of ANY of them belong to the (single) set being shown, and
+  // assertions on ANY of them describe it.
+  async _renderClassDetail(classIri) {
     const group = this._classGroups.get(classIri) || [classIri];
-    const sparql = `
-      SELECT DISTINCT ?instance ?label WHERE {
+    const groupValues = group.map(c => `<${c}>`).join(' ');
+
+    const assertionsSparql = `
+      SELECT ?property ?value ?g WHERE {
         GRAPH ?g {
-          ${this._cumulativeGraphsValuesClause()}
+          ${this._graphsWithInferredValuesClause()}
+          ?classIri ?property ?value .
+          VALUES ?classIri { ${groupValues} }
+          FILTER(!STRSTARTS(STR(?property), "https://sembook.example.org/vocab#"))
+        }
+      }
+      ORDER BY ?property
+    `;
+    const membersSparql = `
+      SELECT DISTINCT ?instance ?label ?g WHERE {
+        GRAPH ?g {
+          ${this._graphsWithInferredValuesClause()}
           ?instance a ?memberClass .
-          VALUES ?memberClass { ${group.map(c => `<${c}>`).join(' ')} }
+          VALUES ?memberClass { ${groupValues} }
           FILTER(!isBlank(?instance))
-          OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?label }
+          OPTIONAL { ?instance <${RDFS}label> ?label }
         }
       }
     `;
-    const bindings = await this.notebook.query(sparql);
+    const [assertionBindings, memberBindings] = await Promise.all([
+      this.notebook.query(assertionsSparql),
+      this.notebook.query(membersSparql)
+    ]);
+
+    // Keep the DIRECT (asserted) equivalence statements — a merged class may carry
+    // several genuine `owl:sameAs`/`owl:equivalentClass` assertions the author typed, and
+    // those belong in the list. Drop only the INFERRED equivalences that point back at one
+    // of the node's own aliases: in a node presented as one resource, the reasoner's
+    // symmetric/transitive `Author sameAs <another alias of Author>` reads as "the same as
+    // itself" and just multiplies with group size. Equivalences pointing at a *different*
+    // resource, and every non-equivalence statement (e.g. inferred `subClassOf
+    // schema:Person`), are kept in both their asserted and inferred spellings.
+    const isInferred = (b) => { const g = b.get('g'); return !!(g && g.value.endsWith('-inferred')); };
+    const redundantEquiv = (b) => {
+      const p = b.get('property').value;
+      if (p !== `${OWL}sameAs` && p !== `${OWL}equivalentClass`) return false;
+      if (!isInferred(b)) return false; // the author's own assertion — always keep
+      const objVal = b.get('value').value;
+      const objCanon = this._classCanon.get(objVal) || objVal;
+      return objCanon === classIri; // inferred sameness with one of its own aliases → noise
+    };
+    const assertionRows = dedupeInferredRows(
+      assertionBindings.filter(b => !redundantEquiv(b)),
+      b => `${b.get('property').value} ${b.get('value').value}`
+    ).map(({ b, inferred }) => ({
+      prop: b.get('property').value,
+      val: b.get('value').value,
+      inferred
+    }));
+
+    const memberRows = dedupeInferredRows(
+      memberBindings,
+      b => b.get('instance').value
+    ).map(({ b, inferred }) => ({
+      iri: b.get('instance').value,
+      label: b.get('label')?.value || localName(b.get('instance').value),
+      inferred
+    }));
 
     const className = localName(classIri);
     const groupNote = group.length > 1
       ? `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${group.join(' ≡ ')}</span>`
-      : '';
+      : `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${classIri}</span>`;
     let html = `<h3 style="font-size:0.875rem;font-weight:600;color:#0f766e;margin-bottom:0.75rem;">
-      Members of ${className}
+      ${className}
       ${groupNote}
     </h3>`;
 
-    if (bindings.length === 0) {
+    html += sectionLabelHtml('Assertions');
+    html += assertionRows.length
+      ? propertyTableHtml(assertionRows)
+      : '<p style="color:#94a3b8;font-size:0.875rem;">None</p>';
+
+    html += sectionLabelHtml(`Members · ${memberRows.length}`);
+    if (memberRows.length === 0) {
       html += '<p style="color:#94a3b8;font-size:0.875rem;">No instances defined</p>';
     } else {
       html += '<ul style="list-style:none;padding:0;margin:0;">';
-      for (const b of bindings) {
-        const iri = b.get('instance').value;
-        const label = b.get('label')?.value || localName(iri);
+      for (const { iri, label, inferred } of memberRows) {
+        const italic = inferred ? 'font-style:italic;' : '';
         html += `
-          <li style="padding:0.375rem 0;border-bottom:1px solid #f1f5f9;font-size:0.875rem;">
+          <li style="padding:0.375rem 0;border-bottom:1px solid #f1f5f9;font-size:0.875rem;${italic}">
             <span style="color:#0d9488;font-weight:500;">${label}</span>
             <span style="color:#94a3b8;font-size:0.75rem;display:block;">${iri}</span>
           </li>`;
@@ -388,7 +577,7 @@ export class SemPanelEntity extends HTMLElement {
     const sparql = `
       SELECT ?property ?value ?g WHERE {
         GRAPH ?g {
-          ${this._cumulativeGraphsWithInferredValuesClause()}
+          ${this._graphsWithInferredValuesClause()}
           <${instanceIri}> ?property ?value .
           FILTER(!STRSTARTS(STR(?property), "https://sembook.example.org/vocab#"))
         }
@@ -399,44 +588,28 @@ export class SemPanelEntity extends HTMLElement {
     const label = localName(instanceIri);
 
     // Dedup property/value pairs across the asserted and inferred graphs, with assertion
-    // winning: a pair that is both asserted and (re-)inferred reads as asserted (not
-    // italic). A pair present only in an <lab-iri>-inferred graph renders italic.
-    const rows = new Map(); // "propvalue" → { prop, val, inferred }
-    for (const b of bindings) {
-      const prop = b.get('property').value;
-      const val = b.get('value').value;
-      const g = b.get('g');
-      const inferred = !!(g && g.value.endsWith('-inferred'));
-      const key = `${prop}${val}`;
-      const existing = rows.get(key);
-      if (existing && !existing.inferred) continue; // asserted already recorded — keep it
-      rows.set(key, { prop, val, inferred });
-    }
+    // winning (dedupeInferredRows); a pair present only in an <lab-iri>-inferred graph
+    // renders italic via the shared table builder. Values are NOT canonicalized here —
+    // an instance's inferred membership in an equivalent class (`type schema:Author`
+    // alongside asserted `type ex:Author`) is a real derivation worth showing, italic.
+    const rows = dedupeInferredRows(
+      bindings,
+      b => `${b.get('property').value} ${b.get('value').value}`
+    ).map(({ b, inferred }) => ({
+      prop: b.get('property').value,
+      val: b.get('value').value,
+      inferred
+    }));
 
     let html = `<h3 style="font-size:0.875rem;font-weight:600;color:#0f766e;margin-bottom:0.75rem;">
       ${label}
       <span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;">${instanceIri}</span>
     </h3>`;
 
-    if (rows.size === 0) {
+    if (rows.length === 0) {
       html += '<p style="color:#94a3b8;font-size:0.875rem;">No properties asserted</p>';
     } else {
-      html += '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">';
-      for (const { prop, val, inferred } of rows.values()) {
-        // Inferred rows (triple lives in sembook:inferred) render italic; everything
-        // else about the row is unchanged.
-        const italic = inferred ? 'font-style:italic;' : '';
-        html += `
-          <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:0.375rem 0.5rem 0.375rem 0;color:#64748b;white-space:nowrap;vertical-align:top;${italic}">
-              ${localName(prop)}
-            </td>
-            <td style="padding:0.375rem 0;color:#1e293b;word-break:break-all;${italic}">
-              ${val}
-            </td>
-          </tr>`;
-      }
-      html += '</table>';
+      html += propertyTableHtml(rows);
     }
 
     this._rightPane.innerHTML = html;
@@ -449,7 +622,7 @@ export class SemPanelEntity extends HTMLElement {
       return;
     }
     if (this._selectedType === 'class') {
-      await this._renderClassMembers(this._selectedIri);
+      await this._renderClassDetail(this._selectedIri);
     } else {
       await this._renderInstanceProperties(this._selectedIri);
     }

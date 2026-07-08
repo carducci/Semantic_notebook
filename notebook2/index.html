@@ -26,11 +26,21 @@
   window.webcola = window.cola;
 </script>
 
-<!-- Cytoscape Cola layout — for cluster-aware force-directed layout -->
+<!-- Cytoscape Cola layout — for cluster-aware force-directed layout (graph panels) -->
 <script src="https://cdn.jsdelivr.net/npm/cytoscape-cola@2.5.1/cytoscape-cola.js" integrity="sha384-hS0F3AnUYl+EBC3wCT4+d6MKdLR27UlifwZZYJi5oRCNhKA1ptaEWExH6BqyfMeW" crossorigin="anonymous"></script>
+
+<!-- fCoSE layout (compound-aware, packs disconnected components) — entity explorer only.
+     Dependency chain layout-base → cose-base → cytoscape-fcose; each UMD reads the
+     previous off its window global (layoutBase → coseBase → cytoscapeFcose), so unlike
+     cola/webcola no aliasing shim is needed. Registered alongside cola, not in place of
+     it — the graph panel stays on cola (ADR-010 rev. 2). -->
+<script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js" integrity="sha384-5E2lB9AIGE6LRCnOOSTnZRlYZFZ01iMeN2fw97Z1r4Z/kXALxKw2AC+ZzQqoeDsG" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js" integrity="sha384-RswRBkrMsPUYpJLbZ1CVA08zbNzAkykE2oGJTujBwfjWNdfxv2WVjLJNqv1LhAOp" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js" integrity="sha384-uk5Wbjq1+KqUdHO30w7N7GrEGdzBhaJeW9o/ANF6v9+yx3M/cBmoX51C000JNCUf" crossorigin="anonymous"></script>
 
 <script>
   cytoscape.use(cytoscapeCola);
+  cytoscape.use(cytoscapeFcose);
 </script>
 <link rel="stylesheet" href="../styles/tokens.css">
 

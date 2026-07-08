@@ -315,6 +315,17 @@ Cytoscape.js offers compound nodes (parent-child containment), multiple layout a
 - Compound node graphs must be destroyed and recreated on update (incremental update is fragile)
 - The Cytoscape instance reference is the one documented exception to the stateless panel model
 
+### Revision (iteration 12) — Entity Explorer Layout: cose → fCoSE (scoped, not project-wide)
+The entity/vocabulary explorer's compound-node hierarchy used plain `cose`, which predates Cytoscape's compound-node support and doesn't pack disconnected components apart — separate class sets (e.g. Person, Book, City with no edges between them) piled on top of one another, requiring the instructor to drag them apart to read them.
+
+**Decision:** the entity explorer (`sem-panel-entity.js`) switches to **fCoSE** (`cytoscape-fcose`, the i-Vis lab's compound-aware successor to cose-bilkent), with `packComponents: true` to tile disconnected class sets side by side instead of overlapping. Loaded via UMD `<script>` tags with SRI hashes (`layout-base` → `cose-base` → `cytoscape-fcose`; each reads the previous off its window global, so no aliasing shim is needed, unlike cola/webcola), registered *alongside* cola, not replacing it.
+
+**Scope note — this was tried project-wide first and reverted.** An earlier attempt also moved the graph panel from `cola` to `fcose`, reasoning that cola's force layout hairballs literal-dense teaching graphs. In practice, getting fCoSE's `randomize` setting right for the graph panel's incremental-update model (a live instance updated via `cy.layout().run()` on every Parse, versus the entity panel's destroy-and-recreate) took more than one attempt and the first attempt shipped a regression (nodes collapsing into a diagonal line on first render). The architect asked to revert and re-scope to the entity explorer only, where the model is simpler: the panel already destroys and recreates its Cytoscape instance on every render (ADR-024), so there are never prior positions to preserve, and `randomize: true` on every layout is safe and sufccient. **The graph panel remains on cola** — untouched, unregressed. Revisiting fCoSE (or another layout) for the graph panel is a separate, deferred question.
+
+### Consequences (of the revision)
+- Vocabulary panel's Classes graph is unaffected — it was already on `grid`, a deliberate earlier choice for its fully-disconnected class boxes, and remains so.
+- Both notebooks' `index.html` now load fCoSE's dependency chain in addition to cola's; nothing was removed.
+
 ---
 
 ## ADR-011 — One Lab, One Named Graph

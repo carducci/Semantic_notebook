@@ -1,4 +1,6 @@
-// cytoscape is loaded globally via <script> tag in index.html — no module import needed.
+// cytoscape and the fCoSE layout (cytoscapeFcose + its cose-base/layout-base deps) are
+// loaded globally via <script> tags in index.html, where cytoscape.use(cytoscapeFcose)
+// is also registered — no module import needed.
 
 import {
   hierarchyToElements,
@@ -117,15 +119,26 @@ const entityStylesheet = [
   }
 ];
 
+// fCoSE, not plain cose: cose predates Cytoscape's compound-node support. It doesn't pack
+// disconnected components apart, so separate class sets (Person, Book, City, ...) pile on
+// top of each other instead of tiling side by side — exactly the bug reported. fCoSE (via
+// packComponents) tiles them and remains compound-aware for the nested instance-in-class
+// containment. randomize:true is safe here (unlike the graph panel) because this panel
+// always destroys and recreates its Cytoscape instance on every render (ADR-024) — there
+// are never prior positions worth preserving to justify randomize:false.
 const entityLayout = {
-  name: 'cose',
+  name: 'fcose',
+  quality: 'proof',
+  randomize: true,
   animate: true,
   animationDuration: 400,
   fit: true,
-  padding: 40,
-  nodeOverlap: 20,
-  idealEdgeLength: 100,
-  componentSpacing: 60
+  padding: 30,
+  nodeDimensionsIncludeLabels: true,
+  packComponents: true,
+  nodeSeparation: 80,
+  idealEdgeLength: 90,
+  nodeRepulsion: 5000
 };
 
 export class SemPanelEntity extends HTMLElement {

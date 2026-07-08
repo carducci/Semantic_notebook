@@ -154,6 +154,11 @@ export class SemPanelEntity extends HTMLElement {
     // category as the Cytoscape instance ref).
     this._classGroups = new Map();
     this._classCanon = new Map();
+    // canonical parent class IRI → Set of canonical direct-child class IRIs, from the
+    // merged subClassOf structure. Lets a class's member list include instances of its
+    // (transitive) subclasses — an Author is a Person. Same render-derived, recomputed-
+    // every-rebuild lifetime as the maps above.
+    this._classChildren = new Map();
   }
 
   // Called by sem-lab after appendChild
@@ -288,6 +293,15 @@ export class SemPanelEntity extends HTMLElement {
       this._classCanon = new Map();
       for (const [canonIri, group] of groupOf) {
         for (const member of group) this._classCanon.set(member, canonIri);
+      }
+      // Capture the (canonical) subClassOf structure so member lists can descend it.
+      this._classChildren = new Map();
+      for (const b of merged) {
+        const c = b.get('class')?.value;
+        const p = b.get('parentClass')?.value;
+        if (!c || !p || c === p) continue;
+        if (!this._classChildren.has(p)) this._classChildren.set(p, new Set());
+        this._classChildren.get(p).add(c);
       }
 
       const elements = hierarchyToElements(merged);
@@ -462,6 +476,30 @@ export class SemPanelEntity extends HTMLElement {
     return `VALUES ?g { ${this._scopeGraphs().map(g => `<${g}>`).join(' ')} }`;
   }
 
+  // The canonical class plus all its transitive subclasses (reflexive closure over
+  // _classChildren). Cycle-guarded via the visited set.
+  _descendantClasses(canonIri) {
+    const out = new Set([canonIri]);
+    const stack = [canonIri];
+    while (stack.length) {
+      for (const child of this._classChildren.get(stack.pop()) || []) {
+        if (!out.has(child)) { out.add(child); stack.push(child); }
+      }
+    }
+    return out;
+  }
+
+  // Expand a set of canonical class IRIs to every alias IRI in their equivalence groups,
+  // so a member query matches instances typed with any spelling (an instance typed
+  // schema:Author still counts toward the merged ex:Author set).
+  _expandAliases(canonSet) {
+    const all = new Set();
+    for (const c of canonSet) {
+      for (const alias of this._classGroups.get(c) || [c]) all.add(alias);
+    }
+    return all;
+  }
+
   // Same scope, but also spanning each lab graph's <lab-iri>-inferred companion — for
   // the views that distinguish asserted vs inferred rows (ADR-031/032).
   _graphsWithInferredValuesClause() {
@@ -489,20 +527,39 @@ export class SemPanelEntity extends HTMLElement {
       }
       ORDER BY ?property
     `;
+    // Members include instances of every (transitive) subclass — a set contains all its
+    // descendants' instances (an Author is a Person). memberClassValues spans the whole
+    // subtree's aliases; directMemberValues is just the selected class's own aliases, used
+    // (asserted graphs only) to decide which members are DIRECT (roman) vs members only by
+    // subclass/inference (italic — same "membership you didn't type" grammar as the
+    // inferred dots in the graph).
+    const memberClassIris = [...this._expandAliases(this._descendantClasses(classIri))];
+    const memberClassValues = memberClassIris.map(c => `<${c}>`).join(' ');
     const membersSparql = `
-      SELECT DISTINCT ?instance ?label ?g WHERE {
+      SELECT DISTINCT ?instance ?label WHERE {
         GRAPH ?g {
           ${this._graphsWithInferredValuesClause()}
           ?instance a ?memberClass .
-          VALUES ?memberClass { ${groupValues} }
+          VALUES ?memberClass { ${memberClassValues} }
           FILTER(!isBlank(?instance))
           OPTIONAL { ?instance <${RDFS}label> ?label }
         }
       }
     `;
-    const [assertionBindings, memberBindings] = await Promise.all([
+    const directMembersSparql = `
+      SELECT DISTINCT ?instance WHERE {
+        GRAPH ?g {
+          ${this._graphsValuesClause()}
+          ?instance a ?memberClass .
+          VALUES ?memberClass { ${groupValues} }
+          FILTER(!isBlank(?instance))
+        }
+      }
+    `;
+    const [assertionBindings, memberBindings, directBindings] = await Promise.all([
       this.notebook.query(assertionsSparql),
-      this.notebook.query(membersSparql)
+      this.notebook.query(membersSparql),
+      this.notebook.query(directMembersSparql)
     ]);
 
     // Keep the DIRECT (asserted) equivalence statements — a merged class may carry
@@ -531,14 +588,24 @@ export class SemPanelEntity extends HTMLElement {
       inferred
     }));
 
-    const memberRows = dedupeInferredRows(
-      memberBindings,
-      b => b.get('instance').value
-    ).map(({ b, inferred }) => ({
-      iri: b.get('instance').value,
-      label: b.get('label')?.value || localName(b.get('instance').value),
-      inferred
-    }));
+    // Direct = asserted `?instance a <this class>`; everything else in the member set is
+    // here by subclass or by reasoner inference → italic.
+    const directSet = new Set(directBindings.map(b => b.get('instance').value));
+    const seen = new Set();
+    const memberRows = [];
+    for (const b of memberBindings) {
+      const iri = b.get('instance').value;
+      if (seen.has(iri)) continue;
+      seen.add(iri);
+      memberRows.push({
+        iri,
+        label: b.get('label')?.value || localName(iri),
+        inferred: !directSet.has(iri)
+      });
+    }
+    // Direct members first, then inferred/subclass ones; stable and alphabetical within.
+    memberRows.sort((a, b) =>
+      (a.inferred - b.inferred) || a.label.localeCompare(b.label));
 
     const className = localName(classIri);
     const groupNote = group.length > 1

@@ -20,7 +20,7 @@ Records here are immutable in the Nygard sense: when a decision changes, a dated
 
 | ADR | Title | Current Home |
 |---|---|---|
-| ADR-001 | Teaching tool, not a general-purpose triplestore UI | README ("What This Is Not") |
+| ADR-001 | Teaching tool, not a general-purpose triplestore UI | STORY.md ("What This Is Not") |
 | ADR-002 | Notebook as semantic artifact | Absorbed into **C3** |
 | **ADR-003** | JSON-LD as notebook wire format, Turtle as authoring format | **Active — below** |
 | **ADR-004** | `sembook:` vocabulary in its own namespace | **Active — below** |
@@ -281,7 +281,7 @@ An earlier note claiming "Vocabulary panel's Classes graph is unaffected... rema
 - The page-level throbber covers the initialization phase
 - A lab with heavy init data will slow down the initial page load
 
-**Why this is architecturally significant:** this is the mechanism that makes multi-lab notebooks work at all, and it's explicitly untested at scale — the README's open questions note that "whether Cytoscape instance count, per-lab reasoning, or Full Graph queries spanning many named graphs hold up" at book-chapter length hasn't been validated. A decision with a known, flagged scalability question is exactly the kind of thing worth keeping visible as its own record rather than burying in a subsystem list.
+**Why this is architecturally significant:** this is the mechanism that makes multi-lab notebooks work at all, and it's explicitly untested at scale — STORY.md's open questions note that "whether Cytoscape instance count, per-lab reasoning, or Full Graph queries spanning many named graphs hold up" at book-chapter length hasn't been validated. A decision with a known, flagged scalability question is exactly the kind of thing worth keeping visible as its own record rather than burying in a subsystem list.
 
 ---
 

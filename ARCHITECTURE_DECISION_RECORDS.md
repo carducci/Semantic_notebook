@@ -323,8 +323,10 @@ The entity/vocabulary explorer's compound-node hierarchy used plain `cose`, whic
 **Scope note — this was tried project-wide first and reverted.** An earlier attempt also moved the graph panel from `cola` to `fcose`, reasoning that cola's force layout hairballs literal-dense teaching graphs. In practice, getting fCoSE's `randomize` setting right for the graph panel's incremental-update model (a live instance updated via `cy.layout().run()` on every Parse, versus the entity panel's destroy-and-recreate) took more than one attempt and the first attempt shipped a regression (nodes collapsing into a diagonal line on first render). The architect asked to revert and re-scope to the entity explorer only, where the model is simpler: the panel already destroys and recreates its Cytoscape instance on every render (ADR-024), so there are never prior positions to preserve, and `randomize: true` on every layout is safe and sufccient. **The graph panel remains on cola** — untouched, unregressed. Revisiting fCoSE (or another layout) for the graph panel is a separate, deferred question.
 
 ### Consequences (of the revision)
-- Vocabulary panel's Classes graph is unaffected — it was already on `grid`, a deliberate earlier choice for its fully-disconnected class boxes, and remains so.
 - Both notebooks' `index.html` now load fCoSE's dependency chain in addition to cola's; nothing was removed.
+
+### Correction (iteration 13) — Vocabulary Panel's Classes Graph Also Moves to fCoSE
+The note above ("Vocabulary panel's Classes graph is unaffected... remains so") turned out to be wrong: `grid` was chosen to avoid `cose`'s "flings disconnected components apart" problem, but grid does not actually pack COMPOUND boxes apart from one another either — disconnected class containers piled on top of each other, the identical bug just fixed for the entity explorer, only surfacing later once the vocabulary panel was exercised with a compound (subclassed) hierarchy rather than a flat one. `sem-panel-vocab.js`'s `classLayout` now also uses fCoSE with `packComponents: true`, same tuning family as the entity explorer, `randomize: true` (safe for the same reason — this panel also destroys and recreates its Cytoscape instance every render).
 
 ---
 
@@ -897,7 +899,33 @@ ADR-031 scoped the entity explorer's inferred-awareness to the instance property
 ### Consequences
 - The inference reveal the entity explorer was designed around (README §The Entity Explorer) now actually renders.
 - Inferred membership placement is canonicalized through the equivalence merge, so a membership derived against `schema:Person` lands in the merged Person set.
-- The vocabulary panel does not yet merge equivalent terms — queued as its own change.
+- The vocabulary panel's row-collapsing turned out to need a genuinely different merge key than this one — see ADR-033.
+
+---
+
+## ADR-033 — Vocabulary Panel Row-Collapsing Is Display-Label Collision, Not Semantic Equivalence
+
+**Status:** Accepted
+**Date:** Iteration 13
+**Supersedes:** an unreleased first attempt (never committed) that merged vocabulary rows on the same `owl:sameAs`/`owl:equivalentClass`/`owl:equivalentProperty` key as ADR-032's entity-explorer merge.
+
+### Context
+Following ADR-032's entity-explorer equivalence merge, the vocabulary panel (`sem-panel-vocab.js`) was given the identical treatment: classes merged on `owl:sameAs`/`owl:equivalentClass`, properties on `owl:equivalentProperty`. In review this proved wrong for a browsing list specifically: `ex:penName owl:equivalentProperty schema:alternateName` — two deliberately, differently-named terms — collapsed into a single row under whichever IRI sorted first, silently removing `penName` from the browsable list. The architect's objection: "If `ex:penName` was defined in the vocab, it needs to be in the list. Period. Not buried in the drilldown."
+
+The entity explorer and the vocabulary panel are solving different problems (this distinction is already in the README: "the entity explorer (set membership) and the vocabulary explorer (class/property definitions and hierarchy) are different things with different interaction models"). The entity explorer merges CLASSES because `owl:sameAs`/`equivalentClass` genuinely means "these are one set" — merging is the correct semantics, not a display compromise. The vocabulary panel is a browsing index of TERMS an author defined; every row-candidate term must be independently findable, because "can I find the term I wrote" is the whole point of the panel. Two terms being asserted equivalent doesn't change that they are two distinct, intentionally-authored names.
+
+### Decision
+The vocabulary panel's Classes and Properties row-collapsing is driven by **exact display-label collision** — `ex:name` and `schema:name` both render as `name`, and a flat list (or a class-graph node label) cannot show two rows/nodes with identical text as distinguishable anyway, so those collapse into one, and the detail/drilldown pane is what disambiguates them (querying every IRI in the group, not just the canonical one). This is NOT semantic: `owl:sameAs`, `owl:equivalentClass`, and `owl:equivalentProperty` assertions play no part in the merge decision — an asserted equivalence between two differently-named terms still surfaces as its own row for each term, and (as before) as its own visible statement in either term's detail pane.
+
+Mechanically this reuses the exact same merge machinery as ADR-032 (`mergeHierarchyBindings`) — only the grouping *key* changes. A new `parse-utils.groupsByLabel(entries)` computes the grouping (trivial: identical strings are already a complete, transitive group — no union-find needed, unlike `equivalenceGroups`) and produces the same `Map<iri, group[]>` shape, so `mergeHierarchyBindings` is agnostic to which one produced its input. The merged-row hover label and detail-pane group note use `/` rather than `≡` to avoid implying a formal equivalence assertion that may not exist.
+
+### Alternatives Considered
+- **Semantic-equivalence merge (the reverted first attempt)** — rejected: buries differently-named, intentionally-authored terms, directly undermining the panel's purpose as a browsing index.
+- **No merging at all** — rejected: `ex:name`/`schema:name` sharing an identical rendered label is a real, if narrow, display collision a list cannot resolve without merging or an artificial disambiguator (e.g. showing the full IRI inline for every row, which the architect did not want).
+
+### Consequences
+- The vocabulary panel and entity explorer now have two clearly-named, deliberately different merge behaviors — this is not an inconsistency to reconcile; it follows from the two panels solving different problems (documented above).
+- The class-hierarchy graph's `packComponents` layout question (ADR-010's iteration-13 correction) and this row-collapsing question are independent — the same fCoSE piling bug applied regardless of which merge key was in use.
 
 ---
 

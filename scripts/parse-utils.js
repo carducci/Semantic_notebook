@@ -82,23 +82,51 @@ export function equivalenceGroups(pairs) {
   return byMember;
 }
 
-// Rewrite hierarchy bindings so ?class / ?parentClass IRIs collapse to one node per
-// equivalence group — `ex:Person owl:sameAs schema:Person` renders as a single set, and
-// members of either IRI land in it. Canonical representative = the group's
-// lexicographically-smallest member that actually appears as a ?class value in the
-// (already scope-filtered) bindings, so merging can never relabel a visible class to an
-// IRI the current scope excludes (e.g. an owl: partner while in 'Mine' scope). A parent
-// pointer that lands in its own group after merging is masked — this also neutralises
-// the containment cycle that mutual equivalentClass-derived subClassOf would create.
-// Returns { bindings, groupOf } where groupOf maps canonical IRI → full sorted group
-// (for expanding member/detail queries and hover labels). Same binding-adapter shape as
-// filterHierarchyBindings, so hierarchyToElements stays agnostic to merging.
-export function mergeHierarchyBindings(bindings, groupsByMember) {
+// Group entries by an exact display-label collision — a PRESENTATIONAL grouping, distinct
+// from equivalenceGroups (which groups by an *asserted* owl:sameAs/equivalentProperty/
+// equivalentClass relationship). Two IRIs with unrelated meanings can render with the
+// identical label (e.g. `ex:name` and `schema:name` both show as "name") and a flat list or
+// a class-graph label cannot tell them apart either way — so they collapse into one
+// row/node for browsing, and the detail/drilldown pane (which spans every IRI in the group)
+// is what disambiguates. Unlike equivalenceGroups this needs no union-find: a shared label
+// is already a complete, transitive grouping key by construction. Returns the same
+// Map<iri, group[]> shape equivalenceGroups does, so mergeHierarchyBindings is agnostic to
+// which one produced its groupsByMember argument. `entries` is [{ iri, label }, ...].
+export function groupsByLabel(entries) {
+  const byLabel = new Map(); // label → iri[]
+  for (const { iri, label } of entries) {
+    if (!byLabel.has(label)) byLabel.set(label, []);
+    if (!byLabel.get(label).includes(iri)) byLabel.get(label).push(iri);
+  }
+  const byMember = new Map();
+  for (const iris of byLabel.values()) {
+    if (iris.length < 2) continue;
+    const sorted = [...iris].sort();
+    for (const iri of sorted) byMember.set(iri, sorted);
+  }
+  return byMember;
+}
+
+// Rewrite hierarchy-shaped bindings (a subject var + a parent-pointer var — ?class/
+// ?parentClass for the entity/vocab class hierarchies, ?property/?parentProperty for the
+// vocab property forest) so IRIs collapse to one node per equivalence group —
+// `ex:Person owl:sameAs schema:Person` renders as a single set/row, and anything hung off
+// either IRI lands on it. Canonical representative = the group's lexicographically-
+// smallest member that actually appears as a ?varName value in the (already
+// scope-filtered) bindings, so merging can never relabel a visible node to an IRI the
+// current scope excludes (e.g. an owl: partner while the entity explorer is in 'Mine'
+// scope). A parent pointer that lands in its own group after merging is masked — this
+// also neutralises the containment cycle that mutual equivalentClass/equivalentProperty-
+// derived subClassOf/subPropertyOf would create. Returns { bindings, groupOf } where
+// groupOf maps canonical IRI → full sorted group (for expanding member/detail queries and
+// hover labels). Same binding-adapter shape as filterHierarchyBindings, so
+// hierarchyToElements stays agnostic to merging.
+export function mergeHierarchyBindings(bindings, groupsByMember, varName = 'class', parentVarName = 'parentClass') {
   if (groupsByMember.size === 0) return { bindings, groupOf: new Map() };
 
   const candidates = new Set();
   for (const b of bindings) {
-    const c = b.get('class')?.value;
+    const c = b.get(varName)?.value;
     if (c) candidates.add(c);
   }
   const canonOf = new Map();
@@ -109,21 +137,21 @@ export function mergeHierarchyBindings(bindings, groupsByMember) {
 
   const out = [];
   for (const b of bindings) {
-    const cls = b.get('class')?.value;
-    const parentCls = b.get('parentClass')?.value;
-    const clsCanon = canon(cls);
-    const parentCanon = canon(parentCls);
-    const dropParent = !!parentCls && parentCanon === clsCanon;
-    if (clsCanon === cls && parentCanon === parentCls && !dropParent) {
+    const subj = b.get(varName)?.value;
+    const parent = b.get(parentVarName)?.value;
+    const subjCanon = canon(subj);
+    const parentCanon = canon(parent);
+    const dropParent = !!parent && parentCanon === subjCanon;
+    if (subjCanon === subj && parentCanon === parent && !dropParent) {
       out.push(b);
       continue;
     }
     out.push({
       get: (name) => {
-        if (name === 'class') return cls ? { value: clsCanon } : b.get(name);
-        if (name === 'parentClass') {
+        if (name === varName) return subj ? { value: subjCanon } : b.get(name);
+        if (name === parentVarName) {
           if (dropParent) return undefined;
-          return parentCls ? { value: parentCanon } : b.get(name);
+          return parent ? { value: parentCanon } : b.get(name);
         }
         return b.get(name);
       }

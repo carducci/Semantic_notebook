@@ -1,11 +1,15 @@
-// cytoscape is loaded globally via <script> tag in index.html — no module import needed.
+// cytoscape and the fCoSE layout (cytoscapeFcose + its cose-base/layout-base deps) are
+// loaded globally via <script> tags in index.html, where cytoscape.use(cytoscapeFcose)
+// is also registered — no module import needed.
 
 import {
   hierarchyToElements,
   localName,
   META_VOCAB_NAMESPACES,
   SEMBOOK_VOCAB_NS,
-  SEMBOOK_IMPLIED_NS
+  SEMBOOK_IMPLIED_NS,
+  groupsByLabel,
+  mergeHierarchyBindings
 } from '../scripts/parse-utils.js';
 
 // ── Namespaces ───────────────────────────────────────────────────────────────
@@ -99,16 +103,25 @@ const classStylesheet = [
   }
 ];
 
-// Grid, not a force layout: vocabulary classes are mostly disconnected (there are no
-// edges between them — subclassing is compound containment, not an edge), and cose flings
-// disconnected components apart, so fit zooms out until nodes are unreadably tiny. Grid
-// keeps them compact and is still compound-aware (subclasses stay nested in their parent).
+// fCoSE, not grid: vocabulary classes are mostly disconnected (there are no edges between
+// them — subclassing is compound containment, not an edge). Grid was the original choice
+// (cose flings disconnected components apart until fit zooms out to illegibility) but grid
+// does not actually pack COMPOUND boxes apart from each other — disconnected class
+// containers piled on top of one another, the same bug fixed for the entity explorer.
+// fCoSE's packComponents tiles them side by side while staying compound-aware (subclasses
+// nest in their parent); randomize:true is safe because this panel destroys and recreates
+// its Cytoscape instance on every render (ADR-024), same as the entity explorer.
 const classLayout = {
-  name: 'grid',
+  name: 'fcose',
+  quality: 'proof',
+  randomize: true,
   fit: true,
   padding: 20,
-  avoidOverlap: true,
-  avoidOverlapPadding: 20,
+  nodeDimensionsIncludeLabels: true,
+  packComponents: true,
+  nodeSeparation: 60,
+  idealEdgeLength: 80,
+  nodeRepulsion: 4500,
   animate: true,
   animationDuration: 300
 };
@@ -123,6 +136,13 @@ export class SemPanelVocab extends HTMLElement {
     this._classesPane = null;
     this._propsPane = null;
     this._detailPane = null;
+    // canonical IRI → full sorted DISPLAY-LABEL-COLLISION group (e.g. ex:name/schema:name,
+    // both rendering as "name"), for classes and properties respectively. This is NOT
+    // semantic (owl:sameAs/equivalentClass/equivalentProperty) — see onGraphUpdated for
+    // why row-collapsing must be driven by label collision only, not asserted equivalence.
+    // Render-derived, recomputed on every rebuild — never carried across graph updates (C7).
+    this._classGroups = new Map();
+    this._propGroups = new Map();
   }
 
   // Called by sem-lab after appendChild
@@ -267,8 +287,43 @@ export class SemPanelVocab extends HTMLElement {
 
       const describedSet = new Set(describedBindings.map(b => b.get('term').value));
 
-      this._renderClasses(classBindings, describedSet);
-      this._renderProperties(propBindings, describedSet);
+      // Row-collapsing is driven by DISPLAY-LABEL COLLISION, not by asserted equivalence
+      // (owl:sameAs / equivalentClass / equivalentProperty). This vocabulary panel is a
+      // browsing list: every row-candidate term (per _classesQuery/_propertiesQuery) must
+      // be independently discoverable in it — that's the whole point of a vocabulary
+      // browser. Merging on asserted equivalence instead (an earlier attempt) silently
+      // buried differently-named terms that merely happened to be declared equivalent
+      // (e.g. `ex:penName owl:equivalentProperty schema:alternateName` — two clearly
+      // distinct, intentionally-named terms) under whichever alias sorted first — a
+      // discoverability regression, not a feature. The ONLY case a list genuinely cannot
+      // represent as two distinct rows is when two terms render with the EXACT SAME
+      // label (e.g. `ex:name` / `schema:name`, both "name") — there is no way to tell them
+      // apart in a flat list or a class-graph label regardless of what they mean, so those
+      // collapse into one row, and the detail pane (which spans every IRI in the group)
+      // is what disambiguates. This is the same merge MACHINERY as the entity explorer's
+      // equivalence merge (mergeHierarchyBindings) — only the grouping KEY differs.
+      // groupsByLabel de-duplicates iri/label pairs internally, so mapping every binding
+      // (including the duplicates an OPTIONAL parentClass/parentProperty join produces)
+      // straight through is fine — no separate dedupe pass needed.
+      const classEntries = classBindings.map(b => ({
+        iri: b.get('class').value,
+        label: b.get('classLabel')?.value || localName(b.get('class').value)
+      }));
+      const { bindings: mergedClasses, groupOf: classGroupOf } =
+        mergeHierarchyBindings(classBindings, groupsByLabel(classEntries));
+      this._classGroups = classGroupOf;
+
+      const propEntries = propBindings.map(b => ({
+        iri: b.get('property').value,
+        label: localName(b.get('property').value)
+      }));
+      const { bindings: mergedProps, groupOf: propGroupOf } = mergeHierarchyBindings(
+        propBindings, groupsByLabel(propEntries), 'property', 'parentProperty'
+      );
+      this._propGroups = propGroupOf;
+
+      this._renderClasses(mergedClasses, describedSet);
+      this._renderProperties(mergedProps, describedSet);
 
       // A graph change may have added properties to the selected term — refresh detail.
       if (this._selectedIri) await this._renderDetail(this._selectedIri);
@@ -396,15 +451,19 @@ export class SemPanelVocab extends HTMLElement {
     `;
   }
 
-  // Every triple where the selected term is the subject — NO namespace filter, so a
-  // term's own self-description (`ex:Book a rdfs:Class`, rdfs:label, …) shows exactly as
-  // asserted. Same predicate/object table shape as sem-panel-entity's _renderInstanceProperties.
-  _detailQuery(termIri) {
+  // Every triple where the selected term (or, for a merged node, ANY of its equivalence
+  // group's IRIs) is the subject — NO namespace filter, so a term's own self-description
+  // (`ex:Book a rdfs:Class`, rdfs:label, …) shows exactly as asserted, whichever alias it
+  // was asserted on. Same predicate/object table shape as sem-panel-entity's
+  // _renderInstanceProperties.
+  _detailQuery(termIris) {
+    const values = termIris.map(i => `<${i}>`).join(' ');
     return `
       SELECT ?property ?value WHERE {
         GRAPH ?g {
           ${this._cumulativeGraphsValuesClause()}
-          <${termIri}> ?property ?value .
+          ?termIri ?property ?value .
+          VALUES ?termIri { ${values} }
         }
       }
       ORDER BY ?property
@@ -431,6 +490,11 @@ export class SemPanelVocab extends HTMLElement {
     for (const el of elements) {
       if (el.data.parent && !nodeIds.has(el.data.parent)) el.data.parent = null;
       el.classes = `${el.classes} ${describedSet.has(el.data.id) ? 'described' : 'identity-only'}`;
+      // A label-collision-merged node's hover label enumerates every IRI it stands for.
+      // "/" (not "≡") deliberately — these terms merely render identically, they are not
+      // being asserted equivalent.
+      const group = this._classGroups.get(el.data.id);
+      if (group) el.data.fullLabel = group.join(' / ');
     }
 
     // Destroy-and-recreate per ADR-024 — compound graphs can't be updated incrementally.
@@ -558,12 +622,22 @@ export class SemPanelVocab extends HTMLElement {
   }
 
   async _renderDetail(termIri) {
-    const bindings = await this.notebook.query(this._detailQuery(termIri));
+    // A label-collision-merged term is presented as one row — pull its group (checking
+    // both maps; classes and properties are disjoint in practice) and query every alias's
+    // own triples, not just the canonical IRI's, so THIS is where the two get
+    // disambiguated. "/" not "≡": these terms merely render identically; they are not
+    // being asserted equivalent (an actual owl:sameAs/equivalentProperty assertion, if
+    // present, still shows up as its own row in the table below either way).
+    const group = this._classGroups.get(termIri) || this._propGroups.get(termIri) || [termIri];
+    const bindings = await this.notebook.query(this._detailQuery(group));
     const label = localName(termIri);
+    const groupNote = group.length > 1
+      ? `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${group.join(' / ')}<br><span style="font-style:italic;">same display label — showing both</span></span>`
+      : `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${termIri}</span>`;
 
     let html = `<h3 style="font-size:0.875rem;font-weight:600;color:#0f766e;margin-bottom:0.75rem;">
       ${label}
-      <span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${termIri}</span>
+      ${groupNote}
     </h3>`;
 
     if (bindings.length === 0) {

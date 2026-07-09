@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light" />
+<title>sembook: — Semantic Notebook Vocabulary</title>
+<link rel="alternate" type="text/turtle" href="/vocab" title="Turtle serialization" />
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 max-w-3xl mx-auto px-6 py-12">
+
+<header class="mb-10 border-b border-slate-200 pb-6">
+  <p class="text-sm text-slate-500 font-mono">https://notebook.semantic.consulting/vocab#</p>
+  <h1 class="text-3xl font-semibold mt-1">Semantic Notebook Vocabulary</h1>
+  <p class="mt-3 text-slate-600">
+    Vocabulary for defining browser-based semantic teaching notebooks. A notebook is an
+    ordered collection of labs, each occupying the full viewport. Each lab contains panels
+    that are projections of a shared named graph.
+  </p>
+  <dl class="mt-4 text-sm text-slate-500 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+    <dt>Prefix</dt><dd><code>sembook:</code></dd>
+    <dt>Version</dt><dd>0.2 — <a class="underline" href="/vocab/0.2">versionIRI</a></dd>
+    <dt>Creator</dt><dd><a class="underline" href="https://mago.co/performers/michael-carducci">Michael Carducci</a></dd>
+    <dt>Turtle</dt><dd><a class="underline font-mono" href="/vocab">GET /vocab</a> (<code>text/turtle</code>)</dd>
+  </dl>
+</header>
+
+<section class="mb-10">
+  <h2 class="text-xl font-semibold mb-4">Classes</h2>
+  <div class="space-y-5">
+
+    <div>
+      <h3 class="font-mono font-semibold" id="Notebook">sembook:Notebook</h3>
+      <p class="text-slate-600 text-sm mt-1">A named, ordered collection of Labs. Serialized as a JSON-LD file and fetched by the browser runtime on page load. The notebook is a first-class resource with its own IRI.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="Lab">sembook:Lab</h3>
+      <p class="text-slate-600 text-sm mt-1">The fundamental teaching unit. A lab occupies the full viewport and is identified by a fragment identifier on the notebook URL. Each lab owns exactly one named graph in the quad store — the lab IRI is the named graph IRI.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="Panel">sembook:Panel</h3>
+      <p class="text-slate-600 text-sm mt-1">Abstract base class for all panel types. A panel is a web component that is a projection of a lab's named graph, queried via a SPARQL query declared in its definition.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="JsonLdPanel">sembook:JsonLdPanel <span class="text-slate-400 font-normal">rdfs:subClassOf sembook:Panel</span></h3>
+      <p class="text-slate-600 text-sm mt-1">An interactive JSON-LD editor panel with a fetch affordance and a Parse button that commits the editor contents to the lab's named graph.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="JsonLdContextPanel">sembook:JsonLdContextPanel <span class="text-slate-400 font-normal">rdfs:subClassOf sembook:JsonLdPanel</span></h3>
+      <p class="text-slate-600 text-sm mt-1">A split-view JSON-LD editor: the document body and its @context are edited in two separate panes sharing one Parse button.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="GraphPanel">sembook:GraphPanel <span class="text-slate-400 font-normal">rdfs:subClassOf sembook:Panel</span></h3>
+      <p class="text-slate-600 text-sm mt-1">A Cytoscape.js graph visualization panel, rendering asserted (solid), inferred (dashed), and fetched (dotted) triples distinctly.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="EntityPanel">sembook:EntityPanel <span class="text-slate-400 font-normal">rdfs:subClassOf sembook:Panel</span></h3>
+      <p class="text-slate-600 text-sm mt-1">A list-based panel displaying named entities or vocabulary terms, filtered by the panel's SPARQL query.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="VocabularyPanel">sembook:VocabularyPanel <span class="text-slate-400 font-normal">rdfs:subClassOf sembook:Panel</span></h3>
+      <p class="text-slate-600 text-sm mt-1">A vocabulary explorer browsing class and property definitions and their hierarchy across a notebook's cumulative scope, distinguishing merely-used terms from described terms.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="TabsPanel">sembook:TabsPanel <span class="text-slate-400 font-normal">rdfs:subClassOf sembook:Panel</span></h3>
+      <p class="text-slate-600 text-sm mt-1">A layout container panel presenting its child panels as switchable tabs.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="TurtlePanel">sembook:TurtlePanel <span class="text-slate-400 font-normal">rdfs:subClassOf sembook:Panel</span></h3>
+      <p class="text-slate-600 text-sm mt-1">A read-only Turtle serialization viewer for the panel's SPARQL-selected scope of the quad store.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="TurtleWriterPanel">sembook:TurtleWriterPanel <span class="text-slate-400 font-normal">rdfs:subClassOf sembook:Panel</span></h3>
+      <p class="text-slate-600 text-sm mt-1">An editable Turtle input panel, following the same Parse-button pattern as JsonLdPanel.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="SparqlPanel">sembook:SparqlPanel <span class="text-slate-400 font-normal">rdfs:subClassOf sembook:Panel</span></h3>
+      <p class="text-slate-600 text-sm mt-1">An interactive SPARQL query editor panel with sample queries and a Run button that executes against the quad store without mutating it.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="SparqlResultPanel">sembook:SparqlResultPanel <span class="text-slate-400 font-normal">rdfs:subClassOf sembook:Panel</span></h3>
+      <p class="text-slate-600 text-sm mt-1">Renders the result of a companion SparqlPanel's most recently executed query — Table, Turtle, or Graph views.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="SampleQuery">sembook:SampleQuery</h3>
+      <p class="text-slate-600 text-sm mt-1">A named, pre-authored SPARQL query offered in a SparqlPanel's sample-query dropdown.</p>
+    </div>
+
+  </div>
+</section>
+
+<section class="mb-10">
+  <h2 class="text-xl font-semibold mb-4">Properties</h2>
+  <div class="space-y-5">
+
+    <div>
+      <h3 class="font-mono font-semibold" id="title">sembook:title <span class="text-slate-400 font-normal">owl:DatatypeProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">The display title of a Notebook. <span class="text-slate-400">domain: sembook:Notebook · range: xsd:string</span></p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="labs">sembook:labs <span class="text-slate-400 font-normal">owl:ObjectProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">Ordered list of Labs in a Notebook. <span class="text-slate-400">domain: sembook:Notebook · range: sembook:Lab</span></p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="label">sembook:label <span class="text-slate-400 font-normal">owl:DatatypeProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">A human-readable display label for a Lab, Panel, or SampleQuery. <span class="text-slate-400">domain: Lab ∪ Panel ∪ SampleQuery · range: xsd:string</span></p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="init">sembook:init <span class="text-slate-400 font-normal">owl:ObjectProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">Seed data for a Lab, expressed as an embedded JSON-LD graph. <span class="text-slate-400">domain: sembook:Lab · range: rdfs:Resource</span></p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="panels">sembook:panels <span class="text-slate-400 font-normal">owl:ObjectProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">Ordered list of Panels within a Lab or TabsPanel. <span class="text-slate-400">domain: Lab ∪ TabsPanel · range: sembook:Panel</span></p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="cssClass">sembook:cssClass <span class="text-slate-400 font-normal">owl:DatatypeProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">Tailwind CSS utility classes applied directly to the rendered component element. <span class="text-slate-400">domain: Lab ∪ Panel · range: xsd:string</span></p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="sparql">sembook:sparql <span class="text-slate-400 font-normal">owl:DatatypeProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">A SPARQL query string — on a Panel, determines what data it renders; on a SampleQuery, the query text offered as a starting point. <span class="text-slate-400">domain: Panel ∪ SampleQuery · range: xsd:string</span></p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="sampleQueries">sembook:sampleQueries <span class="text-slate-400 font-normal">owl:ObjectProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">Ordered list of SampleQuery entries offered in a SparqlPanel's dropdown. <span class="text-slate-400">domain: sembook:SparqlPanel · range: sembook:SampleQuery</span></p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="initialContent">sembook:initialContent <span class="text-slate-400 font-normal">owl:DatatypeProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">Seed text loaded into a panel's primary editing surface before the user makes any edits. <span class="text-slate-400">domain: JsonLdPanel ∪ TurtleWriterPanel · range: xsd:string</span></p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="initialContext">sembook:initialContext <span class="text-slate-400 font-normal">owl:DatatypeProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">Seed text loaded into a JsonLdContextPanel's separate @context editing pane. <span class="text-slate-400">domain: sembook:JsonLdContextPanel · range: xsd:string</span></p>
+    </div>
+
+  </div>
+</section>
+
+<footer class="text-sm text-slate-400 border-t border-slate-200 pt-6">
+  Part of the <a class="underline" href="/">Semantic Notebook</a> teaching tool.
+  Source: <a class="underline" href="https://github.com/carducci/Semantic_notebook/blob/main/sembook.ttl">sembook.ttl</a> on GitHub.
+</footer>
+
+</body>
+</html>

@@ -37,7 +37,7 @@ This isn't purist indulgence. It's the argument made self-referential. Michael i
 
 You can query the notebook with SPARQL. You can reason over it. That's not a feature — it's the point.
 
-The vocabulary lives at `https://sembook.example.org/vocab#` under the `sembook:` prefix. It is **not** in the HydrAI namespace — HydrAI is about agent-native Hydra extensions, a different concern entirely. This one is general enough to be its own contribution, potentially releasable alongside the book.
+The vocabulary lives at `https://notebook.semantic.consulting/vocab#` under the `sembook:` prefix. It is **not** in the HydrAI namespace — HydrAI is about agent-native Hydra extensions, a different concern entirely. This one is general enough to be its own contribution, potentially releasable alongside the book.
 
 ---
 

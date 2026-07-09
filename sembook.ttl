@@ -3,13 +3,13 @@
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
-@prefix sembook: <https://sembook.example.org/vocab#> .
+@prefix sembook: <https://notebook.semantic.consulting/vocab#> .
 
 # ─────────────────────────────────────────────────────────────
 # Ontology Declaration
 # ─────────────────────────────────────────────────────────────
 
-<https://sembook.example.org/vocab>
+<https://notebook.semantic.consulting/vocab>
     a owl:Ontology ;
     rdfs:label "Semantic Notebook Vocabulary"@en ;
     rdfs:comment
@@ -17,7 +17,7 @@
     dcterms:creator <https://mago.co/performers/michael-carducci> ;
     dcterms:description
         "The Semantic Notebook vocabulary provides terms for describing interactive RDF teaching environments. Notebooks are serialized as JSON-LD and interpreted by a browser-based runtime that manages a quad store, SPARQL query engine, and graph visualization layer."@en ;
-    owl:versionIRI <https://sembook.example.org/vocab/0.2> ;
+    owl:versionIRI <https://notebook.semantic.consulting/vocab/0.2> ;
     owl:versionInfo "0.2"^^xsd:string .
 
 

@@ -54,6 +54,7 @@ Records here are immutable in the Nygard sense: when a decision changes, a dated
 | ADR-032 | Entity explorer renders equivalence merges, inferred memberships, class assertions | [DDR-032](DESIGN_DECISIONS.md) |
 | ADR-033 | Entity explorer scope toggle = lab vs cumulative; meta-vocabulary always hidden | [DDR-033](DESIGN_DECISIONS.md) |
 | ~~ADR-033~~ → ADR-034 | Vocabulary panel row-collapsing is display-label collision, not semantic equivalence | [DDR-034](DESIGN_DECISIONS.md) — renumbered; duplicated ADR-033's number in the original document, no code referenced it under that number |
+| **ADR-035** | Dereferencing on static hosting: single-representation Turtle, no content negotiation; instance IRIs rebased to page URLs | **Active — below** |
 
 ---
 
@@ -99,6 +100,14 @@ Records here are immutable in the Nygard sense: when a decision changes, a dated
 - Future contributors can extend the vocabulary independently
 
 **Why this is architecturally significant:** the namespace is baked into every notebook JSON-LD file and every SPARQL query in the system. It's also a public, publishable identity — if the ontology is ever released or dereferenced externally, renaming the namespace later means breaking every consumer, not just editing one file.
+
+### Revision (2026-07-08) — Placeholder Domain Replaced with the Real Production Domain
+
+The namespace above was `https://sembook.example.org/vocab#` — an `example.org` placeholder that never resolved to anything, present since the vocabulary was first drafted. With the app now live on Azure Static Web Apps at the custom domain `notebook.semantic.consulting`, the namespace moved to **`https://notebook.semantic.consulting/vocab#`**, hosted from the same repo that serves the notebooks, rather than a separate domain dedicated solely to the vocabulary.
+
+**Why not a dedicated vocab domain (e.g. `sembook.org`):** no such domain exists or is owned; registering and hosting one is infrastructure this one-person project doesn't need yet (C11 — zero ops). The hash-URI pattern this vocabulary already used (`/vocab#Term`) works identically regardless of which domain hosts it.
+
+Every notebook/lab/panel instance IRI (previously `https://sembook.example.org/intro#...`, `.../turtle#...`) was rebased in the same pass — see the new ADR immediately following this one for the dereferencing mechanism and instance-IRI scheme that change enabled.
 
 ---
 
@@ -328,6 +337,31 @@ An earlier note claiming "Vocabulary panel's Classes graph is unaffected... rema
 - CodeMirror 6 ESM imports are loaded inside the component module, not as global script tags
 
 **Why this is architecturally significant:** every editor surface in the system — present and future — depends on this one library; swapping it touches every editor panel simultaneously, not one component in isolation.
+
+---
+
+## ADR-035 — Dereferencing on Static Hosting: Single-Representation Turtle, Page-URL Instance IRIs
+
+**Context:** C2 requires every significant resource — the `sembook:` vocabulary and every notebook/lab — to be dereferenceable to a meaningful representation. The app is deployed as a static Azure Static Web App (ADR-027/C11: no backend). Proper Linked Data practice for a resource that needs both a human (HTML) and machine (RDF) representation is server-side content negotiation on the Accept header, keyed to one canonical URI. Static hosting cannot vary a response body by request header without a backend component.
+
+**Decision:**
+- The `sembook:` vocabulary is served as a single representation: Turtle, at the hash-URI base `https://notebook.semantic.consulting/vocab` (`.../vocab#Term` for individual terms), via a `staticwebapp.config.json` route rewrite to `sembook.ttl` with an explicit `text/turtle` content-type override (Azure SWA doesn't know the `.ttl` extension by default and serves it as `application/octet-stream` otherwise — confirmed in production before this fix).
+- A hand-written, static human-readable doc page lives at the adjacent path `/vocab/` (`vocab/index.html`), cross-linked via a visible link to `/vocab` and a `<link rel="alternate" type="text/turtle" href="/vocab">` for tooling autodiscovery — the closest zero-ops approximation of conneg's two-representation goal, chosen over an Azure Function doing real Accept-header negotiation.
+- Notebook and lab instance IRIs are rebased to literally be the URLs of the pages that render them (e.g. `https://notebook.semantic.consulting/notebook1/`), with lab IRIs as `#fragment`s of that same URL. This dereferences today with no additional routing, because the lab `<section id="...">` DOM ids already match the fragment names (ADR-015's scroll navigation) — GET the lab IRI, land scrolled to that lab.
+
+**Alternatives Considered:**
+- Real Accept-header content negotiation via an Azure Functions API (SWA's linked-backend option) — rejected: introduces a backend component and an ops surface (function cold starts, a second deploy artifact, a new failure mode) that doesn't exist anywhere else in this project, for a benefit (proper 200 vs. 303 conneg) an audience of conference attendees and Protégé/SPARQL tooling won't notice.
+- 303-See-Other redirect pattern (generic resource URI → distinct document URI per representation) — the standard pattern for non-information resources, but adds a redirect hop for zero benefit here: the vocabulary is a single small document, not a set of individually-dereferenced non-information resources, so the simpler hash-URI pattern (already ADR-004's choice) covers it without redirects.
+- Leaving notebook/lab IRIs as logical identifiers decoupled from any real URL (status quo) — rejected: fails C2's own validation test outright, and was the actual gap this ADR closes.
+
+**Consequences:**
+- `staticwebapp.config.json` is now a required deployment artifact — this project's first departure from "every file in the repo is exactly what runs," in the sense that Azure's routing layer now mediates one specific path. Still zero build step: it's declarative host config, not generated or compiled.
+- The notebook `@id` in `notebooks/intro.jsonld` / `notebooks/turtle.jsonld` now must stay in lockstep with both the folder a notebook is served from (`notebook1/`, `notebook2/`) and the `uri` attributes on that notebook's `<sem-notebook>`/`<sem-lab>` elements in its `index.html` — three places that must agree, not one. A future per-notebook directory rename (DDR-028) must update all three.
+- `owl:versionIRI` (`.../vocab/0.2`) is routed to return the same Turtle as `.../vocab` rather than a distinct historical snapshot — acceptable for now since there is only one published version, but a real second version will need this route to actually differ.
+
+**Why this is architecturally significant:** this is the mechanism that makes ADR-004's namespace and C2's dereferenceability requirement literally true rather than aspirational prose in README.md/STORY.md — every future notebook inherits the page-URL IRI scheme, and every future vocabulary term inherits the static-Turtle-only serving strategy, until this record is revised.
+
+**Governing constraint:** [C2 — Resource Orientation](ARCHITECTURAL_CONSTRAINTS.md#c2--resource-orientation) and [C11 — Static First, Backend Agnostic](ARCHITECTURAL_CONSTRAINTS.md#c11--static-first-backend-agnostic).
 
 ---
 

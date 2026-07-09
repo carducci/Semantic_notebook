@@ -13,7 +13,7 @@ function findNotebookNode(notebookDoc) {
   const graph = notebookDoc['@graph'] || [];
   return graph.find(n =>
     n['@type'] === 'sembook:Notebook' ||
-    n['@type'] === 'https://sembook.example.org/vocab#Notebook'
+    n['@type'] === 'https://notebook.semantic.consulting/vocab#Notebook'
   );
 }
 

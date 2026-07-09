@@ -57,7 +57,7 @@ function extractLabOrder(notebookDoc) {
   const graph = notebookDoc['@graph'] || [];
   const notebook = graph.find(n =>
     n['@type'] === 'sembook:Notebook' ||
-    n['@type'] === 'https://sembook.example.org/vocab#Notebook'
+    n['@type'] === 'https://notebook.semantic.consulting/vocab#Notebook'
   );
   if (!notebook) return [];
   const labs = notebook['sembook:labs'] || [];

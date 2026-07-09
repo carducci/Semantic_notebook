@@ -19,7 +19,7 @@ export const META_VOCAB_NAMESPACES = [
 
 // sembook: infrastructure namespace — excluded from every panel unconditionally (C8),
 // independent of any user-facing scope toggle.
-export const SEMBOOK_VOCAB_NS = 'https://sembook.example.org/vocab#';
+export const SEMBOOK_VOCAB_NS = 'https://notebook.semantic.consulting/vocab#';
 
 // Tool-synthesized fallback vocabulary (see jsonld-panel-shared.js parseToQuads): keys a
 // document's @context doesn't map are minted as urn:sembook:implied:<key> predicates so

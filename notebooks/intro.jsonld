@@ -1,6 +1,6 @@
 {
   "@context": {
-    "sembook": "https://sembook.example.org/vocab#",
+    "sembook": "https://notebook.semantic.consulting/vocab#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
@@ -10,63 +10,63 @@
   },
   "@graph": [
     {
-      "@id": "https://sembook.example.org/intro",
+      "@id": "https://notebook.semantic.consulting/notebook1/",
       "@type": "sembook:Notebook",
       "sembook:title": "Introduction to Linked Data",
       "sembook:labs": [
-        { "@id": "https://sembook.example.org/intro#identity" },
-        { "@id": "https://sembook.example.org/intro#data-in-context" },
-        { "@id": "https://sembook.example.org/intro#introducing-turtle" },
-        { "@id": "https://sembook.example.org/intro#asserting-triples" },
-        { "@id": "https://sembook.example.org/intro#semantic-alignment" },
-        { "@id": "https://sembook.example.org/intro#querying-the-graph" }
+        { "@id": "https://notebook.semantic.consulting/notebook1/#identity" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#introducing-turtle" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#querying-the-graph" }
       ]
     },
     {
-      "@id": "https://sembook.example.org/intro#identity",
+      "@id": "https://notebook.semantic.consulting/notebook1/#identity",
       "@type": "sembook:Lab",
       "sembook:label": "Identity and Connection",
       "sembook:cssClass": "grid grid-cols-2 grid-rows-[40vh_60vh] h-screen w-full",
       "sembook:init": {},
       "sembook:panels": [
         {
-          "@id": "https://sembook.example.org/intro#identity-doc-a",
+          "@id": "https://notebook.semantic.consulting/notebook1/#identity-doc-a",
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "Document A",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
           "sembook:initialContent": "{\n  \"id\": \"441\",\n  \"title\": \"G\\u00f6del, Escher, Bach\",\n  \"author_id\": \"872\",\n  \"published\": 1979\n}"
         },
         {
-          "@id": "https://sembook.example.org/intro#identity-doc-b",
+          "@id": "https://notebook.semantic.consulting/notebook1/#identity-doc-b",
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "Document B",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
           "sembook:initialContent": "{\n  \"id\": \"872\",\n  \"name\": \"Douglas Hofstadter\",\n  \"affiliation_id\": \"34\"\n}"
         },
         {
-          "@id": "https://sembook.example.org/intro#identity-tabs",
+          "@id": "https://notebook.semantic.consulting/notebook1/#identity-tabs",
           "@type": "sembook:TabsPanel",
           "sembook:cssClass": "col-span-2 overflow-hidden flex flex-col",
           "sembook:panels": [
             {
-              "@id": "https://sembook.example.org/intro#identity-local-graph",
+              "@id": "https://notebook.semantic.consulting/notebook1/#identity-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#identity> } }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#identity> } }"
             }
           ]
         }
       ]
     },
     {
-      "@id": "https://sembook.example.org/intro#data-in-context",
+      "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context",
       "@type": "sembook:Lab",
       "sembook:label": "Data and Context",
       "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
       "sembook:init": {},
       "sembook:panels": [
         {
-          "@id": "https://sembook.example.org/intro#data-in-context-editor",
+          "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-editor",
           "@type": "sembook:JsonLdContextPanel",
           "sembook:label": "Book Record",
           "sembook:cssClass": "overflow-hidden flex flex-col",
@@ -74,30 +74,30 @@
           "sembook:initialContext": "{\n  \"@context\": {\n    \"id\": \"@id\",\n    \"title\": \"http://purl.org/dc/terms/title\",\n    \"about\": {\n      \"@id\": \"http://schema.org/about\",\n      \"@context\": {\n        \"title\": \"http://www.wikidata.org/prop/direct/P39\"\n      }\n    },\n    \"author\": {\n      \"@id\": \"http://schema.org/author\",\n      \"@context\": {\n        \"title\": \"http://schema.org/jobTitle\"\n      }\n    }\n  }\n}"
         },
         {
-          "@id": "https://sembook.example.org/intro#data-in-context-tabs",
+          "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-tabs",
           "@type": "sembook:TabsPanel",
           "sembook:cssClass": "overflow-hidden flex flex-col",
           "sembook:panels": [
             {
-              "@id": "https://sembook.example.org/intro#data-in-context-local-graph",
+              "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#data-in-context> } }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#data-in-context> } }"
             },
             {
-              "@id": "https://sembook.example.org/intro#data-in-context-full-graph",
+              "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-full-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Full Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#data-in-context> } }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#data-in-context> } }"
             },
             {
-              "@id": "https://sembook.example.org/intro#data-in-context-entities",
+              "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-entities",
               "@type": "sembook:EntityPanel",
               "sembook:label": "Entities",
-              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://sembook.example.org/intro#data-in-context> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://sembook.example.org/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://sembook.example.org/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#data-in-context> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
             },
             {
-              "@id": "https://sembook.example.org/intro#data-in-context-vocabulary",
+              "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-vocabulary",
               "@type": "sembook:VocabularyPanel",
               "sembook:label": "Vocabulary"
             }
@@ -106,66 +106,66 @@
       ]
     },
     {
-      "@id": "https://sembook.example.org/intro#introducing-turtle",
+      "@id": "https://notebook.semantic.consulting/notebook1/#introducing-turtle",
       "@type": "sembook:Lab",
       "sembook:label": "Two Syntaxes, One Graph",
       "sembook:cssClass": "grid grid-cols-2 grid-rows-[1fr] h-screen w-full",
       "sembook:init": {},
       "sembook:panels": [
         {
-          "@id": "https://sembook.example.org/intro#introducing-turtle-jsonld",
+          "@id": "https://notebook.semantic.consulting/notebook1/#introducing-turtle-jsonld",
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "JSON-LD",
           "sembook:cssClass": "overflow-hidden flex flex-col border-r border-slate-200",
           "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"http://example.org/\",\n    \"schema\": \"http://schema.org/\",\n    \"id\": \"@id\",\n    \"type\": \"@type\"\n  },\n  \"id\": \"/Person/1\",\n  \"type\": \"schema:Person\",\n  \"schema:name\": \"Ada Lovelace\",\n  \"schema:birthDate\": \"1815-12-10\"\n}"
         },
         {
-          "@id": "https://sembook.example.org/intro#introducing-turtle-turtle",
+          "@id": "https://notebook.semantic.consulting/notebook1/#introducing-turtle-turtle",
           "@type": "sembook:TurtlePanel",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
-          "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH <https://sembook.example.org/intro#introducing-turtle> { ?s ?p ?o } }"
+          "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH <https://notebook.semantic.consulting/notebook1/#introducing-turtle> { ?s ?p ?o } }"
         }
       ]
     },
     {
-      "@id": "https://sembook.example.org/intro#asserting-triples",
+      "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples",
       "@type": "sembook:Lab",
       "sembook:label": "Asserting Triples",
       "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
       "sembook:init": {},
       "sembook:panels": [
         {
-          "@id": "https://sembook.example.org/intro#asserting-triples-writer",
+          "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-writer",
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col"
         },
         {
-          "@id": "https://sembook.example.org/intro#asserting-triples-tabs",
+          "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-tabs",
           "@type": "sembook:TabsPanel",
           "sembook:cssClass": "overflow-hidden flex flex-col",
           "sembook:panels": [
             {
-              "@id": "https://sembook.example.org/intro#asserting-triples-local-graph",
+              "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#asserting-triples> } }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#asserting-triples> } }"
             },
             {
-              "@id": "https://sembook.example.org/intro#asserting-triples-full-graph",
+              "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-full-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Full Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#asserting-triples> } }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#asserting-triples> } }"
             },
             {
-              "@id": "https://sembook.example.org/intro#asserting-triples-entities",
+              "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-entities",
               "@type": "sembook:EntityPanel",
               "sembook:label": "Entities",
-              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://sembook.example.org/intro#asserting-triples> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://sembook.example.org/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://sembook.example.org/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#asserting-triples> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
             },
             {
-              "@id": "https://sembook.example.org/intro#asserting-triples-vocabulary",
+              "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-vocabulary",
               "@type": "sembook:VocabularyPanel",
               "sembook:label": "Vocabulary"
             }
@@ -174,51 +174,51 @@
       ]
     },
     {
-      "@id": "https://sembook.example.org/intro#semantic-alignment",
+      "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment",
       "@type": "sembook:Lab",
       "sembook:label": "Semantic Alignment",
       "sembook:cssClass": "grid grid-cols-2 grid-rows-[40vh_60vh] h-screen w-full",
       "sembook:init": {},
       "sembook:panels": [
         {
-          "@id": "https://sembook.example.org/intro#semantic-alignment-book",
+          "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-book",
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "Book Record",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
           "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"http://example.com/\",\n    \"ex\": \"http://example.org/vocab#\",\n    \"schema\": \"http://schema.org/\",\n    \"owl\": \"http://www.w3.org/2002/07/owl#\",\n    \"id\": \"@id\",\n    \"type\": \"@type\"\n  },\n  \"@graph\": [\n    {\n      \"id\": \"ex:isbn\",\n      \"type\": [\"owl:DatatypeProperty\", \"owl:InverseFunctionalProperty\"],\n      \"owl:equivalentProperty\": { \"id\": \"schema:isbn\" }\n    },\n    {\n      \"id\": \"/book/elizabeth-the-queen\",\n      \"type\": \"schema:Book\",\n      \"schema:name\": \"Elizabeth the Queen: The Life of a Modern Monarch\",\n      \"ex:isbn\": \"9780812979795\"\n    }\n  ]\n}"
         },
         {
-          "@id": "https://sembook.example.org/intro#semantic-alignment-catalog",
+          "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-catalog",
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "Catalog Record (Fetch a second record)",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
           "sembook:initialContent": "{}"
         },
         {
-          "@id": "https://sembook.example.org/intro#semantic-alignment-tabs",
+          "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-tabs",
           "@type": "sembook:TabsPanel",
           "sembook:cssClass": "col-span-2 overflow-hidden flex flex-col",
           "sembook:panels": [
             {
-              "@id": "https://sembook.example.org/intro#semantic-alignment-local-graph",
+              "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#semantic-alignment> } }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#semantic-alignment> } }"
             },
             {
-              "@id": "https://sembook.example.org/intro#semantic-alignment-full-graph",
+              "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-full-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Full Graph",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#semantic-alignment> } }"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#semantic-alignment> } }"
             },
             {
-              "@id": "https://sembook.example.org/intro#semantic-alignment-entities",
+              "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-entities",
               "@type": "sembook:EntityPanel",
               "sembook:label": "Entities",
-              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://sembook.example.org/intro#semantic-alignment> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://sembook.example.org/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://sembook.example.org/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#semantic-alignment> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
             },
             {
-              "@id": "https://sembook.example.org/intro#semantic-alignment-vocabulary",
+              "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-vocabulary",
               "@type": "sembook:VocabularyPanel",
               "sembook:label": "Vocabulary"
             }
@@ -227,14 +227,14 @@
       ]
     },
     {
-      "@id": "https://sembook.example.org/intro#querying-the-graph",
+      "@id": "https://notebook.semantic.consulting/notebook1/#querying-the-graph",
       "@type": "sembook:Lab",
       "sembook:label": "Querying the Graph",
       "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
       "sembook:init": {},
       "sembook:panels": [
         {
-          "@id": "https://sembook.example.org/intro#querying-the-graph-editor",
+          "@id": "https://notebook.semantic.consulting/notebook1/#querying-the-graph-editor",
           "@type": "sembook:SparqlPanel",
           "sembook:label": "SPARQL",
           "sembook:cssClass": "overflow-hidden flex flex-col",
@@ -252,7 +252,7 @@
             {
               "@type": "sembook:SampleQuery",
               "sembook:label": "Only Lab 1 (explicit GRAPH override)",
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE {\n  GRAPH <https://sembook.example.org/intro#identity> { ?s ?p ?o }\n}"
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE {\n  GRAPH <https://notebook.semantic.consulting/notebook1/#identity> { ?s ?p ?o }\n}"
             },
             {
               "@type": "sembook:SampleQuery",
@@ -262,7 +262,7 @@
           ]
         },
         {
-          "@id": "https://sembook.example.org/intro#querying-the-graph-result",
+          "@id": "https://notebook.semantic.consulting/notebook1/#querying-the-graph-result",
           "@type": "sembook:SparqlResultPanel",
           "sembook:label": "Result",
           "sembook:cssClass": "overflow-hidden flex flex-col"

@@ -564,7 +564,7 @@ export class SemPanelEntity extends HTMLElement {
           ${this._graphsWithInferredValuesClause()}
           ?classIri ?property ?value .
           VALUES ?classIri { ${groupValues} }
-          FILTER(!STRSTARTS(STR(?property), "https://sembook.example.org/vocab#"))
+          FILTER(!STRSTARTS(STR(?property), "https://notebook.semantic.consulting/vocab#"))
         }
       }
       ORDER BY ?property
@@ -696,7 +696,7 @@ export class SemPanelEntity extends HTMLElement {
           ${this._graphsWithInferredValuesClause()}
           ?instanceIri ?property ?value .
           VALUES ?instanceIri { ${groupValues} }
-          FILTER(!STRSTARTS(STR(?property), "https://sembook.example.org/vocab#"))
+          FILTER(!STRSTARTS(STR(?property), "https://notebook.semantic.consulting/vocab#"))
         }
       }
       ORDER BY ?property

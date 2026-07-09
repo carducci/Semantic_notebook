@@ -178,7 +178,7 @@ export async function parseToQuads(jsonString, fragmentUri, labUri) {
   // shared bare id (e.g. "872") to the same IRI.
   const nquads = await jsonld.toRDF(doc, {
     format: 'application/n-quads',
-    base: 'https://sembook.example.org/data/'
+    base: 'https://notebook.semantic.consulting/data/'
   });
   const parser = new N3.Parser({ format: 'N-Quads' });
   const quads = parser.parse(nquads).map(q =>

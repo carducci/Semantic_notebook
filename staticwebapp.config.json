@@ -1,0 +1,22 @@
+{
+  "mimeTypes": {
+    ".ttl": "text/turtle; charset=utf-8",
+    ".jsonld": "application/ld+json; charset=utf-8"
+  },
+  "routes": [
+    {
+      "route": "/vocab",
+      "rewrite": "/sembook.ttl",
+      "headers": {
+        "content-type": "text/turtle; charset=utf-8"
+      }
+    },
+    {
+      "route": "/vocab/0.2",
+      "rewrite": "/sembook.ttl",
+      "headers": {
+        "content-type": "text/turtle; charset=utf-8"
+      }
+    }
+  ]
+}

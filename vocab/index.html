@@ -6,7 +6,8 @@
 <meta name="color-scheme" content="light" />
 <title>sembook: — Semantic Notebook Vocabulary</title>
 <link rel="alternate" type="text/turtle" href="/vocab" title="Turtle serialization" />
-<script src="https://cdn.tailwindcss.com"></script>
+<!-- Vendored (no CDN fetch at runtime) — see /vendor/globals/PROVENANCE.md and ADR-006 rev. 2. -->
+<script src="../vendor/globals/tailwindcss-play.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 max-w-3xl mx-auto px-6 py-12">
 
@@ -100,6 +101,21 @@
       <p class="text-slate-600 text-sm mt-1">A named, pre-authored SPARQL query offered in a SparqlPanel's sample-query dropdown.</p>
     </div>
 
+    <div>
+      <h3 class="font-mono font-semibold" id="Scope">sembook:Scope</h3>
+      <p class="text-slate-600 text-sm mt-1">The graph scope a panel projects: exactly the owning lab's named graph, or the cumulative union of every lab's graph up to and including the owning lab. Two named individuals: <a class="underline font-mono" href="#LocalScope">sembook:LocalScope</a> and <a class="underline font-mono" href="#CumulativeScope">sembook:CumulativeScope</a>.</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="LocalScope">sembook:LocalScope <span class="text-slate-400 font-normal">a sembook:Scope</span></h3>
+      <p class="text-slate-600 text-sm mt-1">The panel projects only the owning lab's named graph (plus its inferred companion).</p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="CumulativeScope">sembook:CumulativeScope <span class="text-slate-400 font-normal">a sembook:Scope</span></h3>
+      <p class="text-slate-600 text-sm mt-1">The panel projects the union of every lab's named graph from the first lab up to and including the owning lab (each with its inferred companion) — how knowledge introduced in earlier labs stays visible in later ones.</p>
+    </div>
+
   </div>
 </section>
 
@@ -108,8 +124,8 @@
   <div class="space-y-5">
 
     <div>
-      <h3 class="font-mono font-semibold" id="title">sembook:title <span class="text-slate-400 font-normal">owl:DatatypeProperty</span></h3>
-      <p class="text-slate-600 text-sm mt-1">The display title of a Notebook. <span class="text-slate-400">domain: sembook:Notebook · range: xsd:string</span></p>
+      <h3 class="font-mono font-semibold" id="title">sembook:title <span class="text-slate-400 font-normal">owl:DatatypeProperty · rdfs:subPropertyOf dcterms:title</span></h3>
+      <p class="text-slate-600 text-sm mt-1">The display title of a Notebook. Aligned to Dublin Core rather than reinvented — every sembook:title is a dcterms:title. <span class="text-slate-400">domain: sembook:Notebook · range: xsd:string</span></p>
     </div>
 
     <div>
@@ -118,8 +134,8 @@
     </div>
 
     <div>
-      <h3 class="font-mono font-semibold" id="label">sembook:label <span class="text-slate-400 font-normal">owl:DatatypeProperty</span></h3>
-      <p class="text-slate-600 text-sm mt-1">A human-readable display label for a Lab, Panel, or SampleQuery. <span class="text-slate-400">domain: Lab ∪ Panel ∪ SampleQuery · range: xsd:string</span></p>
+      <h3 class="font-mono font-semibold" id="label">sembook:label <span class="text-slate-400 font-normal">owl:DatatypeProperty · rdfs:subPropertyOf rdfs:label</span></h3>
+      <p class="text-slate-600 text-sm mt-1">A human-readable display label for a Lab, Panel, or SampleQuery. Aligned to rdfs:label, so generic RDF tooling reads sembook display names for free. <span class="text-slate-400">domain: Lab ∪ Panel ∪ SampleQuery · range: xsd:string</span></p>
     </div>
 
     <div>
@@ -140,6 +156,11 @@
     <div>
       <h3 class="font-mono font-semibold" id="sparql">sembook:sparql <span class="text-slate-400 font-normal">owl:DatatypeProperty</span></h3>
       <p class="text-slate-600 text-sm mt-1">A SPARQL query string — on a Panel, determines what data it renders; on a SampleQuery, the query text offered as a starting point. <span class="text-slate-400">domain: Panel ∪ SampleQuery · range: xsd:string</span></p>
+    </div>
+
+    <div>
+      <h3 class="font-mono font-semibold" id="scope">sembook:scope <span class="text-slate-400 font-normal">owl:ObjectProperty</span></h3>
+      <p class="text-slate-600 text-sm mt-1">The graph scope this panel projects — declared in the notebook definition so that scope is data, never inferred from a display label. When absent, the runtime default is panel-type-specific: GraphPanel → local; EntityPanel and VocabularyPanel → cumulative. <span class="text-slate-400">domain: sembook:Panel · range: sembook:Scope</span></p>
     </div>
 
     <div>

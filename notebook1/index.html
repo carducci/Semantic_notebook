@@ -8,18 +8,26 @@
      possible signal to opt this (light-only) app out of browser forced-dark repaint. -->
 <meta name="color-scheme" content="light" />
 <title>Semantic Notebook — Introduction to Linked Data</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<!-- ALL runtime libraries are vendored under /vendor/globals/ (exact source
+     versions in that directory's PROVENANCE.md) — no CDN fetches at runtime.
+     Same rationale as the CodeMirror vendoring below, generalized after the
+     scope of the risk sank in: "Conference wifi is unreliable. A live remote
+     fetch during a demo is a liability" (DESIGN_DECISIONS). See ADR-006 rev. 2. -->
+<script src="../vendor/globals/tailwindcss-play.js"></script>
 <!-- n3 1.26.0 (up from 1.17.2): the first release line that ships N3.Reasoner, which
      materialization (scripts/notebook-context.js) needs. Stays within 1.x so the
      Store/Parser/Writer/DataFactory API the rest of the app uses is unchanged. See ADR-031. -->
-<script src="https://cdn.jsdelivr.net/npm/n3@1.26.0/browser/n3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsonld@8.3.1/dist/jsonld.min.js"></script>
+<script src="../vendor/globals/n3.min.js"></script>
+<script src="../vendor/globals/jsonld.min.js"></script>
+<!-- Comunica (official comunica-browser UMD build of @comunica/query-sparql@2.10.0,
+     exposes window.Comunica) — scripts/notebook-context.js reads the global. -->
+<script src="../vendor/globals/comunica-browser.js"></script>
 
 <!-- Cytoscape.js -->
-<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.28.1/dist/cytoscape.min.js" integrity="sha384-J7Q85oZE4GJ/e7+n2aOQsLXfDwwfnA8S2nZAL5BpFsfpCF84zQD7LroZ/dMnLgex" crossorigin="anonymous"></script>
+<script src="../vendor/globals/cytoscape.min.js"></script>
 
 <!-- Cola.js (peer dependency of cytoscape-cola) — must load before cytoscape-cola.js -->
-<script src="https://cdn.jsdelivr.net/npm/webcola@3.4.0/WebCola/cola.js" integrity="sha384-ncqkFbqiVwIGuPfC5tAvtag3HJXVPssYe1NbzJhJ4c36808OhRLsWzHk8GuqKNAD" crossorigin="anonymous"></script>
+<script src="../vendor/globals/cola.js"></script>
 
 <script>
   // webcola's UMD build only exposes itself as window.cola, but cytoscape-cola's
@@ -30,16 +38,16 @@
 </script>
 
 <!-- Cytoscape Cola layout — for cluster-aware force-directed layout (graph panels) -->
-<script src="https://cdn.jsdelivr.net/npm/cytoscape-cola@2.5.1/cytoscape-cola.js" integrity="sha384-hS0F3AnUYl+EBC3wCT4+d6MKdLR27UlifwZZYJi5oRCNhKA1ptaEWExH6BqyfMeW" crossorigin="anonymous"></script>
+<script src="../vendor/globals/cytoscape-cola.js"></script>
 
 <!-- fCoSE layout (compound-aware, packs disconnected components) — entity explorer only.
      Dependency chain layout-base → cose-base → cytoscape-fcose; each UMD reads the
      previous off its window global (layoutBase → coseBase → cytoscapeFcose), so unlike
      cola/webcola no aliasing shim is needed. Registered alongside cola, not in place of
      it — the graph panel stays on cola (ADR-010 rev. 2). -->
-<script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js" integrity="sha384-5E2lB9AIGE6LRCnOOSTnZRlYZFZ01iMeN2fw97Z1r4Z/kXALxKw2AC+ZzQqoeDsG" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js" integrity="sha384-RswRBkrMsPUYpJLbZ1CVA08zbNzAkykE2oGJTujBwfjWNdfxv2WVjLJNqv1LhAOp" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js" integrity="sha384-uk5Wbjq1+KqUdHO30w7N7GrEGdzBhaJeW9o/ANF6v9+yx3M/cBmoX51C000JNCUf" crossorigin="anonymous"></script>
+<script src="../vendor/globals/layout-base.js"></script>
+<script src="../vendor/globals/cose-base.js"></script>
+<script src="../vendor/globals/cytoscape-fcose.js"></script>
 
 <script>
   cytoscape.use(cytoscapeCola);
@@ -88,7 +96,27 @@
      into scroll-snap pages: a scroll gesture always lands on one full lab, never
      half of two. The fixed nav is unaffected — fixed positioning escapes this
      element's scroll flow entirely. -->
-<sem-notebook uri="https://notebook.semantic.consulting/notebook1/" class="block h-screen overflow-y-scroll snap-y snap-mandatory">
+<!-- lab-class carries the page-chrome classes every generated <sem-lab> gets
+     (fixed-nav offset, box-sizing, scroll-snap participation) — page concerns
+     the definition has no business knowing about. The labs themselves are no
+     longer hand-authored here: sem-notebook generates one <sem-lab> per entry
+     in the definition's sembook:labs list, exactly as sem-lab generates its
+     panels — one description, one source of structure.
+     No scroll-mt-12 in lab-class — box-border + pt-12 already reserves 3rem of
+     internal padding at the top of each 100vh lab for the fixed nav to overlay,
+     so the lab's own content clears the nav without any scroll-position
+     compensation. scroll-margin-top would ADDITIONALLY shift every snap resting
+     position 3rem short of the natural i*100vh boundary — a lab is 100vh
+     including its own pt-12, so with both pt-12 and scroll-mt-12 applied,
+     scroll-snap only ever travels 100vh-3rem per gesture, cutting the
+     destination lab's bottom 3rem off below the fold until a second, smaller
+     scroll. Snapping to the very first lab happened to look fine regardless
+     (the negative scroll-margin offset clamps to scrollTop 0), which is what
+     made this easy to miss in one direction and not the other. -->
+<sem-notebook
+  uri="https://notebook.semantic.consulting/notebook1/"
+  lab-class="pt-12 box-border snap-start snap-always"
+  class="block h-screen overflow-y-scroll snap-y snap-mandatory">
 
   <nav id="lab-nav" class="fixed top-0 inset-x-0 z-40 h-12 flex items-center gap-3 px-4 bg-slate-900/95 text-slate-100 text-sm backdrop-blur">
     <button
@@ -122,59 +150,16 @@
     <nav id="lab-nav-links" class="flex flex-col gap-1"></nav>
   </aside>
 
-  <!-- No panel children here — sem-lab reads its panel config from the notebook definition
-       (via notebook:ready) and constructs its own child elements. The grid/sizing classes
-       come entirely from the definition's sembook:cssClass, applied at runtime; the classes
-       below are page-chrome concerns the definition has no business knowing about
-       (fixed-nav offset, box-sizing, scroll-snap participation).
-       No scroll-mt-12 here — box-border + pt-12 already reserves 3rem of internal padding
-       at the top of each 100vh lab for the fixed nav to overlay, so the lab's own content
-       clears the nav without any scroll-position compensation. scroll-margin-top would
-       ADDITIONALLY shift every snap resting position 3rem short of the natural i*100vh
-       boundary — a lab is 100vh including its own pt-12, so with both pt-12 and
-       scroll-mt-12 applied, scroll-snap only ever travels 100vh-3rem per gesture, cutting
-       the destination lab's bottom 3rem off below the fold until a second, smaller scroll.
-       Snapping to the very first lab happened to look fine regardless (the negative
-       scroll-margin offset clamps to scrollTop 0), which is what made this easy to miss
-       in one direction and not the other. -->
-  <sem-lab
-    id="identity"
-    uri="https://notebook.semantic.consulting/notebook1/#identity"
-    class="pt-12 box-border snap-start snap-always">
-  </sem-lab>
-
-  <sem-lab
-    id="data-in-context"
-    uri="https://notebook.semantic.consulting/notebook1/#data-in-context"
-    class="pt-12 box-border snap-start snap-always">
-  </sem-lab>
-
-  <sem-lab
-    id="introducing-turtle"
-    uri="https://notebook.semantic.consulting/notebook1/#introducing-turtle"
-    class="pt-12 box-border snap-start snap-always">
-  </sem-lab>
-
-  <sem-lab
-    id="asserting-triples"
-    uri="https://notebook.semantic.consulting/notebook1/#asserting-triples"
-    class="pt-12 box-border snap-start snap-always">
-  </sem-lab>
-
-  <sem-lab
-    id="semantic-alignment"
-    uri="https://notebook.semantic.consulting/notebook1/#semantic-alignment"
-    class="pt-12 box-border snap-start snap-always">
-  </sem-lab>
-
-  <sem-lab
-    id="querying-the-graph"
-    uri="https://notebook.semantic.consulting/notebook1/#querying-the-graph"
-    class="pt-12 box-border snap-start snap-always">
-  </sem-lab>
+  <!-- <sem-lab> elements are generated here at notebook:ready by sem-notebook,
+       one per sembook:labs entry — do not hand-author them, that's the drift
+       this component removed (see the lab-class note on <sem-notebook> above). -->
 
 </sem-notebook>
 
+<!-- sem-notebook.js must stay above the inline bootstrap module below: its
+     notebook:ready listener (which generates the <sem-lab> elements) has to be
+     registered before buildNav's, so the labs exist when buildNav looks them up. -->
+<script type="module" src="../components/sem-notebook.js"></script>
 <script type="module" src="../components/sem-lab.js"></script>
 <script type="module" src="../components/sem-panel-jsonld.js"></script>
 <script type="module" src="../components/sem-panel-jsonld-split.js"></script>

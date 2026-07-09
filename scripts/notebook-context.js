@@ -1,7 +1,14 @@
-import { QueryEngine } from 'https://cdn.jsdelivr.net/npm/@comunica/query-sparql@2.10.0/+esm';
 import { RDFS_OWL2RL_RULES } from './reasoning-rules.js';
 
 // N3 is loaded globally via <script src=".../n3.min.js"> in index.html — no module import needed.
+
+// Comunica likewise: the official comunica-browser UMD build of
+// @comunica/query-sparql@2.10.0, vendored under /vendor/globals/ and loaded via
+// script tag. This replaced a runtime `import ... from jsdelivr/+esm` for the same
+// reason CodeMirror was vendored (ADR-006 rev.): an on-the-fly CDN bundle fetch is
+// a single point of failure during conference-critical demos. Classic scripts run
+// before deferred module scripts, so the global is guaranteed present here.
+const { QueryEngine } = window.Comunica;
 
 const OWL_SAMEAS = 'http://www.w3.org/2002/07/owl#sameAs';
 

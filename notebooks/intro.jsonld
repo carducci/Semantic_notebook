@@ -52,6 +52,7 @@
               "@id": "https://notebook.semantic.consulting/notebook1/#identity-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
+              "sembook:scope": { "@id": "sembook:LocalScope" },
               "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#identity> } }"
             }
           ]
@@ -82,24 +83,28 @@
               "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
+              "sembook:scope": { "@id": "sembook:LocalScope" },
               "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#data-in-context> } }"
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-full-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Full Graph",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" },
               "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#data-in-context> } }"
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-entities",
               "@type": "sembook:EntityPanel",
               "sembook:label": "Entities",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" },
               "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#data-in-context> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-vocabulary",
               "@type": "sembook:VocabularyPanel",
-              "sembook:label": "Vocabulary"
+              "sembook:label": "Vocabulary",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" }
             }
           ]
         }
@@ -150,24 +155,28 @@
               "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
+              "sembook:scope": { "@id": "sembook:LocalScope" },
               "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#asserting-triples> } }"
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-full-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Full Graph",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" },
               "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#asserting-triples> } }"
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-entities",
               "@type": "sembook:EntityPanel",
               "sembook:label": "Entities",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" },
               "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#asserting-triples> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-vocabulary",
               "@type": "sembook:VocabularyPanel",
-              "sembook:label": "Vocabulary"
+              "sembook:label": "Vocabulary",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" }
             }
           ]
         }
@@ -203,24 +212,28 @@
               "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
+              "sembook:scope": { "@id": "sembook:LocalScope" },
               "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#semantic-alignment> } }"
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-full-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Full Graph",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" },
               "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#semantic-alignment> } }"
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-entities",
               "@type": "sembook:EntityPanel",
               "sembook:label": "Entities",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" },
               "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#semantic-alignment> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-vocabulary",
               "@type": "sembook:VocabularyPanel",
-              "sembook:label": "Vocabulary"
+              "sembook:label": "Vocabulary",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" }
             }
           ]
         }

@@ -55,6 +55,8 @@ Records here are immutable in the Nygard sense: when a decision changes, a dated
 | ADR-033 | Entity explorer scope toggle = lab vs cumulative; meta-vocabulary always hidden | [DDR-033](DESIGN_DECISIONS.md) |
 | ~~ADR-033~~ → ADR-034 | Vocabulary panel row-collapsing is display-label collision, not semantic equivalence | [DDR-034](DESIGN_DECISIONS.md) — renumbered; duplicated ADR-033's number in the original document, no code referenced it under that number |
 | **ADR-035** | Dereferencing on static hosting: single-representation Turtle, no content negotiation; instance IRIs rebased to page URLs | **Active — below** |
+| **ADR-036** | Panel scope is declared data (`sembook:scope`); vocabulary aligns to standard terms via `rdfs:subPropertyOf` | **Active — below** |
+| **ADR-037** | `<sem-lab>` elements generated from the notebook definition, not hand-authored | **Active — below** |
 
 ---
 
@@ -140,6 +142,17 @@ This decision still holds, but should be actively revisited — not silently wor
 - **The conference/offline deployment constraint loosens** (e.g., the notebook moves to an always-hosted environment with CI as the future backend arrives) — the "zero ops, must never fail on stage" argument for no build step weakens once there's a deploy pipeline anyway.
 
 None of these are true yet — this is a flag for the architect, not a pending action.
+
+### Revision 2 (2026-07-09) — All Remaining Runtime CDN Dependencies Vendored
+
+The first reconsideration trigger above ("vendoring becomes a recurring chore") formally fired: a second vendoring pass moved every remaining runtime CDN dependency — Tailwind Play, n3, jsonld, Comunica, Cytoscape, cola, cytoscape-cola, layout-base, cose-base, cytoscape-fcose — into `/vendor/globals/` (see its `PROVENANCE.md`). Per the trigger's own instruction this was decided deliberately rather than silently worked around, and the decision is: **vendor, and the "no build step" rule still holds.**
+
+Two things distinguish this round from the CodeMirror incident and kept it from tripping the "introduce a fetch tool / reconsider tooling" escalation:
+
+- Every file is a complete, self-contained single-file browser build published by its upstream. No `package.json` archaeology, no transitive-import grepping, no import map changes — ten `curl`s and a provenance table. The manual process that "doesn't scale" was the dependency-graph resolution, and none was needed.
+- The motivation was not a new CDN failure but the project's own existing rationale finally being applied consistently: DESIGN_DECISIONS already ruled that "Conference wifi is unreliable. A live remote fetch during a demo is a liability" for *datasets*, while every page still made ten library fetches per load — including on attendees' laptops, which multiply the venue-wifi exposure. The vendoring closes that inconsistency days before a workshop.
+
+Specifics: Comunica now loads as the official `comunica-browser` UMD bundle (same `@comunica/query-sparql@2.10.0` the runtime `+esm` import used) and is read from `window.Comunica` in `scripts/notebook-context.js` — the same script-tag-global pattern n3 and jsonld already used, and the removal of the project's last runtime on-the-fly-CDN-bundling dependency (the exact failure class that broke CodeMirror). notebook2 moved from n3 1.17.2 to the single vendored 1.26.0. Subresource-integrity attributes were dropped along with the CDN URLs (same-origin static files; the provenance table records versions instead).
 
 **Governing constraint:** [C10 — No Framework](ARCHITECTURAL_CONSTRAINTS.md#c10--no-framework) states the rule; this record carries the incident that tested it and the explicit conditions for revisiting it.
 
@@ -362,6 +375,49 @@ An earlier note claiming "Vocabulary panel's Classes graph is unaffected... rema
 **Why this is architecturally significant:** this is the mechanism that makes ADR-004's namespace and C2's dereferenceability requirement literally true rather than aspirational prose in README.md/STORY.md — every future notebook inherits the page-URL IRI scheme, and every future vocabulary term inherits the static-Turtle-only serving strategy, until this record is revised.
 
 **Governing constraint:** [C2 — Resource Orientation](ARCHITECTURAL_CONSTRAINTS.md#c2--resource-orientation) and [C11 — Static First, Backend Agnostic](ARCHITECTURAL_CONSTRAINTS.md#c11--static-first-backend-agnostic).
+
+### Revision (2026-07-09) — Three-Way Lockstep Reduced to Two
+
+The consequence above ("three places that must agree") is reduced by ADR-037: `<sem-lab>` elements are now generated from the definition's `sembook:labs` list, so a notebook's lab set and lab IRIs live only in the definition. What must still agree is the notebook `@id` ↔ serving folder ↔ the `uri` attribute on the page's single `<sem-notebook>` element — two places (definition and page), one value each. The deep-link half of dereferencing (GET a lab IRI, land scrolled to that lab) is preserved by `sem-notebook` re-running the fragment scroll after it creates the lab elements, since the browser's native scroll-to-fragment fires before they exist.
+
+---
+
+## ADR-036 — Panel Scope Is Declared Data; Vocabulary Aligns to Standard Terms
+
+**Context:** Whether a panel projects only its lab's named graph or the cumulative union of all graphs up to that lab was decided by the runtime matching the panel's *display label* (`sembook:label === "Full Graph"`), and the notebook definition carried identical SPARQL for Local Graph and Full Graph panels — the declared query was a fiction the runtime rewrote. Scope is a real concept in this domain, and it was living in a string whose documented meaning is "human-readable display text." That is precisely the "strings without shared meaning" failure mode the first lab teaches against, in the artifact projected to the audience.
+
+**Decision:**
+- Scope is a first-class vocabulary term: `sembook:Scope` with named individuals `sembook:LocalScope` and `sembook:CumulativeScope`, attached to panels via `sembook:scope`. The runtime dispatches on the declared scope; the display-label check survives only as a fallback for definitions that predate the term. Defaults when undeclared are panel-type-specific and documented on the property: GraphPanel → local, EntityPanel/VocabularyPanel → cumulative.
+- In the same pass, `sembook:label` and `sembook:title` gained `rdfs:subPropertyOf rdfs:label` / `dcterms:title` — the vocabulary now practices the alignment technique the `#semantic-alignment` lab teaches, and generic RDF tooling reads sembook display names for free. `subPropertyOf`, not `equivalentProperty`: the entailment should be one-way.
+
+**Alternatives Considered:**
+- A `sembook:CumulativeGraphPanel` subclass — rejected: scope is orthogonal to panel type (entity and vocabulary panels need it too); a class-per-combination lattice doesn't scale.
+- Authors writing the real cumulative query in the definition — rejected for now: the cumulative graph list depends on lab order, which the author would have to hand-maintain in every query; the deeper "declared SPARQL vs. runtime scoping" unification (C13) is deliberately deferred to the generalized runtime.
+
+**Consequences:**
+- The runtime still rewrites GraphPanel/EntityPanel `VALUES ?g` clauses when scope is cumulative — this ADR makes scope honest data but does not unify the C13 story (GraphPanel/EntityPanel declare rewritten queries; VocabularyPanel declares none). That unification is explicitly deferred to the generalized version.
+- Definitions written before `sembook:scope` keep working via the label fallback, which should be deleted when the generalized runtime lands.
+
+**Why this is architecturally significant:** the vocabulary is the public contract (ADR-004); this adds terms every future notebook and any second runtime implementation inherit, and it removes the one place where the runtime's behavior contradicted the vocabulary's own documentation of `sembook:label`.
+
+**Governing constraint:** [C3 — The Notebook Format Is the Subject Matter](ARCHITECTURAL_CONSTRAINTS.md#c3--the-notebook-format-is-the-subject-matter) and [C13 — SPARQL Is the Panel Configuration Surface](ARCHITECTURAL_CONSTRAINTS.md#c13--sparql-is-the-panel-configuration-surface).
+
+---
+
+## ADR-037 — `<sem-lab>` Elements Generated from the Notebook Definition
+
+**Context:** SEMANTIC_NOTEBOOK_SPEC §Component Architecture has always said "The HTML is generated from the JSON-LD — it is not hand-authored," and `sem-lab` honors that one level down by generating its panels from `sembook:panels`. But the labs themselves were hand-authored `<sem-lab>` elements in each notebook page — the asymmetry ADR-035 paid for with its "three places that must agree" consequence, and a standing invitation for the page and the definition to drift.
+
+**Decision:** A `sem-notebook` component (components/sem-notebook.js) generates one `<sem-lab>` per entry in the definition's ordered `sembook:labs` list at `notebook:ready`, exactly as `sem-lab` generates panels. Lab DOM ids remain derived from the IRI fragment (ADR-035's dereferencing depends on that). Page-chrome classes for generated labs (nav offset, scroll-snap participation) come from a `lab-class` attribute on `<sem-notebook>` — still a page concern the definition knows nothing about. Labs created mid-dispatch receive their context via `sem-lab.initNotebook(...)` (DDR-021's `init()` pattern — a listener registered during an event's dispatch never receives that event); the `notebook:ready` listener in `sem-lab` remains for statically-authored elements.
+
+**Consequences:**
+- ADR-035's three-way lockstep drops to two (see its 2026-07-09 revision).
+- Two ordering constraints, both commented in place: `sem-notebook.js` must load before the page's inline bootstrap module (so labs exist before `buildNav` looks them up), and `sem-notebook` re-runs the `location.hash` scroll after generating labs (the browser's native fragment scroll fires before they exist).
+- The page skeleton no longer shows per-lab placeholders before `notebook:ready` — acceptable: the full-page throbber covers that window.
+
+**Why this is architecturally significant:** it completes C3's claim for the page layer — a notebook's structure now has exactly one description, the JSON-LD definition — and every future notebook page inherits the generated-labs pattern.
+
+**Governing constraint:** [C3 — The Notebook Format Is the Subject Matter](ARCHITECTURAL_CONSTRAINTS.md#c3--the-notebook-format-is-the-subject-matter) and [C2 — Resource Orientation](ARCHITECTURAL_CONSTRAINTS.md#c2--resource-orientation).
 
 ---
 

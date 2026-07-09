@@ -31,3 +31,4 @@ N3.js (quad store, Turtle/JSON-LD parsing) · Comunica (SPARQL) · N3.js Reasone
 - [ARCHITECTURE_DECISION_RECORDS.md](ARCHITECTURE_DECISION_RECORDS.md) — the significant, hard-to-reverse technology choices.
 - [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md) — mechanisms, tuning, bug fixes — everything narrower.
 - [SEMANTIC_NOTEBOOK_SPEC.md](SEMANTIC_NOTEBOOK_SPEC.md) — the original build handoff spec.
+- [PEDAGOGIC_LICENSE.md](PEDAGOGIC_LICENSE.md) — deliberate teaching fudges, recorded so license is never mistaken for drift.

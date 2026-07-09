@@ -119,6 +119,24 @@ sembook:SampleQuery
     rdfs:comment
         "A named, pre-authored SPARQL query offered in a SparqlPanel's sample-query dropdown — the same notebook-JSON-LD-declared UI slot other editor panels use for their Fetch-by-IRI affordance. Selecting one loads its sembook:sparql text into the editor; the learner still clicks Run to execute it."@en .
 
+sembook:Scope
+    a owl:Class ;
+    rdfs:label "Scope"@en ;
+    rdfs:comment
+        "The graph scope a panel projects. A panel is always a projection of the quad store; its Scope says which named graphs are in view: exactly the owning lab's graph (LocalScope), or the cumulative union of every lab's graph up to and including the owning lab (CumulativeScope). In both cases each in-scope asserted graph brings its <graph-iri>-inferred companion along."@en .
+
+sembook:LocalScope
+    a sembook:Scope, owl:NamedIndividual ;
+    rdfs:label "local scope"@en ;
+    rdfs:comment
+        "The panel projects only the owning lab's named graph (plus its inferred companion)."@en .
+
+sembook:CumulativeScope
+    a sembook:Scope, owl:NamedIndividual ;
+    rdfs:label "cumulative scope"@en ;
+    rdfs:comment
+        "The panel projects the union of every lab's named graph from the first lab up to and including the owning lab (each with its inferred companion). This is how knowledge introduced in earlier labs stays visible in later ones."@en .
+
 
 # ─────────────────────────────────────────────────────────────
 # Notebook Properties
@@ -126,6 +144,12 @@ sembook:SampleQuery
 
 sembook:title
     a owl:DatatypeProperty ;
+    # Alignment, not reinvention: any dcterms-aware consumer reads sembook titles
+    # for free — the same technique the #semantic-alignment lab teaches with
+    # owl:equivalentProperty, applied to this vocabulary itself. subPropertyOf
+    # rather than equivalentProperty because the entailment should be one-way:
+    # every sembook:title is a dcterms:title, but not vice versa.
+    rdfs:subPropertyOf dcterms:title ;
     rdfs:label "title"@en ;
     rdfs:comment "The display title of a Notebook."@en ;
     rdfs:domain sembook:Notebook ;
@@ -146,6 +170,9 @@ sembook:labs
 
 sembook:label
     a owl:DatatypeProperty ;
+    # See sembook:title for why this aligns via subPropertyOf instead of minting
+    # an unaligned term: generic RDF tooling gets display labels for free.
+    rdfs:subPropertyOf rdfs:label ;
     rdfs:label "label"@en ;
     rdfs:comment
         "A human-readable display label for a Lab, Panel, or SampleQuery. Used in the navigation strip for Labs, as the tab label for Panels within a TabsPanel, and as the option text for a SampleQuery in a SparqlPanel's dropdown."@en ;
@@ -200,6 +227,14 @@ sembook:sparql
         owl:unionOf ( sembook:Panel sembook:SampleQuery )
     ] ;
     rdfs:range xsd:string .
+
+sembook:scope
+    a owl:ObjectProperty ;
+    rdfs:label "scope"@en ;
+    rdfs:comment
+        "The graph scope this panel projects — sembook:LocalScope or sembook:CumulativeScope. Declared in the notebook definition so that scope is data, never inferred from a display label. When absent, the runtime default is panel-type-specific: GraphPanel defaults to local scope; EntityPanel and VocabularyPanel default to cumulative scope (an entity or term introduced two labs ago is still known)."@en ;
+    rdfs:domain sembook:Panel ;
+    rdfs:range sembook:Scope .
 
 sembook:sampleQueries
     a owl:ObjectProperty ;

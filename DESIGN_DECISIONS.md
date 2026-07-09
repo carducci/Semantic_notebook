@@ -139,6 +139,21 @@ Investigation surfaced three facts that shaped the decision, none of which were 
 - RDFS `domain`/`range` on a datatype property can, per standard RDFS materialization, yield a literal-subject/object type triple; accepted (teaching datasets declare domain/range on object properties).
 - Bootstrap `sembook:init` data is not materialized (all current init blocks are empty); materialization is Parse-triggered per the handoff scope.
 
+### Extension — `owl:InverseFunctionalProperty`
+
+**Context:** The ruleset above covers the relational OWL axioms but had no rule for property characteristics that establish identity from data rather than an explicit `owl:sameAs`/`@id`-context assertion. The architect wanted this as a deliberate demo moment: two independently-authored records, in different vocabularies, recognized as the same individual purely because they share a value on a property declared inverse-functional.
+
+**Decision:** Added to `scripts/reasoning-rules.js`:
+```n3
+{ ?p a owl:InverseFunctionalProperty. ?x ?p ?v. ?y ?p ?v. } => { ?x owl:sameAs ?y. }.
+```
+No changes needed elsewhere in the materialization pipeline: the existing generic reflexive-`owl:sameAs` filter in `_materialize` (keyed only on `predicate === owl:sameAs && subject.equals(object)`, not on which rule produced the triple) already drops any reflexive noise this rule generates, and materialization was already per-lab-scoped.
+
+**Verified reasoning chain** (why the compound demo — property alignment *and* identity alignment from one new rule — works without touching the `equivalentProperty` rule at all): if `ex:isbn owl:equivalentProperty schema:isbn` is asserted, the existing equivalentProperty rule expands it to `rdfs:subPropertyOf` both directions; rdfs7 then propagates each record's ISBN value across to the other property name, in both directions, because the reasoner runs to a fixpoint. Once both records have both `ex:isbn` and `schema:isbn` triples (one asserted, one inferred, each), this new rule fires on the shared `ex:isbn` value and derives `owl:sameAs` between the two record IRIs — so a property-vocabulary bridge and an identity bridge compose for free.
+
+**Consequences:**
+- This is what makes DDR-035's instance-level equivalence merge (below) demonstrable without any explicit `sameAs` assertion anywhere in the teaching data — see `notebooks/intro.jsonld`'s "Semantic Alignment" lab.
+
 ---
 
 ## Layout & Visualization
@@ -354,6 +369,29 @@ Mechanically this reuses the exact same merge machinery as DDR-032 (`mergeHierar
 **Consequences:**
 - The vocabulary panel and entity explorer now have two clearly-named, deliberately different merge behaviors — this follows from the two panels solving different problems.
 - The class-hierarchy graph's `packComponents` layout question (ADR-010's iteration-13 correction) and this row-collapsing question are independent — the same fCoSE piling bug applied regardless of which merge key was in use.
+
+---
+
+### DDR-035 — Entity Explorer Merges Instances the Same Way It Merges Classes, One Level Down
+
+**Context:** DDR-032 merges CLASSES connected by `owl:sameAs`/`owl:equivalentClass` into one compound container. It never touched INSTANCES: two instance IRIs connected by `owl:sameAs` (asserted, or — since the `owl:InverseFunctionalProperty` extension to DDR-031 — reasoner-inferred from shared data) still rendered as two separate dots. The architect wanted the IFP demo (see DDR-031's extension) to actually *show* one merged entity, with the union of both records' properties, not just derive the `sameAs` triple invisibly.
+
+**Decision:** Extended `_rebuildHierarchy` in `sem-panel-entity.js` with a second `mergeHierarchyBindings` pass over the *same* `groups` map the class merge already computes — `equivalenceGroups` is role-agnostic (it groups whatever IRIs are `sameAs`-connected, regardless of whether they're used as `?class` or `?instance` elsewhere), so no second equivalence query was needed:
+```js
+const { bindings: doubleMerged, groupOf: instanceGroupOf } =
+  mergeHierarchyBindings(merged, groups, 'instance', '__no_parent__');
+```
+(`parentVarName` pointing at a variable that never appears in these bindings makes the parent-masking branch a no-op — instances have no parent-pointer role in this query shape.) The resulting `doubleMerged` bindings feed `hierarchyToElements` as before; because instance nodes are keyed by the composite `${instanceIri}__in__${classIri}` id, two originally-distinct instance rows that canonicalize to the same instance IRI (same class) collapse into the same Cytoscape node automatically — the existing per-id `Map` dedup in `hierarchyToElements` (already required for the ordinary multi-instance-per-class case) handles it without any change to that function.
+
+New `this._instanceGroups`/`this._instanceCanon` maps mirror `_classGroups`/`_classCanon` exactly. `_appendInferredMembers` canonicalizes the `instance` binding through `_instanceCanon` before building its composite key, so an inferred-membership dot for either alias lands on the same node. `_renderInstanceProperties` now queries every alias in the group (`VALUES ?instanceIri { <alias1> <alias2> ... }`, the same pattern `_renderClassDetail` already uses) and unions their properties, with a group note (`≡`-joined) matching the class detail pane's convention.
+
+**Alternatives Considered:**
+- **A dedicated instance-equivalence SPARQL query** — rejected once it was clear the existing `_equivalenceQuery()` (already unioning `owl:sameAs` and `owl:equivalentClass`) was already computing instance-`sameAs` pairs as a side effect, just not doing anything with them.
+- **Canonicalizing instances inside `mergeHierarchyBindings` in the same call as classes** (a single pass handling both `?class` and `?instance`) — rejected: the canonical-representative rule depends on the candidate set for *that* variable's role (which IRIs actually appear as `?instance` values, vs. which appear as `?class` values), so a single pass would need to track two separate candidate sets anyway. Two sequential calls to the existing generic function is simpler than generalizing it to accept multiple variable names.
+
+**Consequences:**
+- Found and fixed a related gap while verifying: `_renderInstanceProperties`'s alias-union query surfaces the reasoner's symmetric `sameAs` once per alias-pair *direction* (alias A sameAs alias B, and alias B sameAs alias A — two distinct triples once both aliases are queried as subject) — the same "reads as same-as-itself" noise DDR-032's `_renderClassDetail` already filters for classes (`redundantEquiv`). Ported the identical filter (`redundantSameAs`) to the instance view: inferred `owl:sameAs` rows pointing at one of the entity's own aliases are dropped; the author's own asserted `sameAs` (however many) is always kept.
+- Verified end-to-end in the browser against the new "Semantic Alignment" lab (`notebooks/intro.jsonld`): two independently-Parsed/Fetched records with different IRIs, no explicit `sameAs` anywhere in the source data, render as one entity node whose detail pane shows the union of both records' properties.
 
 ---
 

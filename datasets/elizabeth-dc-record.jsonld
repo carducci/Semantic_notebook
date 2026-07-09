@@ -1,0 +1,15 @@
+{
+  "@context": {
+    "@base": "http://example.com/",
+    "dc": "http://purl.org/dc/terms/",
+    "schema": "http://schema.org/",
+    "id": "@id",
+    "type": "@type",
+    "bookTitle": "dc:title",
+    "isbn": "schema:isbn"
+  },
+  "id": "/book/catalog-record-7781",
+  "type": "schema:Book",
+  "bookTitle": "Elizabeth the Queen",
+  "isbn": "9780812979795"
+}

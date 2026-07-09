@@ -1,4 +1,6 @@
 // Hand-authored RDFS + OWL 2 RL (BGP-expressible subset) rules for N3.js's Reasoner.
+// Covers RDFS core plus the relational OWL axioms: equivalentClass, equivalentProperty,
+// inverseOf, SymmetricProperty, TransitiveProperty, sameAs, and InverseFunctionalProperty.
 // See ADR-031 for the full rationale; the short version:
 //
 // N3.js's Reasoner ships NO ruleset — you supply N3 `{…} => {…}` rules — and it
@@ -56,4 +58,8 @@ export const RDFS_OWL2RL_RULES = `
 { ?x owl:sameAs ?y. } => { ?y owl:sameAs ?x. }.
 { ?x owl:sameAs ?y. ?x ?p ?o. } => { ?y ?p ?o. }.
 { ?x owl:sameAs ?y. ?s ?p ?x. } => { ?s ?p ?y. }.
+# owl:InverseFunctionalProperty — two subjects sharing a value on an IFP-declared
+# property are the same individual. Reflexive/duplicate-subject firings are dropped
+# by the same generic owl:sameAs post-filter in _materialize (no special-casing here).
+{ ?p a owl:InverseFunctionalProperty. ?x ?p ?v. ?y ?p ?v. } => { ?x owl:sameAs ?y. }.
 `;

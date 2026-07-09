@@ -16,7 +16,8 @@
         { "@id": "https://sembook.example.org/intro#identity" },
         { "@id": "https://sembook.example.org/intro#data-in-context" },
         { "@id": "https://sembook.example.org/intro#introducing-turtle" },
-        { "@id": "https://sembook.example.org/intro#asserting-triples" }
+        { "@id": "https://sembook.example.org/intro#asserting-triples" },
+        { "@id": "https://sembook.example.org/intro#semantic-alignment" }
       ]
     },
     {
@@ -163,6 +164,59 @@
             },
             {
               "@id": "https://sembook.example.org/intro#asserting-triples-vocabulary",
+              "@type": "sembook:VocabularyPanel",
+              "sembook:label": "Vocabulary"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "https://sembook.example.org/intro#semantic-alignment",
+      "@type": "sembook:Lab",
+      "sembook:label": "Semantic Alignment",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://sembook.example.org/intro#semantic-alignment-book",
+          "@type": "sembook:JsonLdPanel",
+          "sembook:label": "Book Record",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"http://example.com/\",\n    \"ex\": \"http://example.org/vocab#\",\n    \"schema\": \"http://schema.org/\",\n    \"owl\": \"http://www.w3.org/2002/07/owl#\",\n    \"id\": \"@id\",\n    \"type\": \"@type\"\n  },\n  \"@graph\": [\n    {\n      \"id\": \"ex:isbn\",\n      \"type\": [\"owl:DatatypeProperty\", \"owl:InverseFunctionalProperty\"],\n      \"owl:equivalentProperty\": { \"id\": \"schema:isbn\" }\n    },\n    {\n      \"id\": \"/book/elizabeth-the-queen\",\n      \"type\": \"schema:Book\",\n      \"schema:name\": \"Elizabeth the Queen: The Life of a Modern Monarch\",\n      \"ex:isbn\": \"9780812979795\"\n    }\n  ]\n}"
+        },
+        {
+          "@id": "https://sembook.example.org/intro#semantic-alignment-catalog",
+          "@type": "sembook:JsonLdPanel",
+          "sembook:label": "Catalog Record (Fetch a second record)",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:initialContent": "{}"
+        },
+        {
+          "@id": "https://sembook.example.org/intro#semantic-alignment-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "col-span-2 overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://sembook.example.org/intro#semantic-alignment-local-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Local Graph",
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#semantic-alignment> } }"
+            },
+            {
+              "@id": "https://sembook.example.org/intro#semantic-alignment-full-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Full Graph",
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://sembook.example.org/intro#semantic-alignment> } }"
+            },
+            {
+              "@id": "https://sembook.example.org/intro#semantic-alignment-entities",
+              "@type": "sembook:EntityPanel",
+              "sembook:label": "Entities",
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://sembook.example.org/intro#semantic-alignment> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://sembook.example.org/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://sembook.example.org/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
+            },
+            {
+              "@id": "https://sembook.example.org/intro#semantic-alignment-vocabulary",
               "@type": "sembook:VocabularyPanel",
               "sembook:label": "Vocabulary"
             }

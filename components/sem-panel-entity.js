@@ -172,6 +172,15 @@ export class SemPanelEntity extends HTMLElement {
     // (transitive) subclasses — an Author is a Person. Same render-derived, recomputed-
     // every-rebuild lifetime as the maps above.
     this._classChildren = new Map();
+    // Same shape as _classGroups/_classCanon, one level down: canonical INSTANCE IRI →
+    // full sorted equivalence group, plus the inverse member → canonical map. Two
+    // instance IRIs connected by owl:sameAs (asserted, or reasoner-inferred — e.g. via
+    // owl:InverseFunctionalProperty) render as one entity node, not two. Reuses the same
+    // `groups` map the class merge already computes (equivalenceGroups is role-agnostic —
+    // it groups whatever IRIs are sameAs-connected, whether they're used as ?class or
+    // ?instance elsewhere), so no separate equivalence query is needed.
+    this._instanceGroups = new Map();
+    this._instanceCanon = new Map();
   }
 
   // Called by sem-lab after appendChild
@@ -307,9 +316,21 @@ export class SemPanelEntity extends HTMLElement {
       for (const [canonIri, group] of groupOf) {
         for (const member of group) this._classCanon.set(member, canonIri);
       }
+      // Second pass over the SAME groups map, this time canonicalizing ?instance instead
+      // of ?class — instances have no parent-pointer variable in this query shape, so
+      // '__no_parent__' (a variable name that never appears in a binding) makes the
+      // parent-masking branch a no-op. This is what makes two instance IRIs joined by
+      // owl:sameAs render as one entity instead of two.
+      const { bindings: doubleMerged, groupOf: instanceGroupOf } =
+        mergeHierarchyBindings(merged, groups, 'instance', '__no_parent__');
+      this._instanceGroups = instanceGroupOf;
+      this._instanceCanon = new Map();
+      for (const [canonIri, group] of instanceGroupOf) {
+        for (const member of group) this._instanceCanon.set(member, canonIri);
+      }
       // Capture the (canonical) subClassOf structure so member lists can descend it.
       this._classChildren = new Map();
-      for (const b of merged) {
+      for (const b of doubleMerged) {
         const c = b.get('class')?.value;
         const p = b.get('parentClass')?.value;
         if (!c || !p || c === p) continue;
@@ -317,10 +338,14 @@ export class SemPanelEntity extends HTMLElement {
         this._classChildren.get(p).add(c);
       }
 
-      const elements = hierarchyToElements(merged);
-      // A merged container's hover label enumerates every IRI it stands for.
+      const elements = hierarchyToElements(doubleMerged);
+      // A merged container's hover label enumerates every IRI it stands for — classes
+      // are keyed by IRI directly (el.data.id), instances by the composite
+      // `${instanceIri}__in__${classIri}` key, so look theirs up via entityIri instead.
       for (const el of elements) {
-        const group = groupOf.get(el.data.id);
+        const group = el.data.nodeType === 'instance'
+          ? instanceGroupOf.get(el.data.entityIri)
+          : groupOf.get(el.data.id);
         if (group) el.data.fullLabel = group.join(' ≡ ');
       }
       // The inference reveal: derived memberships place the same instance inside
@@ -374,8 +399,10 @@ export class SemPanelEntity extends HTMLElement {
 
   // Place reasoner-derived memberships into the already-built compound hierarchy: the
   // same instance appears inside each additional class container, dashed/italic. Rules:
-  //   • class is canonicalized through the equivalence map, so a membership inferred
-  //     against schema:Person lands in the merged Person container;
+  //   • class AND instance are each canonicalized through their own equivalence map, so
+  //     a membership inferred against schema:Person lands in the merged Person container,
+  //     and an inferred membership for either alias of a merged instance lands on the
+  //     same node rather than creating a second one;
   //   • only existing containers — a class with no asserted presence (hence no
   //     container) doesn't get conjured by an inferred membership;
   //   • asserted membership wins — if the dot is already there solid, no dashed twin.
@@ -384,19 +411,21 @@ export class SemPanelEntity extends HTMLElement {
 
     for (const b of bindings) {
       const rawClass = b.get('class')?.value;
-      const instance = b.get('instance')?.value;
-      if (!rawClass || !instance) continue;
+      const rawInstance = b.get('instance')?.value;
+      if (!rawClass || !rawInstance) continue;
       const classIri = this._classCanon.get(rawClass) || rawClass;
+      const instance = this._instanceCanon.get(rawInstance) || rawInstance;
       if (!have.has(classIri)) continue;            // no asserted container for this class
       const key = `${instance}__in__${classIri}`;
       if (have.has(key)) continue;                  // asserted membership already renders solid
       have.add(key);
+      const group = this._instanceGroups.get(instance);
       elements.push({
         data: {
           id: key,
           entityIri: instance,
           label: b.get('instanceLabel')?.value || localName(instance),
-          fullLabel: instance,
+          fullLabel: group ? group.join(' ≡ ') : instance,
           parent: classIri,
           nodeType: 'instance'
         },
@@ -653,12 +682,20 @@ export class SemPanelEntity extends HTMLElement {
     this._rightPane.innerHTML = html;
   }
 
+  // An instance selection stands for its whole equivalence group (owl:sameAs, asserted or
+  // reasoner-inferred — e.g. via owl:InverseFunctionalProperty): the property table is the
+  // UNION of every alias's properties, not just the clicked one's. Same pattern as
+  // _renderClassDetail's group-spanning assertions query, one level down.
   async _renderInstanceProperties(instanceIri) {
+    const group = this._instanceGroups.get(instanceIri) || [instanceIri];
+    const groupValues = group.map(i => `<${i}>`).join(' ');
+
     const sparql = `
       SELECT ?property ?value ?g WHERE {
         GRAPH ?g {
           ${this._graphsWithInferredValuesClause()}
-          <${instanceIri}> ?property ?value .
+          ?instanceIri ?property ?value .
+          VALUES ?instanceIri { ${groupValues} }
           FILTER(!STRSTARTS(STR(?property), "https://sembook.example.org/vocab#"))
         }
       }
@@ -667,13 +704,30 @@ export class SemPanelEntity extends HTMLElement {
     const bindings = await this.notebook.query(sparql);
     const label = localName(instanceIri);
 
-    // Dedup property/value pairs across the asserted and inferred graphs, with assertion
-    // winning (dedupeInferredRows); a pair present only in an <lab-iri>-inferred graph
-    // renders italic via the shared table builder. Values are NOT canonicalized here —
-    // an instance's inferred membership in an equivalent class (`type schema:Author`
+    // Drop only INFERRED owl:sameAs rows pointing at one of this entity's own aliases —
+    // same rationale as _renderClassDetail's redundantEquiv: querying every alias as
+    // subject means the reasoner's symmetric sameAs surfaces once per alias-pair
+    // direction (catalog-record sameAs elizabeth-the-queen, AND elizabeth-the-queen
+    // sameAs catalog-record), which reads as "the same as itself" once the two are
+    // presented as one node, and multiplies with group size. The author's own ASSERTED
+    // sameAs is always kept, however many — a genuine equivalence statement worth seeing.
+    const isInferred = (b) => { const g = b.get('g'); return !!(g && g.value.endsWith('-inferred')); };
+    const redundantSameAs = (b) => {
+      if (b.get('property').value !== `${OWL}sameAs`) return false;
+      if (!isInferred(b)) return false; // the author's own assertion — always keep
+      const objVal = b.get('value').value;
+      const objCanon = this._instanceCanon.get(objVal) || objVal;
+      return objCanon === instanceIri; // inferred sameness with one of its own aliases → noise
+    };
+
+    // Dedup property/value pairs across the asserted and inferred graphs (and, now,
+    // across every alias in the group), with assertion winning (dedupeInferredRows); a
+    // pair present only in an <lab-iri>-inferred graph, or only via an alias, renders
+    // italic via the shared table builder. Values are NOT canonicalized here — an
+    // instance's inferred membership in an equivalent class (`type schema:Author`
     // alongside asserted `type ex:Author`) is a real derivation worth showing, italic.
     const rows = dedupeInferredRows(
-      bindings,
+      bindings.filter(b => !redundantSameAs(b)),
       b => `${b.get('property').value} ${b.get('value').value}`
     ).map(({ b, inferred }) => ({
       prop: b.get('property').value,
@@ -681,9 +735,12 @@ export class SemPanelEntity extends HTMLElement {
       inferred
     }));
 
+    const groupNote = group.length > 1
+      ? `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${group.join(' ≡ ')}</span>`
+      : `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${instanceIri}</span>`;
     let html = `<h3 style="font-size:0.875rem;font-weight:600;color:#0f766e;margin-bottom:0.75rem;">
       ${label}
-      <span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;">${instanceIri}</span>
+      ${groupNote}
     </h3>`;
 
     if (rows.length === 0) {

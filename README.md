@@ -1,6 +1,8 @@
 # The Semantic Notebook — A Distillation
 > Everything learned in one conversation. Vision, principles, architecture, open questions, surprises.
 
+This is the story. The rules every component must obey live in [ARCHITECTURAL_CONSTRAINTS.md](ARCHITECTURAL_CONSTRAINTS.md); the significant, hard-to-reverse technology and structural choices live in [ARCHITECTURE_DECISION_RECORDS.md](ARCHITECTURE_DECISION_RECORDS.md); everything narrower — mechanisms, tuning, bug fixes — lives in [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md). This document is the throughline connecting all three.
+
 ---
 
 ## The Origin of the Idea
@@ -122,7 +124,7 @@ When a JSON-LD panel parses a document, it extracts `@context` prefix mappings a
 ### Viewport-Triggered Rendering
 Each lab occupies 100vh. Scrolling is the primary navigation. Intersection Observer triggers rendering when a lab enters the viewport. Labs initialize eagerly at page load (all init data loaded into named graphs before `notebook:ready` fires) but render lazily. This combination solves the deep linking problem: deep link to any lab, the graph is already populated, the rendering triggers on scroll. Sequential initialization isn't required.
 
-Now that notebook1 has two labs, CSS scroll-snap (`snap-y snap-mandatory` on the scroll container, `snap-start snap-always` on each lab) guarantees a scroll gesture always lands on one full lab, never half of two — this is what made "which lab is active" well-defined enough to drive nav highlighting (see Nav Generation, below).
+Now that notebook1 has four labs, CSS scroll-snap (`snap-y snap-mandatory` on the scroll container, `snap-start snap-always` on each lab) guarantees a scroll gesture always lands on one full lab, never half of two — this is what made "which lab is active" well-defined enough to drive nav highlighting (see Nav Generation, below). Getting there exposed a real bug: `scroll-mt-12`, added alongside `pt-12` to offset for the fixed nav, double-compensated and cut every snap destination short by 3rem except the first lab (whose offset happened to clamp to 0, hiding the bug in one direction only). `pt-12` alone was enough; `scroll-mt-12` was removed.
 
 ### The `init()` Pattern
 Components created dynamically by `sem-lab` receive their notebook context via an explicit `init(notebook, notebookDoc)` call immediately after `appendChild`. This is different from static components (present at parse time) which can listen for `notebook:ready`. The distinction emerged from implementation — `notebook:ready` fires once, before dynamic components exist. The `init()` pattern is now canonical and documented.
@@ -131,7 +133,7 @@ Components created dynamically by `sem-lab` receive their notebook context via a
 Any lab whose `sembook:cssClass` declares a two-value `grid-rows-[A_B]` track gets a draggable resizer between its top row and bottom row automatically — no new vocabulary, the existing cssClass string is the trigger. Drag freely to repartition; drag within 60px of either edge and release to snap that row down to a thin labeled strip ("▸ Document A · Document B — click to expand"), which restores the last non-collapsed split on click. This gives the instructor a stage-ready way to give the graph (or the editors) the full screen mid-demo without losing the other panel's content. Labs with a single-value track (`[1fr]`, e.g. notebook2's side-by-side lab) are untouched by this mechanism.
 
 ### Nav Generation
-The nav links are generated at runtime from the notebook definition's `sembook:labs` list (`scripts/build-nav.js`), not hand-authored per lab. This was necessary the moment a second lab existed: hand-syncing nav links against `sembook:labs` is exactly the kind of drift ADR-011's "fragment identifier is the single source of a lab's identity" rule exists to prevent. The same script also highlights whichever nav link corresponds to the lab currently dominating the viewport, driven by its own IntersectionObserver — deliberately independent of `sem-lab`'s own observer (which only triggers lazy-build), since nav active-state is page chrome, not teaching data, and has no business on the scoped event bus (C9).
+The nav links are generated at runtime from the notebook definition's `sembook:labs` list (`scripts/build-nav.js`), not hand-authored per lab. This was necessary the moment a second lab existed: hand-syncing nav links against `sembook:labs` is exactly the kind of drift C8's one-lab-one-named-graph rule (the lab IRI *is* its identity) exists to prevent. The same script also highlights whichever nav link corresponds to the lab currently dominating the viewport, driven by its own IntersectionObserver — deliberately independent of `sem-lab`'s own observer (which only triggers lazy-build), since nav active-state is page chrome, not teaching data, and has no business on the scoped event bus (C9).
 
 With notebook1 now at four labs, an inline row of labels no longer fit the 48px fixed strip, so the links moved into a collapsible drawer: a hamburger button in the nav bar toggles a slide-out panel (`#lab-nav-drawer`) containing the vertical link list, dismissible via backdrop click, Escape, or clicking a link. The drawer chrome (button, backdrop, panel) is static markup in each notebook's `index.html`; `build-nav.js` only populates links and wires the toggle — it stays a page-chrome script, not a component, consistent with nav active-state having no place on the scoped event bus.
 
@@ -148,7 +150,8 @@ CodeMirror was originally loaded from `esm.sh` at runtime. Mid-session, `esm.sh`
 | `sem-panel-jsonld` | JSON-LD editor (CodeMirror), Parse button, Fetch affordance |
 | `sem-panel-jsonld-split` | Two side-by-side editors (body + `@context`) sharing one Parse button — teaches that `@context` is data too |
 | `sem-panel-graph` | Cytoscape force-directed graph, `sparql` attribute drives data |
-| `sem-panel-entity` | Split-pane entity explorer: compound node class hierarchy (left) + property viewer (right) |
+| `sem-panel-entity` | Split-pane entity explorer: compound-node class hierarchy (left, `owl:sameAs`-equivalence-merged at both class and instance level, inferred-aware) + property/assertions viewer (right, unions merged instances' properties); Mine/All lab-vs-cumulative scope toggle |
+| `sem-panel-vocab` | Vocabulary explorer: browsing index of author-defined classes/properties, compound-node class hierarchy, rows merged only on exact display-label collision |
 | `sem-panel-turtle` | Read-only Turtle serialization of current named graph, updates on `graph:updated` |
 | `sem-panel-turtle-writer` | Editable Turtle input, same Parse pattern as JSON-LD panel |
 | `sem-panel-tabs` | Layout container, tab chrome, child panel switching |
@@ -161,9 +164,11 @@ All panels share the same base contract. The `sparql` attribute is the universal
 
 ### notebook1 — Introduction to Linked Data
 
+Five labs now, up from the original two — the arc grew to absorb what was originally notebook2's opening beat, a lab that resolves what used to be a "next iteration" item, and a closing reasoning-reveal lab.
+
 **Lab 1: "Identity and Connection"**
 
-Two JSON-LD editors, side by side. Graph visualization below (tabbed: Local Graph, Full Graph, Entities, Vocabulary).
+Two JSON-LD editors, side by side. A single Local Graph tab below — no Full Graph, Entities, or Vocabulary tabs here, deliberately: this lab is about watching two islands become one graph, and the cumulative/definitional views those other tabs show would be noise at this stage, not signal.
 
 The demo has four states:
 
@@ -177,15 +182,25 @@ The demo has four states:
 
 **Lab 2: "Data and Context"**
 
-One full-width panel (`sem-panel-jsonld-split`) instead of two side-by-side editors: the JSON body on the left, its `@context` on the right, one shared Parse button. The teaching point is that `@context` is data, not metadata bolted on the side — separating it into its own visible, editable pane makes that legible. The example (a biography of Elizabeth II, authored by Sally Bedell Smith) maps `about` and `author` to nested contexts with different property mappings (`about.title` → a Wikidata property, `author.title` → `schema:jobTitle`) — the same key name, resolved differently depending on which nested context frames it.
+One full-width panel (`sem-panel-jsonld-split`) instead of two side-by-side editors: the JSON body on the left, its `@context` on the right, one shared Parse button. The teaching point is that `@context` is data, not metadata bolted on the side — separating it into its own visible, editable pane makes that legible. The example (a biography of Elizabeth II, authored by Sally Bedell Smith) maps `about` and `author` to nested contexts with different property mappings (`about.title` → a Wikidata property, `author.title` → `schema:jobTitle`) — the same key name, resolved differently depending on which nested context frames it. This is the first lab with the full four-tab graph suite (Local Graph, Full Graph, Entities, Vocabulary) — the first point in the arc where cumulative and definitional views actually matter.
+
+**Lab 3: "Two Syntaxes, One Graph"**
+
+JSON-LD editor (left), Turtle Reader (right). Type JSON-LD, hit Parse, watch Turtle appear. `@context` prefixes become `@prefix` declarations. The correspondence is visible and immediate. This lab originally lived only in notebook2; it's now also notebook1's bridge into Turtle before the next lab asks the audience to write it directly.
+
+**Lab 4: "Asserting Triples"**
+
+Turtle Writer (editable CodeMirror, same Parse-button pattern as the JSON-LD panel) plus the full four-tab graph suite. This is the lab that used to be described as "built but not wired into a lab yet" — it now closes the notebook1 arc: having just read Turtle in Lab 3, the audience writes it directly and watches it materialize across Local Graph, Full Graph, Entities, and Vocabulary simultaneously.
+
+**Lab 5: "Semantic Alignment"**
+
+Two JSON-LD editors side by side, like Lab 1 — but this time each owns a completely independent record for the same real-world book, in two different vocabularies, under two different IRIs. The left panel ("Book Record") asserts the book plus a small vocabulary declaration: the author's own `ex:isbn` is declared `owl:InverseFunctionalProperty` and bridged to `schema:isbn` via `owl:equivalentProperty`. The right panel ("Catalog Record") starts empty; Fetch loads a second record (`datasets/elizabeth-dc-record.jsonld`) that uses a Dublin-Core-flavored context and only knows about `schema:isbn` — same ISBN value, no shared vocabulary, no `sameAs` anywhere. Parsing both and switching to Entities shows one merged Book instance, not two — see The Entity Explorer, above, for how the two rules chain to produce that.
 
 ### notebook2 — JSON-LD and Turtle
 
 **Lab 1: "Two Syntaxes, One Graph"**
 
-JSON-LD editor (left), Turtle Reader (right). Type JSON-LD, hit Parse, watch Turtle appear. `@context` prefixes become `@prefix` declarations. The correspondence is visible and immediate.
-
-**Lab 2: Turtle Writer + Graph.** The component (`sem-panel-turtle-writer`) is built — same Parse-button pattern as the JSON-LD panel, editable CodeMirror with Turtle highlighting — but it isn't wired into a lab yet. Next iteration.
+The same side-by-side JSON-LD/Turtle-reader demo as notebook1's Lab 3, duplicated here so notebook2 stands on its own as a chapter-companion entry point without depending on notebook1 having been read first. The Turtle Writer lab once planned as this notebook's Lab 2 was instead built into notebook1 (see Lab 4, above) rather than added here.
 
 ---
 
@@ -213,9 +228,29 @@ Classes are compound nodes in Cytoscape — nested containers. Instances are lea
 
 The property viewer (right pane) shows class members when a class is selected, instance properties when an instance is selected. Two modes, one panel, selection-driven.
 
-The key insight that shaped this: `rdfs:subClassOf` is a set containment relationship. `:Magician rdfs:subClassOf :Performer` means the set of Magicians is a subset of the set of Performers. Any instance of Magician is automatically an instance of Performer. The nested compound node visualization makes this containment literal — the Magician circle is visually inside the Performer circle.
+The key insight that shaped this: `rdfs:subClassOf` is a set containment relationship. `:Magician rdfs:subClassOf :Performer` means the set of Magicians is a subset of the set of Performers. Any instance of Magician is automatically an instance of Performer. The nested compound node visualization makes this containment literal — the Magician circle is visually inside the Performer circle. That containment is transitive in the member list too: a class's Members include instances of every descendant subclass, not just its own direct instances — rendered italic and sorted after the direct ones, so a Magician shows up as a (subclass-derived) member of Performer's set without the reasoner having to be asked twice.
 
 `owl:Thing` was explicitly excluded as a root node. It's a distraction at the stage where you're teaching basic RDFS. The universal set can be implicit. This was the right call.
+
+**Equivalence, not duplication.** Classes connected by `owl:sameAs` or `owl:equivalentClass` — asserted or reasoner-inferred, either direction — render as a single compound container, not two. Hovering shows every IRI in the group joined with `≡`. Selecting the merged class shows an Assertions pane above its Members: every triple with the class (or any of its aliases) as subject, asserted rows in roman, reasoner-derived rows in italic. This is deliberately different from how the vocabulary explorer handles the same kind of ambiguity (below) — here, `owl:sameAs` genuinely means "one set, two names," so merging is the correct semantics, not a display compromise.
+
+**Mine vs. All.** A scope toggle above the hierarchy switches between this lab's named graph only ("Mine") and every lab's graph up to and including this one ("All", the same cumulative scope Full Graph uses) — every query in the panel re-derives its scope from this one toggle. The RDF/RDFS/OWL/SHACL/XSD meta-vocabulary is filtered out of the hierarchy in both scopes; it's how you declare, not what you're modelling, and showing it here would be a second, competing reveal.
+
+**Layout.** The hierarchy uses fCoSE, not the original `cose` — disconnected class sets with no edges between them (Person, Book, City, say) used to pile on top of each other under `cose`, forcing the instructor to drag them apart mid-demo. fCoSE's `packComponents` tiles them side by side automatically.
+
+**Instances merge too, one level down.** Everything above about equivalence merging applies to classes. Instances connected by `owl:sameAs` — asserted, or reasoner-inferred via `owl:InverseFunctionalProperty` — now render as one dot, not two, with the union of both records' properties in the detail pane (asserted rows roman, inferred italic, the same convention as everywhere else). This is the payoff of the "Semantic Alignment" lab (notebook1, Lab 5): two records for the same book, in two different vocabularies, under two different IRIs, with no `sameAs` anywhere in the source data — one declares its own `ex:isbn` as `owl:InverseFunctionalProperty` and bridges it to `schema:isbn` via `owl:equivalentProperty`; fetching the second record (which only asserts `schema:isbn`) lets the reasoner chain the two rules — property alignment propagates the ISBN value onto both property names on both records, then the shared value on the now-common property triggers the identity merge. One new reasoning rule produces both a property-vocabulary bridge and an identity bridge, for free.
+
+---
+
+## The Vocabulary Explorer
+
+Where the entity explorer answers "what's in this set," the vocabulary explorer answers "what terms did the author define" — a browsing index of classes and properties, not a set-membership visualization. Once built, it needed the identical-looking merge problem the entity explorer had already solved — and got a deliberately different answer.
+
+**Row candidacy.** A term earns a row if it was explicitly asserted in the lab — either *used* (it appears as a predicate, or as the `rdf:type` object of some non-excluded thing) or *described* (it's the subject or object of `subClassOf`/`subPropertyOf`/`domain`/`range`/`equivalentClass`/`equivalentProperty`, or declared `a rdfs:Class`/`rdf:Property`/`owl:*`). A term you've *defined* but not yet *used* still shows, described but with no instances yet. The only exclusion is the meta-vocabulary itself (`sembook:`, `rdf:`, `rdfs:`, `owl:`, `shacl:`, `xsd:`, and the tool's synthesized `urn:sembook:implied:` fallback predicates) — `schema:` is deliberately never excluded, since it's domain vocabulary an author writes with, not description machinery. Described terms render teal/solid; identity-only ones (referenced but not yet described) render amber/dashed, the same visual grammar as blank nodes elsewhere in the tool.
+
+The first attempt merged vocabulary rows the same way the entity explorer merges classes: on asserted `owl:sameAs` / `equivalentClass` / `equivalentProperty`. That was wrong, and wrong in a way that only showed up once real data exercised it: `ex:penName owl:equivalentProperty schema:alternateName` are two deliberately, differently-named terms, and merging them buried `penName` under whichever IRI sorted first — silently removing an author-defined term from the one list whose entire purpose is "can I find the term I wrote." The fix: row-collapsing here is driven by exact **display-label collision**, not semantics. `ex:name` and `schema:name` collapse into one row only because they'd otherwise render as two indistinguishable "name" rows in a flat list — not because anyone asserted they're equivalent. An actual `owl:sameAs` between two differently-named terms changes nothing about the row list; it still shows up as its own statement in either term's detail pane.
+
+The class hierarchy pane hit the same fCoSE-vs-`cose`/`grid` piling problem the entity explorer did, one iteration later — `grid` was chosen to avoid `cose`'s flinging, but doesn't pack compound boxes apart from each other either, so disconnected class containers piled up until the panel was exercised with a genuinely subclassed hierarchy. Same fix, same `packComponents: true`.
 
 ---
 
@@ -239,11 +274,11 @@ Things that were explicitly deferred and will need resolution:
 
 **Teaching requirements.** The most important open question. The architecture is built but the specific teaching sequence — which concepts, in what order, with what examples — hasn't been formally defined. Everything built so far was designed to be flexible enough to serve whatever sequence emerges. But the sequence will constrain things. Some labs will need new panel types. Some concepts will require new interaction patterns. The architecture should hold, but there will be surprises.
 
-**The vocabulary explorer.** Punted. It was clear that the entity explorer (set membership) and the vocabulary explorer (class/property definitions and hierarchy) are different things with different interaction models. The entity explorer got built. The vocabulary explorer is still an open design question. It probably involves a class hierarchy tree alongside a property detail panel, but the exact visualization hasn't been decided.
+**The vocabulary explorer.** Resolved — built. See "The Vocabulary Explorer" above. It ended up needing a genuinely different row-merging rule than the entity explorer, not just a smaller version of the same component.
 
-**Reasoning wiring.** The N3.js reasoner was selected (over EYE JS) for v1. It supports RDFS and OWL 2 RL — transitivity, inverse properties, property chains, domain/range inference. The architecture has a named graph slot for inferred triples (`<lab-iri-inferred>`). But the reasoner hasn't been wired yet. When it is, the trigger question remains: does reasoning run automatically on every Parse, or is it an explicit "Reason" button? The Parse button model suggests explicit is better — the instructor controls when the graph grows.
+**Reasoning wiring.** Resolved. The N3.js reasoner is wired in and runs automatically on every Parse — no separate "Reason" button. This matches the Parse-button interaction model already established for asserted content: one gesture produces both the asserted delta and its inferred consequences. Inferred triples land in a `<lab-iri>-inferred` named graph and render distinctly (dashed edges in graph panels, italic rows in the entity explorer). The ruleset is narrower than "RDFS and OWL 2 RL" originally implied, too — the reasoning library used is BGP-only, so anything needing built-ins or `rdf:List`s (cardinality, `hasKey`, property chains, `someValuesFrom`) is out of scope; full OWL DL reasoning (EYE JS) remains the deferred escalation for when a lab actually needs it. `owl:InverseFunctionalProperty` was added later — two subjects sharing a value on an IFP-declared property are inferred to be the same individual, no explicit `sameAs` required — and, chained with the already-working `equivalentProperty` rule, is what powers the "Semantic Alignment" lab's compound property-and-identity-alignment reveal (see The Entity Explorer, below).
 
-**Multiple labs and scroll validation.** Partially resolved: notebook1 now has two labs, with CSS scroll-snap and IntersectionObserver-driven nav highlighting validated across them. Still open: this is two labs, not the full length of an eventual book chapter's worth — whether Cytoscape instance count, per-lab reasoning, or Full Graph queries spanning many named graphs hold up at that scale hasn't been tested.
+**Multiple labs and scroll validation.** Further resolved: notebook1 now has four labs (up from two), with CSS scroll-snap and IntersectionObserver-driven nav highlighting validated across all of them. A real bug turned up along the way and got fixed: pairing `scroll-mt-12` with `pt-12` double-compensated for the fixed nav, silently cutting every snap destination short by 3 rem except the very first lab (whose negative scroll-margin offset happened to clamp to 0, which is what hid the bug in one direction and not the other). Still open: four labs is still short of a full book chapter's length — whether Cytoscape instance count, per-lab reasoning, or Full Graph queries spanning many named graphs hold up at that scale hasn't been tested.
 
 **Book artifact export.** What format does the book use for production? The answer determines what "export" means. SVG from Cytoscape is straightforward. A self-contained HTML page with frozen outputs is more work. A PDF is different work again. This is deferred pending the book production format decision.
 

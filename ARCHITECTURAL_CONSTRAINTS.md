@@ -60,6 +60,8 @@ The primary runtime environment is a conference room. The constraints must accou
 - Client-side routing that doesn't reflect in the URL
 - Session state that can't be reconstructed from a URI
 
+**Incorporates:** ADR-015 (scroll-based navigation) confirms this at the lab-navigation level. The full navigation model, including the eager-init/lazy-render pairing (ADR-016), is documented in [ARCHITECTURE_DECISION_RECORDS.md](ARCHITECTURE_DECISION_RECORDS.md).
+
 ---
 
 ### C2 — Resource Orientation
@@ -90,6 +92,8 @@ The primary runtime environment is a conference room. The constraints must accou
 - Layout or behavior encoded as magic strings rather than typed RDF properties
 - Component configuration that isn't representable in the `sembook:` vocabulary
 
+**Incorporates:** ADR-002 (notebook as semantic artifact — this constraint's origin). ADR-003 (JSON-LD wire format, Turtle authoring) and ADR-004 (`sembook:` own namespace) are the specific technology/naming decisions behind it — see [ARCHITECTURE_DECISION_RECORDS.md](ARCHITECTURE_DECISION_RECORDS.md).
+
 ---
 
 ### C4 — No Invented Abstractions
@@ -105,6 +109,8 @@ The primary runtime environment is a conference room. The constraints must accou
 - Magic strings like `"local"` or `"full"` for graph scope instead of SPARQL queries
 - Custom event formats instead of JSON-LD on the event bus
 - Invented query syntax instead of SPARQL
+
+**Incorporates:** ADR-014 (Tailwind utility-class layout). The alternatives considered are documented as DDR-014 in [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md).
 
 ---
 
@@ -138,15 +144,19 @@ Additionally: conference wifi is unreliable. A system that requires a server cal
 - Components that maintain state beyond what the lifecycle contract permits
 - Components that communicate directly with other components rather than through the notebook context
 
+**Incorporates:** ADR-020 (notebook context as the sole communication mediator — this constraint's "communicate through the notebook context" clause is ADR-020's decision). Components created dynamically by `sem-lab` satisfy the "initialize" step via an explicit `init(notebook, notebookDoc)` call rather than by listening for `notebook:ready` (static components use the latter) — this mechanism is documented as DDR-021 in [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md), which this constraint defers to for the concrete timing contract.
+
 ---
 
 ### C7 — The Quad Store Is the Single Source of Truth
 
 **Statement:** The in-browser quad store is the authoritative state of the system. No component may maintain a local copy of graph data. No component may cache triples. The quad store is queried on every render. Components are projections of the store, not owners of data.
 
-**Rationale:** This is the semantic web principle applied to the component model. In the semantic web, the graph is the source of truth. URIs identify things. Querying the graph returns the current state. Applications that cache data create divergence between what is and what is shown. The notebook must not make this mistake about the very thing it teaches.
+When a component owns a fragment of the store's data — for example, an editor panel's contribution to its lab's named graph — updates to that fragment are whole-fragment replacement, never an incremental diff or pure accumulation: every quad previously contributed by that fragment is removed, then the new quads are inserted. There is no meaningful intermediate state between old content and new content that needs to be preserved.
 
-**Validation:** If you clear a component's local state and re-render it from the quad store, does it produce the same output? If not, the component has state that violates this constraint.
+**Rationale:** This is the semantic web principle applied to the component model. In the semantic web, the graph is the source of truth. URIs identify things. Querying the graph returns the current state. Applications that cache data create divergence between what is and what is shown. The notebook must not make this mistake about the very thing it teaches. The same principle governs mutation: the source of truth for a fragment is whatever the owning component currently says it is, not some remembered history of prior states. Diffing or accumulating implies the store should remember what a component used to contribute — which is exactly the local state this constraint forbids.
+
+**Validation:** If you clear a component's local state and re-render it from the quad store, does it produce the same output? If not, the component has state that violates this constraint. For a component that owns a fragment of graph data, does re-committing that fragment remove every quad it previously contributed before inserting the new ones?
 
 **Exceptions (documented):** The Cytoscape instance reference is retained between renders for performance. This is the one documented exception. It does not cache graph data — it caches the rendering context only.
 
@@ -154,6 +164,9 @@ Additionally: conference wifi is unreliable. A system that requires a server cal
 - Components that store triples locally and update the store separately
 - Components that maintain a local copy of query results between renders
 - Any state that diverges from the quad store
+- Accumulating quads across commits without removing prior contributions (ghost triples), or computing a diff instead of replacing the fragment wholesale
+
+**Incorporates:** ADR-017 (`graph:upsertFragment` replace-not-diff model). The fragment-ownership tracking mechanism and the blank-node-collision fix it exposed are documented as DDR-017 and DDR-018 in [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md).
 
 ---
 
@@ -161,14 +174,19 @@ Additionally: conference wifi is unreliable. A system that requires a server cal
 
 **Statement:** Notebook definition triples (infrastructure) live in the default graph. Teaching content triples live in named graphs. Panel SPARQL queries must scope to named graphs only. Infrastructure triples must never appear in any panel visualization.
 
-**Rationale:** The audience is watching the graph. If `sembook:Lab` nodes appear alongside `:Person` nodes, the teaching moment is contaminated. The audience loses the thread. The infrastructure must be invisible. This is not a styling preference — it is a hard boundary between the system and its subject matter.
+Named graphs are scoped one-per-lab: the lab's IRI is its named graph's IRI, and all content belonging to that lab — regardless of which panel or fetch produced it — lives in that single named graph. No lab's content spans multiple named graphs; no named graph is shared across labs.
 
-**Validation:** Load the notebook and parse no user content. Do any panel visualizations show any nodes or edges? If yes, infrastructure is leaking into the teaching surface.
+**Rationale:** The audience is watching the graph. If `sembook:Lab` nodes appear alongside `:Person` nodes, the teaching moment is contaminated. The audience loses the thread. The infrastructure must be invisible. This is not a styling preference — it is a hard boundary between the system and its subject matter. Named graph boundaries are architectural, not editorial: what makes two documents "disconnected islands" is the data — the absence of shared IRIs — not which named graph they happen to load into. Splitting a lab across multiple named graphs, or sharing one graph across labs, adds join complexity for no teaching benefit.
+
+**Validation:** Load the notebook and parse no user content. Do any panel visualizations show any nodes or edges? If yes, infrastructure is leaking into the teaching surface. Does each lab's content live entirely in exactly one named graph, identified by the lab's own IRI?
 
 **Violations:**
 - SPARQL queries without explicit `GRAPH` clause scoping
 - `unionDefaultGraph: true` used without compensating named graph filter
 - Any `sembook:` typed node appearing in a Cytoscape visualization or entity explorer
+- Splitting one lab's content across multiple named graphs, or sharing a single named graph across more than one lab
+
+**Incorporates:** ADR-011 (one lab, one named graph) and ADR-012 (infrastructure/teaching-data split — this constraint's origin).
 
 ---
 
@@ -184,6 +202,8 @@ Additionally: conference wifi is unreliable. A system that requires a server cal
 - Events without `labUri` property
 - Panels that respond to events from other labs
 - Global state changes triggered by lab-local events
+
+**Incorporates:** ADR-025 (`explorer:selected` event) confirms this scoping for entity-explorer selection.
 
 ---
 
@@ -201,6 +221,8 @@ Additionally: conference wifi is unreliable. A system that requires a server cal
 - Any JSX or template compilation
 - Virtual DOM of any kind
 
+**Incorporates:** ADR-005 (native Web Components, no framework, absorbed into this constraint). ADR-006 (no build step) is a full architecture decision record in its own right, including the CodeMirror vendoring incident and the explicit reconsideration triggers — see [ARCHITECTURE_DECISION_RECORDS.md](ARCHITECTURE_DECISION_RECORDS.md) and check them before repeating manual CDN vendoring.
+
 ---
 
 ### C11 — Static First, Backend Agnostic
@@ -215,6 +237,8 @@ Additionally: conference wifi is unreliable. A system that requires a server cal
 - Components that require API endpoints for initialization
 - Auth or session state assumptions
 - Server-rendered HTML that components depend on
+
+**Incorporates:** ADR-027 (static-first deployment, backend-agnostic URI scheme).
 
 ---
 
@@ -234,6 +258,24 @@ Additionally: conference wifi is unreliable. A system that requires a server cal
 
 ---
 
+### C13 — SPARQL Is the Panel Configuration Surface
+
+**Statement:** A panel's data — what it fetches, at what scope — is configured exclusively through a `sparql` attribute holding a SPARQL SELECT query, executed against the quad store to produce what the panel renders. No panel type may carry a parallel scope vocabulary — magic strings, typed scope enums, boolean flags — alongside or instead of the query.
+
+**Rationale:** A SPARQL query is self-describing: it states exactly what it fetches, inspectable without reading component code. This is what lets any future panel type — a table, a timeline, a map, a raw result grid — fit the existing architecture by adding a query, not by teaching the system a new configuration vocabulary. It is also what makes "this lab only" versus "cumulative graph" versus any other scope a difference in the query text, not a difference the component needs to interpret. A magic-string scope variant was proposed early on and rejected precisely because it would have required every panel type to learn a private vocabulary of special values — the SPARQL query replaced it and eliminated the category entirely.
+
+**Validation:** Does every panel's rendered content trace back to its own `sparql` attribute and nothing else? Is there any panel-specific scope flag, enum, or magic string in component code or in the notebook JSON-LD definition?
+
+**Violations:**
+- A hardcoded SPARQL query inside component code rather than read from the `sparql` attribute
+- A `scope` or similarly-typed property interpreted by the component
+- Magic-string scope variants (`"local"`, `"full"`, `"cumulative"`)
+- A new panel type that requires a component-code change to support a data scope its query could already express
+
+**Incorporates:** ADR-013 (SPARQL as universal panel configuration surface). The alternatives considered and the `graphsUpTo()` cumulative-scope `VALUES` clause injection mechanism are documented as DDR-013 in [DESIGN_DECISIONS.md](DESIGN_DECISIONS.md).
+
+---
+
 ## Constraint Validation Checklist
 
 Before submitting any implementation for review, the agent must answer these questions:
@@ -250,6 +292,7 @@ Before submitting any implementation for review, the agent must answer these que
 10. **C10 — No Framework:** Is there a build step? Is there a UI framework dependency?
 11. **C11 — Static First:** Does this work without a backend? Is the fetch URL the only seam?
 12. **C12 — Scope Control:** Does this implementation match the handoff scope exactly? Are deferred items still deferred?
+13. **C13 — SPARQL Configuration:** Does every panel read its data exclusively from its own `sparql` attribute? Is there any panel-specific scope vocabulary (magic string, enum, flag) anywhere else?
 
 ---
 
@@ -264,13 +307,14 @@ Following Fielding's constraint-based definition of architectural styles (REST b
 3. Ecosystem-native abstractions (C4)
 4. Local-first execution with server escape hatches (C5)
 5. Uniform component lifecycle (C6)
-6. A quad store as single source of truth (C7)
-7. Hard separation between infrastructure and content data (C8)
+6. A quad store as single source of truth, with whole-fragment-replacement mutation (C7)
+7. Hard separation between infrastructure and content data, one named graph per lab (C8)
 8. Scoped inter-component communication (C9)
 9. No framework, no build step (C10)
 10. Backend-agnostic static deployment (C11)
+11. SPARQL as the uniform panel configuration surface (C13)
 
-A system that satisfies all twelve constraints is an instance of this style. A system that violates any constraint is not — regardless of what it looks like from the outside.
+A system that satisfies all twelve style-defining constraints above (C1–C11, C13 — eleven bullets, since C1 and C2 share one) is an instance of this style. C12 (Scope Control) governs the development process rather than the deployed system, so it sits outside this style definition — thirteen constraints in total govern the project. A system that violates any style constraint is not an instance of this style — regardless of what it looks like from the outside.
 
 ---
 

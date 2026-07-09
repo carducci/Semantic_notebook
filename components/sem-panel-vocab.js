@@ -632,7 +632,7 @@ export class SemPanelVocab extends HTMLElement {
     const bindings = await this.notebook.query(this._detailQuery(group));
     const label = localName(termIri);
     const groupNote = group.length > 1
-      ? `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${group.join(' / ')}<br><span style="font-style:italic;">same display label — showing both</span></span>`
+      ? `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${group.join(' / ')}<br><span style="font-style:italic;">one name, ${group.length} distinct terms — the IRIs above tell them apart</span></span>`
       : `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${termIri}</span>`;
 
     let html = `<h3 style="font-size:0.875rem;font-weight:600;color:#0f766e;margin-bottom:0.75rem;">

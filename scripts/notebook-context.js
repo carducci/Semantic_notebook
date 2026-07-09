@@ -42,6 +42,51 @@ export class NotebookContext extends EventTarget {
     return bindingsStream.toArray();
   }
 
+  // Execute an arbitrary learner-typed SPARQL query (sem-panel-sparql's Run button).
+  // Unlike query(), this never assumes bindings — it branches on Comunica's own
+  // resultType so CONSTRUCT/DESCRIBE (quads) and ASK (boolean) are representable too,
+  // not just SELECT.
+  //
+  // Scoping: a query with no explicit GRAPH/FROM clause is implicitly scoped to the
+  // cumulative graph (asserted AND inferred) spanning every lab up to and including
+  // labUri, via a native SPARQL `FROM <iri> FROM <iri> ...` dataset clause inserted
+  // before the query's own WHERE keyword — never by copying data into a side store,
+  // so there's nothing that can fall out of sync with the real store. A query that
+  // already contains an explicit GRAPH/FROM clause is left completely untouched, so
+  // the learner's own scoping (one lab's graph, an explicit VALUES ?g merge, even the
+  // default/infrastructure graph by IRI) is honored exactly as written.
+  async executeSparql(labUri, sparql) {
+    const hasExplicitScope = /\bGRAPH\b/i.test(sparql) || /\bFROM\b/i.test(sparql);
+
+    let queryToRun = sparql;
+    if (!hasExplicitScope) {
+      // Asserted graph + its -inferred companion for every lab up to and including
+      // this one — same graph-list shape sem-lab.js's _inferredAwareGraphSparql
+      // already builds for the Full Graph tab, so reasoning is visible by default.
+      const graphs = this.graphsUpTo(labUri).flatMap(g => [g, `${g}-inferred`]);
+      const fromClauses = graphs.map(g => `FROM <${g}>`).join(' ');
+      // Only the first (outermost) WHERE is replaced — a non-global regex match
+      // stops after one hit, and any nested subquery WHERE appears later in the text.
+      queryToRun = sparql.replace(/\bWHERE\b/i, `${fromClauses} WHERE`);
+    }
+
+    const result = await this.engine.query(queryToRun, {
+      sources: [this.store],
+      unionDefaultGraph: true
+    });
+
+    if (result.resultType === 'bindings') {
+      const stream = await result.execute();
+      return { resultType: 'bindings', bindings: await stream.toArray() };
+    }
+    if (result.resultType === 'quads') {
+      const stream = await result.execute();
+      return { resultType: 'quads', quads: await stream.toArray() };
+    }
+    // 'boolean' — ASK
+    return { resultType: 'boolean', value: await result.execute() };
+  }
+
   // Describe a resource — returns all quads about it
   describe(uri) {
     return this.store.getQuads(N3.DataFactory.namedNode(uri), null, null, null);

@@ -139,6 +139,11 @@ export class SemLab extends HTMLElement {
     } else if (panelDef['@type'] === 'sembook:TurtlePanel') {
       el.init(this._notebook, this._notebookDoc);
       this._notebook.subscribe(this.uri, el);
+    } else if (panelDef['@type'] === 'sembook:SparqlPanel' || panelDef['@type'] === 'sembook:SparqlResultPanel') {
+      // Neither reacts to graph:updated (they don't render a store projection on a
+      // schedule sem-lab drives) — SparqlResultPanel reacts to its own sparql:executed
+      // listener, registered inside init() itself, so no notebook.subscribe() here.
+      el.init(this._notebook, this._notebookDoc);
     }
     // sembook:TabsPanel's nested panels are init'd inside _buildTabs.
   }
@@ -308,6 +313,22 @@ export class SemLab extends HTMLElement {
 
     if (type === 'sembook:TurtleWriterPanel') {
       const el = document.createElement('sem-panel-turtle-writer');
+      el.setAttribute('uri', panelDef['@id'] || '');
+      el.setAttribute('label', panelDef['sembook:label'] || '');
+      if (panelDef['sembook:cssClass']) el.className = panelDef['sembook:cssClass'];
+      return el;
+    }
+
+    if (type === 'sembook:SparqlPanel') {
+      const el = document.createElement('sem-panel-sparql');
+      el.setAttribute('uri', panelDef['@id'] || '');
+      el.setAttribute('label', panelDef['sembook:label'] || '');
+      if (panelDef['sembook:cssClass']) el.className = panelDef['sembook:cssClass'];
+      return el;
+    }
+
+    if (type === 'sembook:SparqlResultPanel') {
+      const el = document.createElement('sem-panel-sparql-result');
       el.setAttribute('uri', panelDef['@id'] || '');
       el.setAttribute('label', panelDef['sembook:label'] || '');
       if (panelDef['sembook:cssClass']) el.className = panelDef['sembook:cssClass'];

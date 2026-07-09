@@ -258,6 +258,19 @@ export function sparqlToElements(bindings) {
   return [...nodes.values(), ...edges.values()];
 }
 
+// Adapts a CONSTRUCT/DESCRIBE quad array to the binding-shaped `.get('s'|'p'|'o')`
+// interface sparqlToElements expects, so the SPARQL result panel's Graph view can
+// render CONSTRUCT results through the exact same node/edge-building logic as every
+// SELECT-shaped graph panel, rather than a second copy of it. Quads carry no graph
+// provenance the way a `?g`-projecting SELECT binding can, so inferred/asserted
+// edge styling doesn't apply here — every edge renders asserted (solid).
+export function quadsToElements(quads) {
+  const bindings = quads.map(q => ({
+    get: (name) => ({ s: q.subject, p: q.predicate, o: q.object }[name])
+  }));
+  return sparqlToElements(bindings);
+}
+
 export function hierarchyToElements(bindings) {
   const classNodes = new Map();    // classIri → element
   const instanceNodes = new Map(); // instanceIri+classIri → element

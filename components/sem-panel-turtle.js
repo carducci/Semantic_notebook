@@ -9,7 +9,7 @@ import { turtle } from '@codemirror/legacy-modes/mode/turtle';
 
 // N3 is loaded globally via <script src=".../n3.min.js"> in index.html — no module import needed.
 
-function createTurtleViewer(parent, content) {
+export function createTurtleViewer(parent, content) {
   return new EditorView({
     doc: content,
     extensions: [

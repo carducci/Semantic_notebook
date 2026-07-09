@@ -104,7 +104,20 @@ sembook:SparqlPanel
     rdfs:subClassOf sembook:Panel ;
     rdfs:label "SPARQL Panel"@en ;
     rdfs:comment
-        "An interactive SPARQL query panel. Provides a query editing surface and executes queries against the current quad store state. Deferred — not implemented in v1."@en .
+        "An interactive SPARQL query editor panel. Provides a query editing surface, a dropdown of author-defined sample queries (sembook:sampleQueries), and a Run button that executes the current query against the quad store — same Parse-button-family, explicit-commit interaction model as TurtleWriterPanel, but read-only: Run never mutates the lab's named graph. A query with no explicit GRAPH/FROM clause is implicitly scoped to the cumulative graph (asserted and inferred) spanning every lab up to and including this one; a query that explicitly scopes graphs overrides that default. Results are handed to a companion SparqlResultPanel via a sparql:executed event, not rendered by this panel directly."@en .
+
+sembook:SparqlResultPanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:Panel ;
+    rdfs:label "SPARQL Result Panel"@en ;
+    rdfs:comment
+        "Renders the result of a companion SparqlPanel's most recently executed query, received via a sparql:executed event rather than a static sembook:sparql attribute. Offers three views — Table (always available), Turtle, and Graph — the latter two enabled only when the result is triple-shaped (a SELECT projecting exactly ?s ?p ?o, or a CONSTRUCT/DESCRIBE quad stream)."@en .
+
+sembook:SampleQuery
+    a owl:Class ;
+    rdfs:label "Sample Query"@en ;
+    rdfs:comment
+        "A named, pre-authored SPARQL query offered in a SparqlPanel's sample-query dropdown — the same notebook-JSON-LD-declared UI slot other editor panels use for their Fetch-by-IRI affordance. Selecting one loads its sembook:sparql text into the editor; the learner still clicks Run to execute it."@en .
 
 
 # ─────────────────────────────────────────────────────────────
@@ -135,10 +148,10 @@ sembook:label
     a owl:DatatypeProperty ;
     rdfs:label "label"@en ;
     rdfs:comment
-        "A human-readable display label for a Lab or Panel. Used in the navigation strip for Labs and as the tab label for Panels within a TabsPanel."@en ;
+        "A human-readable display label for a Lab, Panel, or SampleQuery. Used in the navigation strip for Labs, as the tab label for Panels within a TabsPanel, and as the option text for a SampleQuery in a SparqlPanel's dropdown."@en ;
     rdfs:domain [
         a owl:Class ;
-        owl:unionOf ( sembook:Lab sembook:Panel )
+        owl:unionOf ( sembook:Lab sembook:Panel sembook:SampleQuery )
     ] ;
     rdfs:range xsd:string .
 
@@ -181,9 +194,20 @@ sembook:sparql
     a owl:DatatypeProperty ;
     rdfs:label "SPARQL query"@en ;
     rdfs:comment
-        "A SPARQL SELECT query string that determines what data a panel renders. The panel executes this query against the quad store when it renders. Different panels use different queries to project different views of the same underlying graph — local graph, full graph, entity list, vocabulary list."@en ;
-    rdfs:domain sembook:Panel ;
+        "A SPARQL query string. On a Panel, this is a SELECT query that determines what data the panel renders each time it re-renders — local graph, full graph, entity list, vocabulary list. On a SampleQuery, this is the query text (any form — SELECT, CONSTRUCT, ASK) offered as a starting point in a SparqlPanel's dropdown, loaded into the editor verbatim rather than executed automatically."@en ;
+    rdfs:domain [
+        a owl:Class ;
+        owl:unionOf ( sembook:Panel sembook:SampleQuery )
+    ] ;
     rdfs:range xsd:string .
+
+sembook:sampleQueries
+    a owl:ObjectProperty ;
+    rdfs:label "sample queries"@en ;
+    rdfs:comment
+        "Ordered list of SampleQuery entries offered in a SparqlPanel's dropdown, filling the same notebook-JSON-LD-declared UI slot other editor panels use for their Fetch-by-IRI affordance."@en ;
+    rdfs:domain sembook:SparqlPanel ;
+    rdfs:range sembook:SampleQuery .
 
 sembook:initialContent
     a owl:DatatypeProperty ;

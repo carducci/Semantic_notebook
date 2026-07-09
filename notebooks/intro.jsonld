@@ -5,7 +5,8 @@
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "sembook:labs": { "@container": "@list" },
-    "sembook:panels": { "@container": "@list" }
+    "sembook:panels": { "@container": "@list" },
+    "sembook:sampleQueries": { "@container": "@list" }
   },
   "@graph": [
     {
@@ -17,7 +18,8 @@
         { "@id": "https://sembook.example.org/intro#data-in-context" },
         { "@id": "https://sembook.example.org/intro#introducing-turtle" },
         { "@id": "https://sembook.example.org/intro#asserting-triples" },
-        { "@id": "https://sembook.example.org/intro#semantic-alignment" }
+        { "@id": "https://sembook.example.org/intro#semantic-alignment" },
+        { "@id": "https://sembook.example.org/intro#querying-the-graph" }
       ]
     },
     {
@@ -221,6 +223,49 @@
               "sembook:label": "Vocabulary"
             }
           ]
+        }
+      ]
+    },
+    {
+      "@id": "https://sembook.example.org/intro#querying-the-graph",
+      "@type": "sembook:Lab",
+      "sembook:label": "Querying the Graph",
+      "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://sembook.example.org/intro#querying-the-graph-editor",
+          "@type": "sembook:SparqlPanel",
+          "sembook:label": "SPARQL",
+          "sembook:cssClass": "overflow-hidden flex flex-col",
+          "sembook:sampleQueries": [
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "All triples",
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE {\n  ?s ?p ?o\n}"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "Subjects and predicates in use",
+              "sembook:sparql": "SELECT DISTINCT ?s ?p WHERE {\n  ?s ?p ?o\n}"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "Only Lab 1 (explicit GRAPH override)",
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE {\n  GRAPH <https://sembook.example.org/intro#identity> { ?s ?p ?o }\n}"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "Reshape into one relation (CONSTRUCT)",
+              "sembook:sparql": "CONSTRUCT {\n  ?s <http://example.org/vocab#relatedTo> ?o\n} WHERE {\n  ?s ?p ?o .\n  FILTER(!isLiteral(?o))\n}"
+            }
+          ]
+        },
+        {
+          "@id": "https://sembook.example.org/intro#querying-the-graph-result",
+          "@type": "sembook:SparqlResultPanel",
+          "sembook:label": "Result",
+          "sembook:cssClass": "overflow-hidden flex flex-col"
         }
       ]
     }

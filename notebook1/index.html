@@ -64,6 +64,7 @@
     "@codemirror/view": "../vendor/codemirror/codemirror-view.js",
     "@codemirror/lang-json": "../vendor/codemirror/codemirror-lang-json.js",
     "@codemirror/legacy-modes/mode/turtle": "../vendor/codemirror/codemirror-legacy-modes-turtle.js",
+    "@codemirror/legacy-modes/mode/sparql": "../vendor/codemirror/codemirror-legacy-modes-sparql.js",
     "@lezer/common": "../vendor/codemirror/lezer-common.js",
     "@lezer/highlight": "../vendor/codemirror/lezer-highlight.js",
     "@lezer/lr": "../vendor/codemirror/lezer-lr.js",
@@ -166,6 +167,12 @@
     class="pt-12 box-border snap-start snap-always">
   </sem-lab>
 
+  <sem-lab
+    id="querying-the-graph"
+    uri="https://sembook.example.org/intro#querying-the-graph"
+    class="pt-12 box-border snap-start snap-always">
+  </sem-lab>
+
 </sem-notebook>
 
 <script type="module" src="../components/sem-lab.js"></script>
@@ -176,6 +183,8 @@
 <script type="module" src="../components/sem-panel-vocab.js"></script>
 <script type="module" src="../components/sem-panel-turtle.js"></script>
 <script type="module" src="../components/sem-panel-turtle-writer.js"></script>
+<script type="module" src="../components/sem-panel-sparql.js"></script>
+<script type="module" src="../components/sem-panel-sparql-result.js"></script>
 <script type="module">
   import { bootstrap } from '../scripts/bootstrap.js';
   import { buildNav } from '../scripts/build-nav.js';

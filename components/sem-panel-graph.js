@@ -3,7 +3,7 @@
 
 import { sparqlToElements, localName } from '../scripts/parse-utils.js';
 
-const stylesheet = [
+export const stylesheet = [
   // IRI nodes — solid, teal
   {
     selector: 'node.iri',
@@ -94,7 +94,7 @@ const stylesheet = [
   }
 ];
 
-const layout = {
+export const layout = {
   name: 'cola',
   animate: true,
   animationDuration: 600,

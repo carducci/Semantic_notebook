@@ -2,7 +2,7 @@
 
 An interactive knowledge graph that renders itself.
 
-This is a browser-based teaching tool for the understanding semantic;  built for conference talks and as book companion material. It has one core trick: you add an ontology to a graph, and the graph knows more than you told it. Reasoning emergence, made visceral and interactive, live on stage.
+This is a browser-based teaching tool for the understanding the semantic stack for AI and integration. It's built for conference talks and as book companion material. It has one core trick: you add an ontology to a graph, and the graph knows more than you told it. Reasoning emergence, made visceral and interactive, live on stage.
 
 The deeper trick is that the tool is made of the thing it teaches. A "notebook" here isn't a JSON config file the app happens to read — it's a JSON-LD document describing itself in a proper OWL ontology (`sembook:`), published at a dereferenceable URI. The app bootstraps by loading its own definition into a knowledge graph and querying that graph to find out what to render. You can point a SPARQL query at the notebook you're looking at. The tool doesn't just talk about semantic, self-describing formats — it *is* one.
 

@@ -122,7 +122,7 @@
     {
       "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples",
       "@type": "sembook:Lab",
-      "sembook:label": "Asserting Triples",
+      "sembook:label": "Defining Terms",
       "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
       "sembook:init": {},
       "sembook:panels": [
@@ -130,7 +130,8 @@
           "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-writer",
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Turtle",
-          "sembook:cssClass": "overflow-hidden flex flex-col"
+          "sembook:cssClass": "overflow-hidden flex flex-col",
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\nex:title a rdf:Property ;\n    rdfs:label \"Title\" ;\n    rdfs:comment \"The title of a published work\" ;\n    rdfs:range xsd:string .\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-tabs",
@@ -138,31 +139,17 @@
           "sembook:cssClass": "overflow-hidden flex flex-col",
           "sembook:panels": [
             {
+              "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-vocabulary",
+              "@type": "sembook:VocabularyPanel",
+              "sembook:label": "Vocabulary",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" }
+            },
+            {
               "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-local-graph",
               "@type": "sembook:GraphPanel",
               "sembook:label": "Local Graph",
               "sembook:scope": { "@id": "sembook:LocalScope" },
               "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#asserting-triples> } }"
-            },
-            {
-              "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-full-graph",
-              "@type": "sembook:GraphPanel",
-              "sembook:label": "Full Graph",
-              "sembook:scope": { "@id": "sembook:CumulativeScope" },
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#asserting-triples> } }"
-            },
-            {
-              "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-entities",
-              "@type": "sembook:EntityPanel",
-              "sembook:label": "Entities",
-              "sembook:scope": { "@id": "sembook:CumulativeScope" },
-              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#asserting-triples> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
-            },
-            {
-              "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-vocabulary",
-              "@type": "sembook:VocabularyPanel",
-              "sembook:label": "Vocabulary",
-              "sembook:scope": { "@id": "sembook:CumulativeScope" }
             }
           ]
         }

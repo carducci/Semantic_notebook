@@ -71,8 +71,8 @@
           "@type": "sembook:JsonLdContextPanel",
           "sembook:label": "Book Record",
           "sembook:cssClass": "overflow-hidden flex flex-col",
-          "sembook:initialContent": "{\n  \"id\": \"URN:ISBN:0812979796\",\n  \"title\": \"Elizabeth the Queen: The Life of a Modern Monarch\",\n  \"about\": {\n    \"id\": \"https://dbpedia.org/resource/Elizabeth_II\",\n    \"name\": \"Elizabeth Windsor\",\n    \"title\": \"Queen of the United Kingdom\"\n  },\n  \"author\": {\n    \"id\": \"https://example.com/person/id/35626\",\n    \"name\": \"Sally Bedell Smith\",\n    \"title\": \"Biographer\"\n  }\n}",
-          "sembook:initialContext": "{\n  \"@context\": {\n    \"id\": \"@id\",\n    \"title\": \"http://purl.org/dc/terms/title\",\n    \"about\": {\n      \"@id\": \"http://schema.org/about\",\n      \"@context\": {\n        \"title\": \"http://www.wikidata.org/prop/direct/P39\"\n      }\n    },\n    \"author\": {\n      \"@id\": \"http://schema.org/author\",\n      \"@context\": {\n        \"title\": \"http://schema.org/jobTitle\"\n      }\n    }\n  }\n}"
+          "sembook:initialContent": "{\n  \"@id\": \"https://example.com/Book/Id/8268\",\n  \"title\": \"Elizabeth the Queen: The Life of a Modern Monarch\",\n  \"isbn\": \"0812979796\",\n  \"about\": {\n    \"@id\": \"https://dbpedia.org/resource/Elizabeth_II\",\n    \"name\": \"Elizabeth Windsor\",\n    \"title\": \"Queen of the United Kingdom\"\n  },\n  \"author\": {\n    \"@id\": \"https://example.com/Author/Id/35626\",\n    \"name\": \"Sally Bedell Smith\",\n    \"title\": \"Biographer\"\n  }\n}",
+          "sembook:initialContext": "{\n  \"@context\": {\n    \"title\": \"https://example.com/ns#title\",\n    \"about\": {\n      \"@id\": \"https://example.com/ns#about\",\n      \"@context\": {\n        \"title\": \"https://example.com/ns#positionHeld\"\n      }\n    },\n    \"author\": {\n      \"@id\": \"https://example.com/ns#author\"\n    }\n  }\n}"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-tabs",
@@ -122,7 +122,7 @@
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "JSON-LD",
           "sembook:cssClass": "overflow-hidden flex flex-col border-r border-slate-200",
-          "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"http://example.org/\",\n    \"schema\": \"http://schema.org/\",\n    \"id\": \"@id\",\n    \"type\": \"@type\"\n  },\n  \"id\": \"/Person/1\",\n  \"type\": \"schema:Person\",\n  \"schema:name\": \"Ada Lovelace\",\n  \"schema:birthDate\": \"1815-12-10\"\n}"
+          "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"https://example.com/\",\n    \"ex\": \"https://example.com/ns#\",\n    \"id\": \"@id\",\n    \"title\": \"ex:title\",\n    \"published\": \"ex:published\",\n    \"author_id\": { \"@id\": \"ex:author\", \"@type\": \"@id\" }\n  },\n  \"id\": \"/Book/Id/441\",\n  \"@type\": \"ex:Book\",\n  \"title\": \"G\\u00f6del, Escher, Bach\",\n  \"author_id\": \"/Author/Id/872\",\n  \"published\": 1979\n}"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#introducing-turtle-turtle",

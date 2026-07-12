@@ -87,20 +87,6 @@
               "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#data-in-context> } }"
             },
             {
-              "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-full-graph",
-              "@type": "sembook:GraphPanel",
-              "sembook:label": "Full Graph",
-              "sembook:scope": { "@id": "sembook:CumulativeScope" },
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#data-in-context> } }"
-            },
-            {
-              "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-entities",
-              "@type": "sembook:EntityPanel",
-              "sembook:label": "Entities",
-              "sembook:scope": { "@id": "sembook:CumulativeScope" },
-              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#data-in-context> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
-            },
-            {
               "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-vocabulary",
               "@type": "sembook:VocabularyPanel",
               "sembook:label": "Vocabulary",
@@ -122,7 +108,7 @@
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "JSON-LD",
           "sembook:cssClass": "overflow-hidden flex flex-col border-r border-slate-200",
-          "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"https://example.com/\",\n    \"ex\": \"https://example.com/ns#\",\n    \"id\": \"@id\",\n    \"title\": \"ex:title\",\n    \"published\": \"ex:published\",\n    \"author_id\": { \"@id\": \"ex:author\", \"@type\": \"@id\" }\n  },\n  \"id\": \"/Book/Id/441\",\n  \"@type\": \"ex:Book\",\n  \"title\": \"G\\u00f6del, Escher, Bach\",\n  \"author_id\": \"/Author/Id/872\",\n  \"published\": 1979\n}"
+          "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"https://catalog.example.net/\",\n    \"schema\": \"http://schema.org/\",\n    \"id\": \"@id\"\n  },\n  \"id\": \"/book/979-8868804090\",\n  \"@type\": \"schema:Book\",\n  \"schema:name\": \"Mastering Software Architecture\",\n  \"schema:isbn\": \"979-8868804090\",\n  \"schema:datePublished\": \"2025\",\n  \"schema:author\": {\n    \"id\": \"https://w3id.org/people/michael\",\n    \"schema:name\": \"Michael Carducci\"\n  }\n}"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#introducing-turtle-turtle",

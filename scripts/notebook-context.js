@@ -134,6 +134,15 @@ export class NotebookContext extends EventTarget {
   // (the convention in spec §"Named Graph Model", ADR-009, and sembook.ttl). Idempotent:
   // the inferred graph is cleared and recomputed from scratch on every call, so repeated
   // Parses of the same or overlapping fragments never accumulate duplicate derivations.
+  //
+  // Reasoning input is CUMULATIVE (ADR-038): the union of every lab's asserted graph up
+  // to and including this one — knowledge accumulates, so an axiom parsed here acts on
+  // data parsed hours ago, and vice versa. Attribution stays per-lab: this lab's
+  // inferred graph receives only derivations the graph did not already know before this
+  // lab (earlier labs' inferred graphs are subtracted from the delta) — "what did THIS
+  // parse teach the graph." Recomputation is forward-only, same convention as panel
+  // refresh (C9): re-parsing an earlier lab does not recompute later labs' inferred
+  // graphs until those labs next parse.
   _materialize(labUri) {
     const df = N3.DataFactory;
     const inferredGraph = df.namedNode(`${labUri}-inferred`);
@@ -143,9 +152,14 @@ export class NotebookContext extends EventTarget {
       this.store.removeQuad(q);
     }
 
-    // 2. This lab's asserted triples (its own named graph only — per-lab isolation,
-    //    matching how the lab's asserted graph is scoped; not a cross-lab union).
-    const asserted = this.store.getQuads(null, null, null, df.namedNode(labUri));
+    // 2. Reasoning input: union of asserted graphs for every lab up to and including
+    //    this one (never the default graph — notebook infrastructure is not teaching
+    //    data, C7). graphsUpTo returns [labUri] when lab order isn't loaded yet.
+    const scopeGraphs = this.graphsUpTo(labUri);
+    const inputGraphs = scopeGraphs.length > 0 ? scopeGraphs : [labUri];
+    const asserted = inputGraphs.flatMap(g =>
+      this.store.getQuads(null, null, null, df.namedNode(g))
+    );
     if (asserted.length === 0) return;
 
     // 3. Reason in an isolated scratch store rather than in place. N3.Reasoner mutates
@@ -160,13 +174,30 @@ export class NotebookContext extends EventTarget {
     }
     const assertedKeys = new Set(scratch.getQuads().map(quadKey));
 
+    // Derivations the graph already knew before this lab: every EARLIER lab's inferred
+    // graph (this lab's own was cleared in step 1). Subtracting them keeps attribution
+    // honest and cumulative projections free of duplicate inferred triples.
+    const knownKeys = new Set(
+      inputGraphs
+        .filter(g => g !== labUri)
+        .flatMap(g => this.store.getQuads(null, null, null, df.namedNode(`${g}-inferred`)))
+        .map(quadKey)
+    );
+
     new N3.Reasoner(scratch).reason(this._getRulesStore());
 
-    // 4. Newly derived = everything in the scratch graph that wasn't already asserted.
-    //    Write those (only those) into the inferred graph.
+    // 4. Newly derived = everything in the scratch graph that wasn't asserted anywhere
+    //    in scope and wasn't already derived by an earlier lab.
     for (const q of scratch.getQuads()) {
       if (assertedKeys.has(quadKey(q))) continue;                 // re-derived assertion
+      if (knownKeys.has(quadKey(q))) continue;                    // already known before this lab
       if (q.predicate.value === OWL_SAMEAS && q.subject.equals(q.object)) continue; // reflexive noise
+      // DDR-031's "known wart": rdfs2/rdfs3 can derive a type triple whose subject is a
+      // literal (e.g. rdfs:range on a datatype property typing its literal values).
+      // N3.js rules can't express the guard, but this diff step can: literal subjects
+      // aren't legal RDF, so they never reach the store. Cumulative input (ADR-038)
+      // made this reachable from ordinary seed data rather than a theoretical edge.
+      if (q.subject.termType === 'Literal') continue;
       this.store.addQuad(df.quad(q.subject, q.predicate, q.object, inferredGraph));
     }
   }

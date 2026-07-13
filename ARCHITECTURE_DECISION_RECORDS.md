@@ -421,4 +421,30 @@ The consequence above ("three places that must agree") is reduced by ADR-037: `<
 
 ---
 
+## ADR-038 — Cumulative Reasoning Input, Per-Lab Derivation Attribution
+
+**Context:** DDR-031 wired materialization with "per-lab scope only" — reasoning input was the current lab's asserted graph, nothing else. That line was stated as mechanics inside the isolation paragraph, with no rationale attached; it mirrored how panel queries scope, but nothing depended on it. The workshop arc, meanwhile, depends on its opposite: the teaching thesis is that knowledge *accumulates* — an alignment axiom declared in one lab must act on data parsed hours earlier ("the ontology reaches back"), and must detonate again when foreign data arrives labs later. Under per-lab input, cross-lab co-inference was impossible and both of those beats were staged fictions at best.
+
+**Decision:**
+- **Input is cumulative:** `_materialize(labUri)` reasons over the union of *asserted* graphs for every lab up to and including `labUri` (`graphsUpTo` — the same ordered scope every cumulative projection already uses). Never the default graph: notebook infrastructure is not teaching data (C7).
+- **Attribution stays per-lab:** derivations land in the current lab's `<lab-iri>-inferred` graph, minus everything the graph already knew — earlier labs' inferred graphs are subtracted from the delta. A lab's inferred graph therefore reads as "what *this* parse taught the graph," which is the pedagogically honest bookkeeping and keeps cumulative projections free of duplicate inferred triples.
+- **Recomputation is forward-only,** same convention as panel refresh (C9): re-parsing an earlier lab recomputes only that lab's inferred graph (from *its* prefix of the day); later labs' inferred graphs go stale until their own next Parse. Forward room-flow never observes this.
+- **DDR-031's "known wart" is closed:** rdfs2/rdfs3 deriving literal-subject type triples was accepted there because N3.js rules can't express a literal guard — but the asserted-vs-derived diff step is plain JS, and now drops any derived quad with a Literal subject (not legal RDF). Cumulative input made the wart reachable from ordinary seed data (a `range` axiom in one lab, literal-valued uses of the property in another), so acceptance was no longer viable.
+
+**Alternatives Considered:**
+- **Keep per-lab input, re-seed axioms/data into whichever lab needs the reveal** — rejected: the compounding story becomes curated fiction, and the Turtle panel betrays the re-seeding to exactly the audience being taught to read it.
+- **One global inferred graph** — rejected: loses per-parse attribution ("which lab taught the graph this?"), which panels and the justification narrative both use.
+- **Recompute every lab's inferred graph on every Parse** — rejected: violates the forward-only convention panels already set (C9), for no observable benefit in room flow.
+
+**Consequences:**
+- Reasoning cost per Parse grows with the day's asserted union — trivially fast at teaching scale; revisit if a notebook ever carries non-teaching data volumes.
+- Early-lab seed silence (PEDAGOGIC_LICENSE L3) now depends on the *union's* axiom content, not just the lab's own seed: an axiom parsed anywhere acts on everything before it. The authoring convention tightens accordingly — no domain/range/subclass axioms anywhere before the first reveal lab.
+- The verified reveal pair this exists for: an axiom parsed in the classes lab retro-typed a record asserted three labs earlier (checked 2026-07-12: `schema:Book ⊑ ex:Book` in lab 5 derived `<catalog book> a ex:Book` from lab 3's typing), while labs 1–4 remain inference-silent.
+
+**Why this is architecturally significant:** it redefines what the reasoner's input *is* for every current and future lab, it is the mechanism behind the workshop's central "graph gets smarter" claim (C3 both ways: the tool's behavior must not contradict the lesson), and its forward-only staleness contract is now something lab authors and any future runtime implementation must honor.
+
+**Governing constraint:** [C3 — The Notebook Format Is the Subject Matter](ARCHITECTURAL_CONSTRAINTS.md#c3--the-notebook-format-is-the-subject-matter), C7 (infrastructure in the default graph), and C9 (scoped events / forward-only refresh). Refines ADR-009 / DDR-031.
+
+---
+
 *Records here are added when a new decision clears the bar in the "How This Relates" section above. When a decision changes, append a dated Revision/Correction section (see ADR-010) rather than editing the original text away.*

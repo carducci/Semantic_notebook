@@ -117,23 +117,108 @@ right there — nobody should be scrolling back through labs to copy an IRI.
 Optional stretch: `rdfs:domain ex:isbn ex:Book`, then assert a brand-new
 resource with only an `ex:isbn` — it gets typed `ex:Book` out of thin air.
 
-## Lab 6 — Merging Vocabularies (deck Labs 7+8) — IN DESIGN
+## Lab 6 — Merging Vocabularies (deck Labs 7+8)
 
-Aligning our vocabulary to schema.org's equivalent terms and classes, in
-**pure RDFS** — no `owl:` yet. Equivalence is built live out of a part the
-room already owns: `rdfs:subPropertyOf`, declared both ways.
+Aligning our vocabulary to schema.org's terms and classes, in **pure RDFS** —
+no `owl:` yet. The arc inside the lab: one-way containment first (the honest,
+common case), then the escalation to both-ways — equivalence built live out
+of a part the room already owns.
 
-**The rhetorical device (use this):** "You know how all beers are beverages,
-but not all beverages are beers? That's subclass — one-way. Now suppose I say
-it *twice*, in both directions: every `ex:isbn` is a `schema:isbn`, and every
-`schema:isbn` is an `ex:isbn`. How would a reasoner evaluate that? The only
-world where both rules hold is one where they're *the same property*.
-`ex:isbn` ≡ `schema:isbn` — we just built equivalence out of subproperty."
-Payoff deferred to the OWL section: OWL's contribution is *naming* this
-pattern (`owl:equivalentProperty` — one line instead of two; watch it replace
-them, same graph).
+**Seed (Turtle writer):** the worked example is `title`, the day's running
+term — `ex:title rdfs:subPropertyOf schema:name .` **one direction only**,
+with the candidates commented as questions (`author`? `Book`? `isbn` —
+"careful: is this one-way… or both?").
 
-**Open items before build:** cumulative-reasoning decision (the bridge
-declared here should detonate when the foreign catalog arrives in the merging
-lab — cross-lab inference doesn't exist yet); which terms/classes get aligned
-in the seed vs. live; surface (Vocabulary tab primary).
+**Walking the title example — beats and quips:**
+- Setup: "Their system doesn't even have a word called *title* for this — they
+  say *name*. Do we fight about it? No. We state the relationship."
+- The device: "Every title is a name. Not every name is a title — ask anyone
+  named Duke." (Beer/beverage carryover: *title is the beer here.*)
+- Parse, then the bloom: two dashed `schema:name` triples appear on the
+  *morning's* records. "Nobody edited the publisher's data. Nobody wrote a
+  migration. We told the graph one true thing, and it re-read everything it
+  already knew."
+- Why one-way matters — the trap, worth saying out loud when someone proposes
+  `title ≡ name`: "Declare those equivalent and then align `ex:name` to
+  `schema:name` too — congratulations, transitivity just made everyone's name
+  their title. Careless equivalence is how you end up with a library where
+  everybody is named *Moby Dick*. Direction is a modeling decision."
+- The escalation (live): work the worklist. `author`: one-way. Classes: same
+  trick one level up, `rdfs:subClassOf`. Then `isbn`: "is every `ex:isbn` a
+  `schema:isbn`? Yes. Is every `schema:isbn` an `ex:isbn`? …also yes. So say
+  it twice." Two one-way statements, both directions → "How must a reasoner
+  evaluate that? The only world where both hold is one where they're *the
+  same property*. We just built equivalence out of subproperty." (OWL's
+  contribution — *naming* this pattern in one line — stays in the OWL
+  section's pocket.)
+- If Lab 2's collision was left unfixed, "Biographer" now blooms as Sally's
+  `schema:name` — either quietly fix it in Lab 2 beforehand, or use it:
+  "alignment propagates your *mistakes* just as faithfully."
+
+**Tabs:** Vocabulary (default) + Local Graph (the Turn's pointing surface:
+the bridge itself is an edge among the books and people) + Full Graph (the
+bloom across the whole morning).
+
+**Note:** ADR-038 (cumulative reasoning) is what makes all of this real —
+axioms parsed here act on the whole morning's data, and the isbn bridge built
+here detonates again when the foreign dataset arrives in Lab 7.
+
+### The bridge out of Lab 6 (Pledge / Turn / Prestige)
+
+- **Pledge:** declarative alignment, shown. Classes converged, properties
+  deduped, dashed dialect triples across the morning's data.
+- **Turn (rapid-fire takahashi):** "You might be thinking 'ok cool, we mapped
+  two schemas… in a really weird way…' — That's not what just happened. We
+  *learned* something about the semantics. We expressed what we learned as
+  individual facts. We added those facts to the knowledge graph. We didn't map
+  fields. We made the data, itself, smarter."
+- **While saying "individual facts": point at the Local Graph tab** — the
+  bridge is ON SCREEN as data: `ex:isbn —subPropertyOf→ schema:isbn`, an edge
+  among the books and people. "Your mapping has an IRI. It's queryable. Your
+  ETL config never was."
+- **Prestige = Lab 7's fetch** ("…let me show you something…"), BEFORE the
+  LOD story: the queen's record joins with zero local mapping. Then "how does
+  this scale?" → DBpedia → LOD cloud as *recognition* — the world has been
+  doing what the room just did, since 2007, at billions of facts.
+- **Callback triangle to keep verbally parallel:** slide 154 "the graph grows
+  in understanding" (plant) → this Turn "we made the data itself smarter"
+  (thesis) → slide 498 "it's a capability of the data itself" (payoff).
+
+## Lab 7 — Merging Graphs (deck Lab 9) — IN DESIGN
+
+Fetch a document about the queen "from DBpedia" and watch it join the day's
+graph with zero local mapping. Design decisions on record:
+
+- **The dataset is doctored, on purpose (pedagogic license, entry due when the
+  file lands):** heavily trimmed from real DBpedia output — what's in frame in
+  CodeMirror must look *familiar*, not a mountain of every-language labels.
+  Buried inside: schema.org assertions that genuinely exist in DBpedia's
+  vocabulary alignment, called out quietly in a Turtle comment if the surface
+  is Turtle. Authentic `owl:` strays stay (foreshadowing), curated so nothing
+  visibly merges before its moment.
+- **Fetched IRIs are silently rebased** (existing dereference behavior — CORS
+  + offline-capable demos). License note due alongside the dataset.
+- Fetch fills the editor and does NOT parse (ADR-019) — read the foreign
+  record with the room before committing it.
+- **The smuggle (DO NOT FORGET):** the doctored dataset carries extra vocab
+  assertions that pay off *later* — a fact surfaces labs afterward and the
+  beat is "how did the data know that? …DBpedia told us." That question is
+  the bridge into the trust/provenance aside (whose full answer is the
+  named-graphs beat in the SPARQL section: every triple knows where it came
+  from). Choose the smuggled assertions when the dataset is authored.
+- **Quip looking for a home** (candidate spots: after this lab's zero-mapping
+  merge, the OWL declare-once section, or the 1000× token-reduction slide):
+  *"The smarter we make the graph, the less we need to say."*
+
+## Lab 8+ — SPARQL section — REMINDERS
+
+- **"Query in whatever language makes sense to you" demo:** run the persons
+  query in schema.org terms (`?p schema:givenName ?n`), then the identical
+  question in `ex:` terms — same answers, "but you already understand this…"
+  Then the sleeper: `DESCRIBE <https://w3id.org/people/michael>` — foaf terms
+  pour out. "This is the graph we built — and we never even touched this
+  vocabulary." (foaf = the third dialect; its schema.org bridges are published
+  by the vocabularies themselves.) Exact sequencing TBD.
+- **Tie this demo back to multi-agent systems** when the deck reaches that
+  section — an agent that speaks *any* of the aligned dialects can query the
+  graph; nobody coordinated. Michael asked to be reminded at that deck beat.

@@ -99,6 +99,27 @@ and between retrieval and reasoning.
 You're done when: you can point at the fact nobody typed and name the two
 statements that justify it.
 
+## Lab 6 — Merging Vocabularies
+
+Two vocabularies have been living in your graph all day: yours, and the one
+the publisher's system spoke in Lab 3. Mostly different words for the same
+ideas. Time to teach the graph what you've noticed.
+
+**Goal:** alignment is knowledge, not configuration — a mapping is just
+another fact.
+
+The seed states one relationship, in one direction: every `ex:title` is a
+`schema:name` (not every name is a title — direction matters). Parse it and
+watch the Full Graph: records from hours ago restate themselves in a
+vocabulary you never used. Then work the commented list — and when you reach
+`isbn`, ask yourself the seed's question: one-way, or both? Say what's true.
+If it's true both ways, say it twice, and think about what a reasoner must
+conclude.
+
+You're done when: data you asserted this morning carries dashed triples in
+the other vocabulary, and you can explain why `title` got one direction but
+`isbn` got two.
+
 ---
 
 ## References

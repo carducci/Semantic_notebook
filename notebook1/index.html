@@ -7,7 +7,7 @@
      meta tag is parsed before any external stylesheet loads, so it's the earliest
      possible signal to opt this (light-only) app out of browser forced-dark repaint. -->
 <meta name="color-scheme" content="light" />
-<title>Semantic Notebook — Introduction to Linked Data</title>
+<title>Semantic Notebook — An Engineer's Guide to the Semantic Layer</title>
 <!-- ALL runtime libraries are vendored under /vendor/globals/ (exact source
      versions in that directory's PROVENANCE.md) — no CDN fetches at runtime.
      Same rationale as the CodeMirror vendoring below, generalized after the
@@ -130,7 +130,10 @@
       <span class="block h-0.5 w-4 bg-current"></span>
       <span class="block h-0.5 w-4 bg-current"></span>
     </button>
-    <span class="font-semibold tracking-wide">Introduction to Linked Data</span>
+    <span class="font-semibold tracking-wide">An Engineer's Guide to the Semantic Layer</span>
+    <!-- Populated by build-nav.js with the active lab ("Lab 5 · Classes and Subclasses").
+         Empty until the first lab intersects; build-nav owns all its updates. -->
+    <span id="lab-nav-current" class="truncate text-slate-300"></span>
   </nav>
 
   <!-- Backdrop and drawer sit below the fixed nav bar (top-12), not over it,

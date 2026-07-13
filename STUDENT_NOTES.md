@@ -1,0 +1,111 @@
+# Workshop Notes — Data Architecture for AI
+
+Your companion for the hands-on labs at
+**<https://notebook.semantic.consulting/notebook1/>**. Everything runs in your
+browser — nothing to install. Each lab is one full screen; scroll (or use the
+menu) to move between them. **Parse** is your commit button: edit, parse,
+watch the graph.
+
+Reading the graph: **teal circles** are things with identity (an IRI). **Amber
+circles** are anonymous — the graph knows something is there but not *what*.
+**Gray boxes** are plain values. **Dashed** edges and *italic* rows are facts
+the graph worked out on its own — you'll see your first one in Lab 5.
+
+---
+
+## Lab 1 — Identity and Connection
+
+Two JSON documents from two different systems. They're about connected things —
+a book and its author — but nothing connects them, because nothing in them has
+identity.
+
+**Goal:** feel the moment data becomes *linked* data.
+
+1. Parse both documents as-is. Two islands.
+2. Give each record identity: add `@base` and map `id` to `@id` in a
+   `@context`. Watch amber turn teal.
+3. Map `author_id` so its value is understood as *a reference, not a string*:
+   `"author_id": { "@type": "@id" }`. Watch the islands become one graph.
+4. Fetch the richer author record. Same IRI — so everything just attaches.
+
+You're done when: one connected graph, no amber nodes, and you can say *why*
+the edge appeared.
+
+## Lab 2 — Data and Context
+
+One JSON document where the same key — `title` — means three different things:
+a book's title, a royal position, a job. Humans read past this; machines can't.
+
+**Goal:** meaning is contextual, and context can be written down.
+
+The `@context` pane is data too. See how the queen's `title` is resolved
+differently *inside* the `about` object. Then finish the job: the author's
+`title` is still colliding with the book's, and `isbn` and `name` are still
+unmapped "magic strings." Map them to your own terms.
+
+You're done when: three different `title` meanings resolve to three different
+properties, and nothing in the graph says `implied:` anymore.
+
+## Lab 3 — Two Syntaxes, One Graph
+
+A record from a completely different system — a publisher's catalog, using a
+vocabulary we've never seen — and a second pane you haven't met.
+
+**Goal:** JSON-LD documents are one *costume* for something deeper: sentences.
+
+Parse, then read the right-hand pane out loud. Subject, verb, object, period.
+That's Turtle — the same graph, written as statements. Notice the `@context`
+prefixes became `@prefix` lines. Change something on the left; parse; find it
+on the right.
+
+You're done when: you can point at any line of Turtle and say which part of
+the JSON it came from.
+
+## Lab 4 — Defining Terms
+
+Open the Vocabulary tab: every term you've used today is listed — and almost
+all of them are amber. They have identity, but no meaning anyone wrote down.
+
+**Goal:** definitions are data. A term is a resource you can describe like any
+other.
+
+The editor holds a complete definition of `title`: what kind of thing it is
+(`rdf:Property`), a human label, a description, what values it takes
+(`rdfs:range`). Parse it — watch `title` turn teal in the vocabulary. Then
+work down the amber list and describe your own terms the same way.
+
+You're done when: the terms *you* created are teal, and you can explain what
+`rdfs:range` told the graph.
+
+## Lab 5 — Classes and Subclasses
+
+So far the graph knows *things* and *properties*. Now it learns *kinds of
+things* — and how kinds relate.
+
+**Goal:** watch the graph know more than you told it.
+
+The seed declares a class (`ex:Book`) and claims one: Gödel, Escher, Bach `a
+ex:Book`. Now build upward: declare `ex:Author`, and state the relationship —
+`ex:Author rdfs:subClassOf schema:Person`. Then type the people you've met
+today: Sally, Hofstadter, Michael are Authors; Elizabeth is a Person. Their
+IRIs are waiting in the editor's comments — no need to hunt back through
+earlier labs. Watch the Entities tab as you parse.
+
+Something will appear that you did not type. Find it. It's dashed for a
+reason: the graph *derived* it, and it can tell you exactly from which two
+statements. That's the difference between a database and a knowledge graph —
+and between retrieval and reasoning.
+
+You're done when: you can point at the fact nobody typed and name the two
+statements that justify it.
+
+---
+
+## References
+
+- JSON-LD: <https://www.w3.org/TR/json-ld11/> · playground: <https://json-ld.org/playground/>
+- RDF primer: <https://www.w3.org/TR/rdf11-primer/>
+- Turtle: <https://www.w3.org/TR/turtle/>
+- RDFS: <https://www.w3.org/TR/rdf-schema/>
+- schema.org: <https://schema.org/> (you met it before you knew its name)
+- Michael: <https://w3id.org/people/michael> · <michael@semantic.consulting>

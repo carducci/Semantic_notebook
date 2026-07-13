@@ -28,23 +28,42 @@ export function buildNav(linksEl, notebookDoc) {
   const labUris = (notebookNode['sembook:labs'] || []).map(l => l['@id'] || l);
 
   const linksBySlug = new Map();
+  const headingsBySlug = new Map(); // slug → "Lab N · Label" for the fixed bar
 
+  let labNumber = 0;
   for (const labUri of labUris) {
     const lab = graph.find(n => n['@id'] === labUri);
     if (!lab) continue;
+    labNumber++;
 
     const slug = new URL(labUri).hash; // e.g. "#identity" — derived, never re-typed
+    const label = lab['sembook:label'] || labUri;
+    const heading = `Lab ${labNumber} · ${label}`;
     const a = document.createElement('a');
     a.href = slug;
     a.className = INACTIVE_LINK_CLASS;
-    a.textContent = lab['sembook:label'] || labUri;
-    a.addEventListener('click', closeDrawer);
+    a.textContent = label;
+    a.addEventListener('click', () => {
+      // Reflect the destination immediately — the IntersectionObserver update
+      // lands a beat later, after the snap scroll settles.
+      setCurrentLabHeading(heading);
+      closeDrawer();
+    });
     linksEl.appendChild(a);
     linksBySlug.set(slug.slice(1), a);
+    headingsBySlug.set(slug.slice(1), heading);
   }
 
-  observeActiveLab(linksBySlug);
+  observeActiveLab(linksBySlug, headingsBySlug);
   wireDrawerToggle();
+}
+
+// The fixed bar shows which lab dominates the viewport ("Lab 5 · Classes and
+// Subclasses") next to the notebook title. The #lab-nav-current span is page
+// chrome authored in each notebook's index.html; absent span, no-op.
+function setCurrentLabHeading(heading) {
+  const el = document.getElementById('lab-nav-current');
+  if (el) el.textContent = heading;
 }
 
 // Highlights whichever nav link corresponds to the <sem-lab> currently
@@ -56,7 +75,7 @@ export function buildNav(linksEl, notebookDoc) {
 // Scroll-snap (ADR-015) guarantees at most one lab is ever substantially in
 // view, so "the most-intersecting lab wins" needs no scroll-direction or
 // velocity tracking — just track each lab's latest ratio and re-pick the max.
-function observeActiveLab(linksBySlug) {
+function observeActiveLab(linksBySlug, headingsBySlug) {
   if (linksBySlug.size === 0) return;
 
   const ratios = new Map();
@@ -78,6 +97,7 @@ function observeActiveLab(linksBySlug) {
     for (const [slug, link] of linksBySlug) {
       link.className = slug === activeSlug ? ACTIVE_LINK_CLASS : INACTIVE_LINK_CLASS;
     }
+    if (activeSlug) setCurrentLabHeading(headingsBySlug.get(activeSlug) || '');
   }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
 
   for (const slug of linksBySlug.keys()) {

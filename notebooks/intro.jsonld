@@ -12,12 +12,13 @@
     {
       "@id": "https://notebook.semantic.consulting/notebook1/",
       "@type": "sembook:Notebook",
-      "sembook:title": "Introduction to Linked Data",
+      "sembook:title": "An Engineer's Guide to the Semantic Layer",
       "sembook:labs": [
         { "@id": "https://notebook.semantic.consulting/notebook1/#identity" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#introducing-turtle" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#defining-classes" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#querying-the-graph" }
       ]
@@ -150,6 +151,49 @@
               "sembook:label": "Local Graph",
               "sembook:scope": { "@id": "sembook:LocalScope" },
               "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#asserting-triples> } }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "https://notebook.semantic.consulting/notebook1/#defining-classes",
+      "@type": "sembook:Lab",
+      "sembook:label": "Classes and Subclasses",
+      "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#defining-classes-writer",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "Turtle",
+          "sembook:cssClass": "overflow-hidden flex flex-col",
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix schema: <http://schema.org/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\nex:Book a rdfs:Class ;\n    rdfs:label \"Book\" ;\n    rdfs:comment \"A published written work\" .\n\n<https://example.com/Book/Id/441> a ex:Book .\n\n# Our world has met more kinds of things than the graph knows about.\n# Declare them, relate them, and claim their members:\n#\n#   ex:Author        — who below counts? What else is an Author?\n#   schema:Person    — the queen, certainly. Anyone else — always?\n#   ex:Organization  — Hofstadter has an affiliation… to what kind of thing?\n#\n# The cast so far:\n#   <https://example.com/Author/Id/872>          Douglas Hofstadter\n#   <https://example.com/Author/Id/35626>        Sally Bedell Smith\n#   <https://w3id.org/people/michael>            Michael Carducci\n#   <https://dbpedia.org/resource/Elizabeth_II>  Elizabeth II\n#   <https://example.com/Org/Id/34>              Hofstadter's affiliation\n"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#defining-classes-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://notebook.semantic.consulting/notebook1/#defining-classes-entities",
+              "@type": "sembook:EntityPanel",
+              "sembook:label": "Entities",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" },
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#defining-classes> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
+            },
+            {
+              "@id": "https://notebook.semantic.consulting/notebook1/#defining-classes-vocabulary",
+              "@type": "sembook:VocabularyPanel",
+              "sembook:label": "Vocabulary",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" }
+            },
+            {
+              "@id": "https://notebook.semantic.consulting/notebook1/#defining-classes-local-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Local Graph",
+              "sembook:scope": { "@id": "sembook:LocalScope" },
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#defining-classes> } }"
             }
           ]
         }

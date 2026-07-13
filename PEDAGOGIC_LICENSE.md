@@ -91,6 +91,26 @@ and owl-curation are curriculum, not drift. The smuggled assertions (e.g.
 `dbo:spouse` + Prince Philip, planted for a later "how did the data know
 that?" beat) are part of the lesson plan — see INSTRUCTOR_NOTES.md.
 
+## L5 — The w3id.org dereference is faked out
+
+**The fudge:** the Standing on Shoulders lab presents fetching
+`https://w3id.org/people/michael` (Michael's real, resolving IRI — 303 →
+`semantic.consulting/michael.ttl`), but actually fetches a doctored local
+copy (`datasets/michael-foaf.ttl`): trimmed, with a `foaf:knows` link into
+the day's cast added, and FOAF's schema.org alignments plus the
+`foaf:knows` domain/range axioms shipped in-band as plain `rdfs:` (the real
+FOAF spec publishes equivalents of these, but as owl: constructs and in a
+separate document).
+
+**The honest version:** live dereference of the real IRI (CORS and
+conference wifi permitting) followed by a second fetch of the FOAF
+vocabulary document itself, with owl:-flavored alignment axioms.
+
+**Unwind:** the local-serving part matches L4's rationale and unwinds the
+same way (content negotiation via caching proxy in the generalized version).
+The in-band rdfs-flavored axioms are curriculum — "the vocabulary ships what
+it learned" is the lesson, and pre-OWL the rdfs: rendering is the license.
+
 ---
 
 *Add entries as they're committed. If an entry stops being true (the concept

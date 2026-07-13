@@ -21,6 +21,7 @@
         { "@id": "https://notebook.semantic.consulting/notebook1/#defining-classes" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#merging-vocabularies" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#integration-for-free" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#querying-the-graph" }
       ]
@@ -134,7 +135,7 @@
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\nex:title a rdf:Property ;\n    rdfs:label \"Title\" ;\n    rdfs:comment \"The title of a published work\" ;\n    rdfs:range xsd:string .\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n# ── Our ontology ──────────────────────────────────────\n\nex:title a rdf:Property ;\n    rdfs:label \"Title\" ;\n    rdfs:comment \"The title of a published work\" ;\n    rdfs:range xsd:string .\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-tabs",
@@ -170,7 +171,7 @@
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix schema: <http://schema.org/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\nex:Book a rdfs:Class ;\n    rdfs:label \"Book\" ;\n    rdfs:comment \"A published written work\" .\n\n<https://example.com/Book/Id/441> a ex:Book .\n\n# Our world has met more kinds of things than the graph knows about.\n# Declare them, relate them, and claim their members:\n#\n#   ex:Author        — who below counts? What else is an Author?\n#   schema:Person    — every Author is one. Who else — always?\n#   ex:Organization  — Hofstadter has an affiliation… to what kind of thing?\n#\n# (And Elizabeth? What IS she, exactly? …Do we actually know?)\n#\n# The cast so far:\n#   <https://example.com/Author/Id/872>          Douglas Hofstadter\n#   <https://example.com/Author/Id/35626>        Sally Bedell Smith\n#   <https://w3id.org/people/michael>            Michael Carducci\n#   <https://dbpedia.org/resource/Elizabeth_II>  Elizabeth II\n#   <https://example.com/Org/Id/34>              Hofstadter's affiliation\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix schema: <http://schema.org/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology ──────────────────────────────────────\n\nex:Book a rdfs:Class ;\n    rdfs:label \"Book\" ;\n    rdfs:comment \"A published written work\" .\n\n# ── Our data ──────────────────────────────────────────\n\n<https://example.com/Book/Id/441> a ex:Book .\n\n# Our world has met more kinds of things than the graph knows about.\n# Declare them, relate them, and claim their members:\n#\n#   ex:Author        — who below counts? What else is an Author?\n#   schema:Person    — every Author is one. Who else — always?\n#   ex:Organization  — Hofstadter has an affiliation… to what kind of thing?\n#\n# (And Elizabeth? What IS she, exactly? …Do we actually know?)\n#\n# The cast so far:\n#   <https://example.com/Author/Id/872>          Douglas Hofstadter\n#   <https://example.com/Author/Id/35626>        Sally Bedell Smith\n#   <https://w3id.org/people/michael>            Michael Carducci\n#   <https://dbpedia.org/resource/Elizabeth_II>  Elizabeth II\n#   <https://example.com/Org/Id/34>              Hofstadter's affiliation\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#defining-classes-tabs",
@@ -213,7 +214,7 @@
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix schema: <http://schema.org/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# Every title is a name. Not every name is a title.\n# One-way containment — the graph already has a word for that:\n\nex:title rdfs:subPropertyOf schema:name .\n\n# What else did we learn today? Align the rest:\n#\n#   ex:author  and  schema:author   — every one of ours is one of theirs… and?\n#   ex:Book    and  schema:Book     — classes too: rdfs:subClassOf, both ways?\n#   ex:isbn    and  schema:isbn     — careful: is this one-way… or both?\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix schema: <http://schema.org/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology (alignments) ──────────────────────────\n\n# Every title is a name. Not every name is a title.\n# One-way containment — the graph already has a word for that:\n\nex:title rdfs:subPropertyOf schema:name .\n\n# What else did we learn today? Align the rest:\n#\n#   ex:author  and  schema:author   — every one of ours is one of theirs… and?\n#   ex:Book    and  schema:Book     — classes too: rdfs:subClassOf, both ways?\n#   ex:isbn    and  schema:isbn     — careful: is this one-way… or both?\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#merging-vocabularies-tabs",
@@ -280,6 +281,49 @@
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#integration-for-free-vocabulary",
+              "@type": "sembook:VocabularyPanel",
+              "sembook:label": "Vocabulary",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders",
+      "@type": "sembook:Lab",
+      "sembook:label": "Standing on Shoulders",
+      "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders-writer",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "FOAF Record (Fetch it)",
+          "sembook:cssClass": "overflow-hidden flex flex-col",
+          "sembook:fetchUrl": "../datasets/michael-foaf.ttl"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders-entities",
+              "@type": "sembook:EntityPanel",
+              "sembook:label": "Entities",
+              "sembook:scope": { "@id": "sembook:CumulativeScope" },
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#standing-on-shoulders> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
+            },
+            {
+              "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders-local-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Local Graph",
+              "sembook:scope": { "@id": "sembook:LocalScope" },
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#standing-on-shoulders> } }"
+            },
+            {
+              "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders-vocabulary",
               "@type": "sembook:VocabularyPanel",
               "sembook:label": "Vocabulary",
               "sembook:scope": { "@id": "sembook:CumulativeScope" }

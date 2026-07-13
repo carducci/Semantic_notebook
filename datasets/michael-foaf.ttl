@@ -1,0 +1,26 @@
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+
+# ── Michael's FOAF file ─────────────────────────────────────────
+
+<https://w3id.org/people/michael>
+    a foaf:Person ;
+    foaf:name "Michael Carducci" ;
+    foaf:workplaceHomepage <https://semantic.consulting> ;
+    foaf:interest <https://dbpedia.org/resource/Category:Software_architecture> ;
+    foaf:knows <https://example.com/Author/Id/872> .
+
+# ── FOAF ontology (excerpt) ─────────────────────────────────────
+# The vocabulary doesn't just give us terms — it ships what it has
+# already learned about the world:
+
+foaf:Person rdfs:subClassOf schema:Person .
+foaf:name rdfs:subPropertyOf schema:name .
+foaf:knows rdfs:subPropertyOf schema:knows ;
+    rdfs:domain foaf:Person ;
+    rdfs:range foaf:Person .
+foaf:interest rdfs:subPropertyOf schema:knowsAbout .
+
+# (foaf:workplaceHomepage has no clean schema.org counterpart.
+#  Not everything maps — and nothing breaks when it doesn't.)

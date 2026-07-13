@@ -140,6 +140,25 @@ You're done when: you can trace one dashed fact end-to-end — which foreign
 triple, through which alignment, landed where — and say who wrote each link
 in that chain (hint: not you).
 
+## Lab 8 — Standing on Shoulders
+
+One more fetch: Michael's actual public identity —
+`https://w3id.org/people/michael` — written in FOAF, a vocabulary for
+describing people that has existed since 2000.
+
+**Goal:** an existing ontology brings more than terms — it brings everything
+it already learned.
+
+Fetch and read the Turtle before parsing. Notice the record doesn't just
+*use* FOAF's words — the vocabulary ships its own knowledge: what a
+`foaf:Person` is relative to `schema:Person`, and what kind of things
+`foaf:knows` can possibly connect. Parse, and check the Entities tab for
+someone who just got classified without anyone saying a word about him.
+
+You're done when: you can explain how a person became a `foaf:Person`
+without any triple saying so — and which *vocabulary author*, years ago,
+made that inference possible.
+
 ---
 
 ## References
@@ -149,4 +168,5 @@ in that chain (hint: not you).
 - Turtle: <https://www.w3.org/TR/turtle/>
 - RDFS: <https://www.w3.org/TR/rdf-schema/>
 - schema.org: <https://schema.org/> (you met it before you knew its name)
+- FOAF: <http://xmlns.com/foaf/spec/> (describing people since 2000)
 - Michael: <https://w3id.org/people/michael> · <michael@semantic.consulting>

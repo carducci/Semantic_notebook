@@ -10,6 +10,14 @@ discrepancy event per lab; seeds fire zero visible inference before Lab 5;
 schema.org stays "some other system's dialect" until the web-scale reveal;
 nothing invites "what if triples disagree" before the named-graphs beat.
 
+**Authoring convention (retroactive, 2026-07-12):** any Turtle surface that
+mixes instance data and vocabulary axioms labels its sections with boxed
+comments — `# ── <whose> data/file ──` vs `# ── <vocab> ontology (excerpt) ──`
+— so the data/ontology distinction is visible in every frame before it's ever
+taught. Applied to the Lab 4/5/6 seeds and michael-foaf.ttl; JSON-LD datasets
+can't carry comments, so there the convention is structural (alignment nodes
+grouped last in @graph).
+
 **Runtime behavior worth knowing on stage:**
 - Parse is the only commit — nothing updates on keystroke.
 - Cumulative panels (Full Graph, Entities "All", Vocabulary) refresh when
@@ -255,15 +263,63 @@ Design decisions on record:
   merge, the OWL declare-once section, or the 1000× token-reduction slide):
   *"The smarter we make the graph, the less we need to say."*
 
-## Lab 8+ — SPARQL section — REMINDERS
+### Post-Lab-7 deck sequence (agreed rework)
+
+Wow → stakes → origin → ecosystem → thesis; each beat answers the question
+the previous one raises:
+
+1. **Land the Prestige** — the Turn slides, closing "how does this scale?"
+2. **Energy Instruments tease** (pulled forward; 1–2 slides, plant not
+   payoff): four systems, one business question, zero ETL. "Read and write in
+   whichever dialect makes sense to you." Full case study still returns later.
+3. **Liz IRI → DBpedia → LOD** (existing 265–271 run): "where did that record
+   come from?" — lands distributed-understanding-without-coordination as
+   *recognition* of what the room just did.
+4. **schema.org reveal + existing vocabularies**: "that hub you aligned to
+   this morning? It has a name." Origin capsule with COMPRESSED Google/hotels
+   (2–3 slides — the market-coercion beat; designated flex cut if long).
+   Then widen: utility vocabs (rdf/rdfs/xsd — how to say) vs domain vocabs
+   (schema.org, Dublin Core, industry — what there is). Subclass, don't
+   reinvent. Do NOT name foaf — the DESCRIBE sleeper meets it first.
+5. **"We don't need a global ontology. We never did."** — thesis restated,
+   calling back the morning's 132–136; the EKG/EDW line lands here.
+6. **Lab 9 "Merging Graphs" placeholder is DELETED** — its content is Lab 7;
+   the callout slide, retitled "Integration for Free," lives at the Prestige.
+
+## Lab 8 — Standing on Shoulders (existing-vocabularies beat)
+
+**Where it sits:** inside the post-Lab-7 deck stretch, right after the
+schema.org reveal + utility-vs-domain-vocabularies widening.
+**Seed:** Turtle writer, empty, Fetch input pre-filled with
+`../datasets/michael-foaf.ttl` — narrated as dereferencing
+`https://w3id.org/people/michael` (Michael's real IRI; the fake-out is
+licensed, L5).
+**Live arc:** Fetch → read (it's Turtle — the "what FOAF already learned"
+block is a real comment this time) → Parse. Michael's node — in the graph
+since Lab 3 — gains foaf properties by IRI join, `foaf:name` lands on
+`schema:name` through FOAF's own bridge, and the beat:
+**Hofstadter gets typed `foaf:Person` and `schema:Person`, derived**, purely
+for being on the receiving end of `foaf:knows`. FOAF's domain/range axioms
+classified him. (Callback to Lab 5's domain/range stretch beat, if used.)
+**The punchline (verbatim):** "When we build on an existing ontology, we
+don't just get the terms — **we get everything it learned**."
+**Quip option** on foaf:knows Hofstadter: "…I wish. Aspirational data."
+Swap the object of foaf:knows freely — anyone in the day's cast works and
+the inference follows them.
+**Tabs:** Entities (default — watch the containers) + Local Graph + Vocabulary.
+**Note:** this beat supersedes "don't name foaf before the SPARQL sleeper."
+The DESCRIBE sleeper transmutes accordingly (below).
+
+## Lab 9+ — SPARQL section — REMINDERS
 
 - **"Query in whatever language makes sense to you" demo:** run the persons
-  query in schema.org terms (`?p schema:givenName ?n`), then the identical
-  question in `ex:` terms — same answers, "but you already understand this…"
-  Then the sleeper: `DESCRIBE <https://w3id.org/people/michael>` — foaf terms
-  pour out. "This is the graph we built — and we never even touched this
-  vocabulary." (foaf = the third dialect; its schema.org bridges are published
-  by the vocabularies themselves.) Exact sequencing TBD.
+  query in schema.org terms, then the identical question in `ex:` terms —
+  same answers, "but you already understand this…" Then the closer,
+  REFRAMED now that foaf was introduced in Standing on Shoulders:
+  `DESCRIBE <https://w3id.org/people/michael>` returns **one node speaking
+  four dialects** — `ex:`, `schema:`, `dbo:`, `foaf:` — "one thing, four
+  vocabularies, one graph. Pick whichever language you think in; the answers
+  are the same." Exact sequencing TBD.
 - **Tie this demo back to multi-agent systems** when the deck reaches that
   section — an agent that speaks *any* of the aligned dialects can query the
   graph; nobody coordinated. Michael asked to be reminded at that deck beat.

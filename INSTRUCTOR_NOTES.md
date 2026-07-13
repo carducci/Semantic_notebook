@@ -10,6 +10,23 @@ discrepancy event per lab; seeds fire zero visible inference before Lab 5;
 schema.org stays "some other system's dialect" until the web-scale reveal;
 nothing invites "what if triples disagree" before the named-graphs beat.
 
+**Standing delivery rules (OWL section onward — hammer these):**
+- **The SQL strawman, drawn sharply:** yes, a competent analyst could write a
+  SQL query that finds Kate's husband or everything in Colorado. But the
+  *query writer* carries the semantics in their head — out-of-band knowledge,
+  re-supplied per query, per person, forever. Here the knowledge is IN the
+  data: the graph *knows*, and anyone (or anything) that asks gets the
+  benefit. Navigable data model ≠ knowing data. Query-ability is not
+  knowledge.
+- **"An LLM doesn't have to guess at this. It's a computable fact. It cannot
+  be hallucinated."** Use verbatim, repeatedly.
+- **PUNCTUATION RULE: every single time you say "the graph got smarter,"
+  immediately translate: "— which means YOUR AI just got smarter."** No
+  exceptions. The room must leave with those two phrases fused.
+- **OWL lab setup callback (each lab):** "We didn't map fields. We learned
+  something about the data and told the graph. `:marriedTo` is symmetric —
+  let's weave that fact into the knowledge fabric."
+
 **Authoring convention (retroactive, 2026-07-12):** any Turtle surface that
 mixes instance data and vocabulary axioms labels its sections with boxed
 comments — `# ── <whose> data/file ──` vs `# ── <vocab> ontology (excerpt) ──`
@@ -310,7 +327,187 @@ the inference follows them.
 **Note:** this beat supersedes "don't name foaf before the SPARQL sleeper."
 The DESCRIBE sleeper transmutes accordingly (below).
 
-## Lab 9+ — SPARQL section — REMINDERS
+## Lab 9 — The Nature of Relationships (OWL: symmetric / inverse / subproperty)
+
+**Surface:** dueling Turtle writers — **Data** (left) | **Semantics** (right)
+— over a single Local Graph tab. Separation of concerns made physical: the
+data never changes; you parse *meaning* and the graph grows.
+**Seed:** Data holds ONE fact: `<w3id:michael> ex:husbandOf ex:kate .`
+Semantics holds only the breadcrumb comments. Follow-along.
+**The follow-along Turtle (final state of the Semantics panel):**
+```turtle
+@prefix ex: <https://example.com/ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:husbandOf rdfs:subPropertyOf ex:marriedTo .
+ex:marriedTo a owl:SymmetricProperty .
+ex:wifeOf owl:inverseOf ex:husbandOf .
+```
+**Staging:** parse Data first — two nodes, one edge, nothing else. Then add
+the semantics one line at a time, parsing after each: subPropertyOf →
+*michael marriedTo kate* (dashed); SymmetricProperty → *kate marriedTo
+michael*; inverseOf → *kate wifeOf michael*. **One asserted fact, three
+derived facts** (verified). "I said one thing. The graph now knows four."
+**Do NOT promise `owl:propertyChainAxiom`** (uncle = brother∘parent, etc.) —
+the notebook's reasoner is BGP-only and cannot run chains; it's a
+slides-only mention.
+**Delivery:** SQL strawman + can't-be-hallucinated + punctuation rule, every
+beat.
+
+## Lab 10 — Transitivity (the UberConf world)
+
+**Surface:** same dueling-writers + Local Graph shape.
+**Seed (Data):** UberConf `a schema:EducationalEvent`, `schema:performer` →
+Michael's w3id IRI, `schema:location` → Westin Westminster (`schema:Hotel`);
+`ex:locatedIn` chain: michael → Westin → Westminster → Colorado, plus
+Westminster → `ex:DenverMetro` (label: "Denver"). Semantics: breadcrumbs
+only ("…where am I? The graph does not know yet.").
+**The follow-along Turtle:** one line —
+```turtle
+ex:locatedIn a owl:TransitiveProperty .
+```
+**Payoff (verified):** five derived edges bloom at once — michael is in
+Westminster, in "Denver," in Colorado; the Westin too. One line of
+semantics; the graph closes the whole chain.
+**The Denver aside (lean, keep):** the conference ads say "Denver, CO" —
+Westminster isn't in Denver proper. `ex:DenverMetro` is a *different
+resource* that happens to carry the label "Denver," and it's the one the ad
+means. Nobody lied; two contexts, two resources, one label. Lab 2's
+title-collision lesson, grown up — 30 seconds, then move on.
+
+## OWL suite — remaining (IFP; FP punted)
+
+**FunctionalProperty — PUNTED as a lab (2026-07-12).** Every candidate
+breaks: spouse (stale data welds your ex to your current), bornIn
+(granularity — "Rock Springs" and "USA" are both true, FP welds a city to a
+country). The underlying principle, worth one slide breath at most: **FP
+claims uniqueness about the world; IFP claims uniqueness about an
+identifier — and identifiers are the one thing humans design to be
+unique.** That's why IFP demos sing and FP demos blow up. If the stale-data
+question arises anyway (someone will invent FP in their head), it's a gift
+with a scheduled answer: "you've just discovered why provenance matters —
+hold that thought for the last lab."
+
+**Lab 9 coda — the Philip payoff (QUICK BONUS FACT, instructor-only beat):**
+after Kate's cascade: "…and remember Philip?" Add to the Semantics panel —
+`@prefix dbo: <https://dbpedia.org/ontology/> .` then
+`dbo:spouse a owl:SymmetricProperty .` and, for the cross-ontology kick,
+`dbo:spouse rdfs:subPropertyOf ex:marriedTo .` → parse → **switch to the
+Entity viewer**: Philip now carries an inferred `marriedTo` — DBpedia's
+fact, expressed in OUR vocabulary, derived by a rule typed seconds ago.
+**The significance to hit (needs its own vibrant slide):**
+**MULTIPLE DATASETS GOT SMARTER.** Not our data enriched by theirs — every
+dataset in the graph now knows more, in every dialect, simultaneously.
+Script: "The graph knows more than you told it. The AI consuming this knows
+more than you told it. These are new facts in the dataset — and they cannot
+be hallucinated."
+## Lab 11 — Semantic Alignment (IFP — the identity climax) — BUILT
+
+**Surface:** left = JSON-LD panel, Fetch pre-filled with
+`../datasets/elizabeth-catalog-record.jsonld`; right = Turtle writer
+(breadcrumbs only); below = Local Graph, Full Graph, Entities, Vocabulary.
+**The dataset:** a fictional library system (`lib:` —
+catalog.worldlib.example): its own record IRI, `lib:mainTitle`,
+`lib:author` ("Smith, Sally Bedell", literal, library-style), `lib:isbn`
+`"0812979796"`, `lib:format` — and its vocabulary's own schema.org
+alignments in-band (`lib:Book ⊑ schema:Book`, `lib:isbn ⊑ schema:isbn`,
+`lib:mainTitle ⊑ schema:name`). **No identifier shared** with the Lab 2
+record.
+**The follow-along Turtle (one line):**
+```turtle
+schema:isbn a owl:InverseFunctionalProperty .
+```
+**Chain (verified end-to-end):** Lab 2's isbn mapping (`isbn` → `ex:isbn`,
+done live at 9:45) + Lab 6's alignment (`ex:isbn` ↔ `schema:isbn`, done
+live mid-morning) + the fetched record's own `lib:isbn ⊑ schema:isbn` +
+this one line → both records derive `schema:isbn "0812979796"` → IFP fires
+→ `owl:sameAs`, both directions. **16 derived triples.** In the Entity
+explorer: two book dots become ONE, and the merged record's **properties
+double** — it gains `mainTitle`/`author`/`format` from the library AND the
+room's `title`, Sally's IRI, and the `about` → Elizabeth link, which
+connects the merged book into the queen's whole cluster.
+**LIVE-WORK DEPENDENCIES (do not skip):** the merge requires Lab 2's isbn
+mapping and Lab 6's isbn alignment to have actually happened. If either was
+skipped, add them quietly before this lab.
+**Delivery:** "Two systems. No shared key. Nobody wrote a crosswalk. We
+told the graph one true thing about what an ISBN *is* — and identity
+emerged." Then the pause — the denouement — before the KG reveal and
+SPARQL: look at Full Graph. That thing on screen is a knowledge graph. It
+was never built. It *emerged*.
+
+**Slide asset delivered:** `C:\Users\micha\OneDrive\Documents\talks\lab9-local-graph.svg`
+— Lab 9's local-graph end state in the tool's exact visual grammar (teal
+IRI nodes, solid gray asserted edges, dashed violet inferred), laid out
+clean: michael/kate with 1 solid + 3 dashed edges, semantics cluster to the
+right. (Live Cytoscape export was unusable — layout doesn't settle in the
+headless env.)
+
+## SPARQL section — AGREED PROGRESSION (Michael, 2026-07-12)
+
+**Act 1 — familiar ground** ("…you're safe and sound here, now…"). It's a
+query language. Preset sample queries in the dropdown, run in order:
+1. `SELECT ?s ?p ?o` — remember, it's all triples.
+2. Books, in OUR vocabulary (`ex:`).
+3. `DESCRIBE <https://w3id.org/people/michael>` — introduce the keyword;
+   four dialects come back off one node.
+4. The books query again — in schema.org terms, then dbo:/foaf-flavored —
+   same answers, different language.
+**Takeaway slide/speech:** "Your AI doesn't care what your info silo calls
+things — because it knows what you MEAN. And so does every other system
+that consumes it. So why are you still writing ETLs, and mapping files, and
+anti-corruption layers, and SDKs, and… Just make data make sense to
+machines."
+
+**Act 2 — the rug pull** ("…at the McFly farm."). This isn't a database —
+it's a knowledge graph. Direct questions. Wikidata tangent for endless
+examples. Then: how does this plug into AI? Toggle the SPARQL endpoint on,
+advertise it in Hydra, back to the generic client, ask the big question,
+get the answer.
+**The drumbeat:** Zero-shot. Self-discovering. Explainable. Grounded.
+Provable. *Justified.*
+**Value prop, verbatim arc with callback slides:** language is vague; SPARQL
+is precise. "Remember the Q&A example from the very beginning (slide) — and
+I said (slide) there's no mechanism in the architecture for truth, only
+probability. (slide) SPARQL gives you truth. (slide) Your knowledge graph is
+the architecture for truth your AI has been missing all along. Stop thinking
+it's something you *build*. It's not an artifact. It's not a neo4j database.
+It's an emergent behavior — born from making your data mean something."
+**"Emergent" means, concretely:** a bare LLM, generic prompt, generic
+client, connected via the API and KG — instantly understood the landscape.
+No prior knowledge. No custom prompt. No MCP. No custom tools. No generated
+SDK.
+
+## The Turn Nobody Expects (provenance / named graphs) — SCRIPT
+
+Set-up (Michael's beats, verbatim):
+> "Justified, true, belief. (beat) That's what this whole workshop has been
+> about. (beat) Knowledge. (beat) The semantic layer is how machine
+> knowledge is justified. You see how it works. (beat) You've seen a lot of
+> accuracy. (beat) But accuracy isn't always truth. …
+> 'An educated mind is one that can entertain an idea without accepting
+> it.'" (attribute as "attributed to Aristotle" — it's actually Lowell
+> Thomas; engineers have phones.)
+
+"Accuracy isn't truth" is a CALLBACK to the morning's 90%/one-nine slides —
+accuracy unmasked a second time, one level up.
+
+The landing (the quote is a literal spec of the quad store):
+> "Your knowledge graph is an educated mind. It's been holding DBpedia's
+> claims, and my claims, and YOUR claims — all day. Entertaining every one
+> of them. But it never confused *storing* a fact with *accepting* it —
+> because every fact in this graph remembers who said it."
+> (live: GRAPH clause — exclude a source without deleting it; show asserted
+> vs inferred provenance)
+> "Acceptance isn't storage. Acceptance is a query-time decision.
+> …Belief. Justified. And now — TRUE, with receipts."
+
+This is also the L1/L2 license unwind: "the notebook has been doing this
+invisibly since 9am" — the tool confesses its own machinery as the final
+lesson in trust. If anyone raised the stale-data question earlier, name
+them here — the scheduled answer arrives.
+
+## SPARQL section — REMINDERS
 
 - **"Query in whatever language makes sense to you" demo:** run the persons
   query in schema.org terms, then the identical question in `ex:` terms —

@@ -111,6 +111,24 @@ same way (content negotiation via caching proxy in the generalized version).
 The in-band rdfs-flavored axioms are curriculum — "the vocabulary ships what
 it learned" is the lesson, and pre-OWL the rdfs: rendering is the license.
 
+## L6 — The library catalog record is fictional and self-aligning
+
+**The fudge:** the Semantic Alignment lab fetches
+`datasets/elizabeth-catalog-record.jsonld`, presented as a record from a
+library system nobody has integrated with. The system
+(`catalog.worldlib.example`) is invented, and its vocabulary's schema.org
+alignments (`lib:isbn ⊑ schema:isbn` etc.) ship in-band with the instance
+record — real library vocabularies (e.g. BIBFRAME) publish alignments, but
+in separate ontology documents, not inside every record.
+
+**The honest version:** fetch the record, then dereference its vocabulary
+terms to discover the published alignments — a second fetch the lab's
+pacing can't afford.
+
+**Unwind:** in the generalized version, in-band vocabulary excerpts could
+become honest follow-your-nose dereferencing of term IRIs. The fiction of
+the system itself is permanent curriculum (control over what's in frame).
+
 ---
 
 *Add entries as they're committed. If an entry stops being true (the concept

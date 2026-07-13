@@ -22,6 +22,8 @@
         { "@id": "https://notebook.semantic.consulting/notebook1/#merging-vocabularies" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#integration-for-free" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#transitivity" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#querying-the-graph" }
       ]
@@ -333,6 +335,80 @@
       ]
     },
     {
+      "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships",
+      "@type": "sembook:Lab",
+      "sembook:label": "The Nature of Relationships",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships-data",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "Data",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n\n# ── Our data ── one fact. That is all we are going to say.\n\n<https://w3id.org/people/michael> ex:husbandOf ex:kate .\n"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships-semantics",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "Semantics",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology ── what do these relationships MEAN?\n#\n# A husband is… what, more generally?\n# Does the relationship point back?\n# And what is the word for the other direction?\n"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "col-span-2 overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships-local-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Local Graph",
+              "sembook:scope": { "@id": "sembook:LocalScope" },
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#nature-of-relationships> } }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "https://notebook.semantic.consulting/notebook1/#transitivity",
+      "@type": "sembook:Lab",
+      "sembook:label": "Transitivity",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#transitivity-data",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "Data",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix schema: <http://schema.org/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our data ── one conference, one hotel, one performer.\n\n<https://uberconf.com> a schema:EducationalEvent ;\n    rdfs:label \"UberConf\" ;\n    schema:performer <https://w3id.org/people/michael> ;\n    schema:location ex:WestinWestminster .\n\nex:WestinWestminster a schema:Hotel ;\n    rdfs:label \"Westin Westminster\" ;\n    ex:locatedIn ex:Westminster .\n\nex:Westminster rdfs:label \"Westminster\" ;\n    ex:locatedIn ex:Colorado ;\n    ex:locatedIn ex:DenverMetro .\n\nex:Colorado rdfs:label \"Colorado\" .\nex:DenverMetro rdfs:label \"Denver\" .\n\n<https://w3id.org/people/michael> ex:locatedIn ex:WestinWestminster .\n"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#transitivity-semantics",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "Semantics",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n\n# ── Our ontology ──\n#\n# If I am in the hotel, and the hotel is in the city,\n# and the city is in the state… where am I?\n#\n# The graph does not know yet. Teach it what \"located in\" means.\n"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#transitivity-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "col-span-2 overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://notebook.semantic.consulting/notebook1/#transitivity-local-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Local Graph",
+              "sembook:scope": { "@id": "sembook:LocalScope" },
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#transitivity> } }"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment",
       "@type": "sembook:Lab",
       "sembook:label": "Semantic Alignment",
@@ -340,18 +416,19 @@
       "sembook:init": {},
       "sembook:panels": [
         {
-          "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-book",
-          "@type": "sembook:JsonLdPanel",
-          "sembook:label": "Book Record",
-          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
-          "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"http://example.com/\",\n    \"ex\": \"http://example.org/vocab#\",\n    \"schema\": \"http://schema.org/\",\n    \"owl\": \"http://www.w3.org/2002/07/owl#\",\n    \"id\": \"@id\",\n    \"type\": \"@type\"\n  },\n  \"@graph\": [\n    {\n      \"id\": \"ex:isbn\",\n      \"type\": [\"owl:DatatypeProperty\", \"owl:InverseFunctionalProperty\"],\n      \"owl:equivalentProperty\": { \"id\": \"schema:isbn\" }\n    },\n    {\n      \"id\": \"/book/elizabeth-the-queen\",\n      \"type\": \"schema:Book\",\n      \"schema:name\": \"Elizabeth the Queen: The Life of a Modern Monarch\",\n      \"ex:isbn\": \"9780812979795\"\n    }\n  ]\n}"
-        },
-        {
           "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-catalog",
           "@type": "sembook:JsonLdPanel",
-          "sembook:label": "Catalog Record (Fetch a second record)",
+          "sembook:label": "Catalog Record (Fetch it)",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:initialContent": "{}",
+          "sembook:fetchUrl": "../datasets/elizabeth-catalog-record.jsonld"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-semantics",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "Semantics",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
-          "sembook:initialContent": "{}"
+          "sembook:initialContent": "@prefix schema: <http://schema.org/> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n\n# ── Our ontology ──\n#\n# Two records. Two systems. No shared identifier.\n#\n# But an ISBN identifies exactly one book —\n# whoever holds it, however they spell the property.\n#\n# Say that. Precisely.\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-tabs",

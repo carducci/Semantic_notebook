@@ -159,6 +159,56 @@ You're done when: you can explain how a person became a `foaf:Person`
 without any triple saying so — and which *vocabulary author*, years ago,
 made that inference possible.
 
+## Lab 9 — The Nature of Relationships
+
+Two editors now: **Data** on the left, **Semantics** on the right. The data
+is one fact — one — about Michael and Kate.
+
+**Goal:** describe how a relationship *works*, and watch facts nobody typed
+become computable.
+
+Parse the data: two nodes, one edge. Now answer the Semantics panel's
+questions, one line at a time, parsing as you go: a husband is a kind of
+spouse (`rdfs:subPropertyOf`); marriage points both ways
+(`owl:SymmetricProperty`); *wife-of* is *husband-of* read backwards
+(`owl:inverseOf`). Watch the graph after each parse.
+
+You're done when: one asserted fact has become four known facts, and you can
+say which dashed edge came from which line of semantics. None of them is a
+guess. None of them can be hallucinated.
+
+## Lab 10 — Transitivity
+
+A real scene: this conference, this hotel, this city — and you, somewhere
+inside all of it.
+
+**Goal:** one line of semantics closes an entire chain.
+
+Parse the data and look at the graph: a chain of `locatedIn` links, each
+one step long. The graph does not know where Michael is beyond the hotel.
+Teach it what "located in" *means* — that it carries through — and parse.
+
+You're done when: you can explain why five new edges appeared from one
+declaration — and why the ads saying the conference is in "Denver" aren't
+lying, even though Denver proper is nowhere in this graph.
+
+## Lab 11 — Semantic Alignment
+
+One last stranger: a library catalog's record of a book you've known since
+this morning. Different system, different vocabulary, different identifier —
+*no* shared key.
+
+**Goal:** identity doesn't have to be declared. It can be inferred.
+
+Fetch and read the record. Notice there is nothing connecting it to your
+book — except a thirteen-digit string you've seen before. Now think about
+what an ISBN *is*: one book per ISBN, one ISBN per book. Say that precisely
+(`owl:InverseFunctionalProperty`), parse, and open the Entities tab.
+
+You're done when: two books have become one, its properties have doubled,
+and you can name every fact in the chain that made it happen — including
+who asserted each one, and when.
+
 ---
 
 ## References

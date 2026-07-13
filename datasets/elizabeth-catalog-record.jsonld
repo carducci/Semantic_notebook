@@ -1,0 +1,31 @@
+{
+  "@context": {
+    "lib": "https://catalog.worldlib.example/ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "http://schema.org/",
+    "id": "@id",
+    "type": "@type"
+  },
+  "@graph": [
+    {
+      "id": "https://catalog.worldlib.example/record/BX-4471902",
+      "type": "lib:Book",
+      "lib:mainTitle": "Elizabeth the Queen: The Life of a Modern Monarch",
+      "lib:author": "Smith, Sally Bedell",
+      "lib:isbn": "0812979796",
+      "lib:format": "Hardcover"
+    },
+    {
+      "id": "lib:Book",
+      "rdfs:subClassOf": { "id": "schema:Book" }
+    },
+    {
+      "id": "lib:mainTitle",
+      "rdfs:subPropertyOf": { "id": "schema:name" }
+    },
+    {
+      "id": "lib:isbn",
+      "rdfs:subPropertyOf": { "id": "schema:isbn" }
+    }
+  ]
+}

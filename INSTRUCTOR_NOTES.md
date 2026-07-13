@@ -101,8 +101,13 @@ Inference-silent on Parse — no `subClassOf` in the seed.
 `ex:Author rdfs:subClassOf schema:Person` (note: **crossing dialects** — your
 class, their class, one hierarchy; quietly the first cross-vocabulary modeling
 act of the day). Type the existing cast: Sally, Hofstadter, Michael `a
-ex:Author`; the queen `a schema:Person` (she needs the typing to appear in
-the entity viewer at all). Watch the Entities tab.
+ex:Author`. **Do NOT type the queen** — this is deliberate. Point at the
+Entities tab: "Notice who's missing? The graph has known about Elizabeth
+since this morning and still has no idea what she *is*. Remember that." Her
+classification arrives in Lab 7, from DBpedia's knowledge, not the room's —
+"suddenly the queen is a person, and nobody here said so." (If an eager
+attendee types her anyway, nothing breaks — Lab 7's derivation is simply
+absorbed and the beat softens.)
 **Discrepancy event:** the first dashed edge of the day — Sally's dot appears
 *inside the Person container* though nobody typed her there; the reasoner
 derived it from the hierarchy (rdfs9). Then it compounds: every Author is a
@@ -134,15 +139,32 @@ with the candidates commented as questions (`author`? `Book`? `isbn` —
   say *name*. Do we fight about it? No. We state the relationship."
 - The device: "Every title is a name. Not every name is a title — ask anyone
   named Duke." (Beer/beverage carryover: *title is the beer here.*)
+- **The prop bit (do this physically):** hold up the book — "What's the *name*
+  of this? …You'd hand me the title. Interchangeable — in that direction."
+  Point at yourself — "But *Michael* is not the title of a book. Name is the
+  broader thing; title is the special case that works anywhere a name is
+  wanted, never the reverse. So we're modeling this as a **specialization** —
+  and RDFS already has one word for 'the special case of': `subPropertyOf`.
+  One line, one direction, and the graph knows a title will serve anywhere a
+  name is asked for."
 - Parse, then the bloom: two dashed `schema:name` triples appear on the
   *morning's* records. "Nobody edited the publisher's data. Nobody wrote a
   migration. We told the graph one true thing, and it re-read everything it
   already knew."
-- Why one-way matters — the trap, worth saying out loud when someone proposes
-  `title ≡ name`: "Declare those equivalent and then align `ex:name` to
-  `schema:name` too — congratulations, transitivity just made everyone's name
-  their title. Careless equivalence is how you end up with a library where
-  everybody is named *Moby Dick*. Direction is a modeling decision."
+- Why one-way matters — **the trap: transitive welding through a hub.**
+  Equivalence composes: everything declared equivalent to `schema:name`
+  becomes equivalent to *each other*, not just to it. Walk it: declare
+  `ex:title ≡ schema:name` (both ways), then later someone reasonably adds
+  `ex:name ≡ schema:name`. Both look innocent. The chain now runs
+  `ex:title ≡ schema:name ≡ ex:name` — *your own two properties just merged*.
+  Hofstadter's name "Douglas Hofstadter" is now also his title; every book's
+  title is its `ex:name`. Nothing errors — the graph did exactly what you
+  said, globally, retroactively, in dashed edges. Rule of thumb for the room:
+  **one-way arrows can safely converge on a shared hub; two-way arrows
+  through a hub weld everything they touch into one property.** "Is it true
+  in both directions?" is the modeling question of this lab — isbn passes,
+  title doesn't. Quip: "Careless equivalence is how you end up with a library
+  where everybody is named *Moby Dick*."
 - The escalation (live): work the worklist. `author`: one-way. Classes: same
   trick one level up, `rdfs:subClassOf`. Then `isbn`: "is every `ex:isbn` a
   `schema:isbn`? Yes. Is every `schema:isbn` an `ex:isbn`? …also yes. So say
@@ -184,10 +206,33 @@ here detonates again when the foreign dataset arrives in Lab 7.
   in understanding" (plant) → this Turn "we made the data itself smarter"
   (thesis) → slide 498 "it's a capability of the data itself" (payoff).
 
-## Lab 7 — Merging Graphs (deck Lab 9) — IN DESIGN
+## Lab 7 — Integration for Free (deck Lab 9)
 
-Fetch a document about the queen "from DBpedia" and watch it join the day's
-graph with zero local mapping. Design decisions on record:
+**Seed:** empty JSON-LD panel labeled "DBpedia Record (Fetch it)"; the Fetch
+IRI input arrives pre-filled (`sembook:fetchUrl`) with
+`../datasets/elizabeth-dbpedia.jsonld` — one click fetches (fills the editor,
+does NOT parse), a second click commits.
+Read it with the room first: dbo: terms nobody has seen, and — scroll down —
+**the vocabulary's alignments travel with the data** (`dbo:Person ⊑
+schema:Person`, `dbo:birthName ⊑ schema:name`; DBpedia genuinely publishes
+these). No comment syntax exists in JSON — the pointing IS the callout.
+**Live arc:** Fetch → read → Parse → Full Graph: the foreign record attaches
+to the *existing* queen node (same IRI since Lab 2), and the dashed climb
+happens — queen and Philip derive `schema:Person` through DBpedia's own
+chain, birth name lands on `schema:name` where the morning's data already
+converges. Zero local mapping was written.
+**Discrepancy event:** data from a system nobody mapped arrives *already
+understood* — the room's Lab-6 work and DBpedia's published alignments meet
+at the schema.org hub without coordination. **The queen beat:** she was
+deliberately left unclassified in Lab 5 (the "notice who's missing" plant) —
+now she materializes into the Person container, dashed, classified by
+someone else's knowledge: "suddenly the queen is a person — and nobody in
+this room said so."
+**Tabs:** Local Graph (default) + Entities + Vocabulary.
+**Deck:** this is the Prestige — the "…let me show you something…" beat,
+BEFORE the LOD story; "how does this scale?" → DBpedia → LOD as recognition.
+
+Design decisions on record:
 
 - **The dataset is doctored, on purpose (pedagogic license, entry due when the
   file lands):** heavily trimmed from real DBpedia output — what's in frame in

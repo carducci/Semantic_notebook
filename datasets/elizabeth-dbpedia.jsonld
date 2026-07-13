@@ -1,0 +1,48 @@
+{
+  "@context": {
+    "dbo": "https://dbpedia.org/ontology/",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "schema": "http://schema.org/",
+    "id": "@id",
+    "type": "@type",
+    "dbo:spouse": { "@type": "@id" }
+  },
+  "@graph": [
+    {
+      "id": "https://dbpedia.org/resource/Elizabeth_II",
+      "type": "dbo:Royalty",
+      "rdfs:label": "Elizabeth II",
+      "dbo:birthName": "Elizabeth Alexandra Mary Windsor",
+      "dbo:birthDate": "1926-04-21",
+      "dbo:spouse": "https://dbpedia.org/resource/Prince_Philip,_Duke_of_Edinburgh"
+    },
+    {
+      "id": "https://dbpedia.org/resource/Prince_Philip,_Duke_of_Edinburgh",
+      "type": "dbo:Royalty",
+      "rdfs:label": "Prince Philip, Duke of Edinburgh"
+    },
+    {
+      "id": "dbo:Royalty",
+      "type": "owl:Class",
+      "rdfs:label": "royalty",
+      "rdfs:subClassOf": { "id": "dbo:Person" }
+    },
+    {
+      "id": "dbo:Person",
+      "type": "owl:Class",
+      "rdfs:label": "person",
+      "rdfs:subClassOf": { "id": "schema:Person" }
+    },
+    {
+      "id": "dbo:birthName",
+      "rdfs:label": "birth name",
+      "rdfs:subPropertyOf": { "id": "schema:name" }
+    },
+    {
+      "id": "dbo:birthDate",
+      "rdfs:label": "birth date",
+      "rdfs:subPropertyOf": { "id": "schema:birthDate" }
+    }
+  ]
+}

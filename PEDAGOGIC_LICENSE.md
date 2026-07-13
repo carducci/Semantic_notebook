@@ -66,6 +66,31 @@ alignment and inference. That authoring convention is the actual mechanism of
 this license and should be kept in mind when editing early-lab
 `sembook:initialContent`.
 
+## L4 — The "DBpedia" record is doctored and locally served
+
+**The fudge:** the Integration for Free lab fetches
+`datasets/elizabeth-dbpedia.jsonld` — presented as "a document about the
+queen from DBpedia," it is actually hand-authored: trimmed from thousands of
+real triples to a dozen that fit one CodeMirror frame and look familiar; the
+class/property alignments to schema.org (which DBpedia genuinely publishes)
+are re-expressed as plain `rdfs:subClassOf`/`subPropertyOf` and shipped
+in-band with the instance data; `owl:` appearances are curated to be inert
+under our ruleset (`a owl:Class` typings stay; `owl:sameAs` links were
+deliberately REMOVED because our reasoner's sameAs replication/merge rules
+would fire and pre-empt the OWL lab's identity-merge reveal); and the fetch
+URL is local — real DBpedia IRIs inside, our host serving them (CORS +
+conference wifi + control over exactly what appears on screen).
+
+**The honest version:** live `GET https://dbpedia.org/data/Elizabeth_II.json`
+— thousands of triples, dozens of languages, real owl:sameAs links firing
+merges out of sequence, and a network dependency on stage.
+
+**Unwind:** never fully. The local-serving fudge could become honest content
+negotiation against a caching proxy in the generalized version; the trimming
+and owl-curation are curriculum, not drift. The smuggled assertions (e.g.
+`dbo:spouse` + Prince Philip, planted for a later "how did the data know
+that?" beat) are part of the lesson plan — see INSTRUCTOR_NOTES.md.
+
 ---
 
 *Add entries as they're committed. If an entry stops being true (the concept

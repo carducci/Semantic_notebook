@@ -179,6 +179,10 @@ export class SemPanelTurtleWriter extends HTMLElement {
     const lab = graph.find(n => n['@id'] === this._labUri);
     if (!lab) return;
     const panelNode = findPanelNode(lab['sembook:panels'], this.uri);
+    // Same sembook:fetchUrl seeding as sem-panel-jsonld — input pre-filled,
+    // fetch and Parse each remain deliberate clicks (ADR-019).
+    const fetchUrl = panelNode?.['sembook:fetchUrl'];
+    if (fetchUrl && this._fetchInput) this._fetchInput.value = fetchUrl;
     const initialContent = panelNode?.['sembook:initialContent'];
     if (!initialContent) return;
     this._editorContent = initialContent;

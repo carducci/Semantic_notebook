@@ -64,6 +64,11 @@ export class SemPanelJsonLd extends HTMLElement {
     const lab = graph.find(n => n['@id'] === this.labUri);
     if (!lab) return;
     const panelNode = findPanelNode(lab['sembook:panels'], this.uri);
+    // Seed the Fetch IRI input when the definition supplies one (sembook:fetchUrl).
+    // Only the input is pre-filled — fetching stays a deliberate click, and parsing
+    // another (ADR-019's explicit-commit model, twice over).
+    const fetchUrl = panelNode?.['sembook:fetchUrl'];
+    if (fetchUrl && this._fetchInput) this._fetchInput.value = fetchUrl;
     const initialContent = panelNode?.['sembook:initialContent'];
     if (!initialContent) return;
     this._editorContent = initialContent;

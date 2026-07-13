@@ -87,9 +87,10 @@ things* — and how kinds relate.
 The seed declares a class (`ex:Book`) and claims one: Gödel, Escher, Bach `a
 ex:Book`. Now build upward: declare `ex:Author`, and state the relationship —
 `ex:Author rdfs:subClassOf schema:Person`. Then type the people you've met
-today: Sally, Hofstadter, Michael are Authors; Elizabeth is a Person. Their
-IRIs are waiting in the editor's comments — no need to hunt back through
-earlier labs. Watch the Entities tab as you parse.
+today: Sally, Hofstadter, Michael are Authors. Their IRIs are waiting in the
+editor's comments — no need to hunt back through earlier labs. Watch the
+Entities tab as you parse. (As for Elizabeth — what *is* she, exactly? Sit
+with that one. The graph doesn't know either… yet.)
 
 Something will appear that you did not type. Find it. It's dashed for a
 reason: the graph *derived* it, and it can tell you exactly from which two
@@ -119,6 +120,25 @@ conclude.
 You're done when: data you asserted this morning carries dashed triples in
 the other vocabulary, and you can explain why `title` got one direction but
 `isbn` got two.
+
+## Lab 7 — Integration for Free
+
+A record about Elizabeth II, from DBpedia — a system nobody in this room has
+ever integrated with. Vocabulary you've never seen (`dbo:` everything).
+
+**Goal:** feel integration happen with zero mapping work.
+
+Fetch the record (the URL is given in the room) and *read it before you
+parse*. Notice two things: the queen's IRI is one your graph already knows —
+and near the bottom, DBpedia's vocabulary ships its own alignments to
+schema.org, as plain data. Now Parse, and watch the Full Graph: the foreign
+record attaches to *your* queen, and dashed facts climb through DBpedia's
+alignments into the same shared vocabulary your Lab 6 work aligned to. Two
+parties, no coordination, one graph.
+
+You're done when: you can trace one dashed fact end-to-end — which foreign
+triple, through which alignment, landed where — and say who wrote each link
+in that chain (hint: not you).
 
 ---
 

@@ -263,6 +263,17 @@ sembook:initialContext
     rdfs:domain sembook:JsonLdContextPanel ;
     rdfs:range xsd:string .
 
+sembook:fetchUrl
+    a owl:DatatypeProperty ;
+    rdfs:label "fetch URL"@en ;
+    rdfs:comment
+        "Pre-fills a panel's Fetch-by-IRI input with this URL before the user touches it. Only the input is seeded — fetching remains a deliberate click, and parsing the fetched document another, preserving the explicit-commit interaction model (ADR-019). Useful when a lab's choreography depends on fetching a specific curated resource and typing the URL live would be friction, not teaching."@en ;
+    rdfs:domain [
+        a owl:Class ;
+        owl:unionOf ( sembook:JsonLdPanel sembook:TurtleWriterPanel )
+    ] ;
+    rdfs:range xsd:string .
+
 
 # ─────────────────────────────────────────────────────────────
 # Named Graph Convention (informative)

@@ -209,6 +209,36 @@ You're done when: two books have become one, its properties have doubled,
 and you can name every fact in the chain that made it happen — including
 who asserted each one, and when.
 
+## Lab 12 — Querying the Graph
+
+Everything the room built today is one graph. SPARQL is how you talk to it.
+
+**Goal:** ask the day's graph real questions — in any vocabulary you like.
+
+Work the numbered sample queries in order. Watch for three things: the
+library's record answering in *your* vocabulary (nobody mapped it); one
+`DESCRIBE` returning a person in four dialects at once; and query 5's
+last column — every fact knows *who said it*, including the inferred ones.
+Then run query 6 and notice what "excluding a source" doesn't do: nothing
+was deleted. Trust became part of the question.
+
+You're done when: you've run query 7, read what came back, and realized
+where you've been all day.
+
+## Lab 13 — Contexts on the Fly
+
+**Goal:** contexts aren't fixed — you can mint one whenever a question
+deserves it.
+
+`CONSTRUCT` returns a *graph*, not rows. The first sample invents a
+brand-new vocabulary and populates it from three systems' data in one
+query. The second defines a class nobody ever declared — and enumerates
+its members. No migration, no schema change, no meeting.
+
+You're done when: you can explain the difference between a class someone
+asserted, a class the reasoner derived, and a class you just made up — and
+why the graph is comfortable with all three.
+
 ---
 
 ## References

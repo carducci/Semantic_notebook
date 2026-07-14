@@ -507,6 +507,70 @@ invisibly since 9am" — the tool confesses its own machinery as the final
 lesson in trust. If anyone raised the stale-data question earlier, name
 them here — the scheduled answer arrives.
 
+## Lab 12 — Querying the Graph — BUILT & VERIFIED
+
+Seven sample queries in the dropdown, numbered in delivery order:
+1. **It's all triples** — `SELECT ?s ?p ?o` (auto-scoped to the whole day,
+   asserted + inferred; ~100+ rows).
+2. **Books — in our vocabulary** — the LIBRARY record answers `ex:title`,
+   a property it never asserted.
+3. **DESCRIBE Michael** — one node, four dialects (ex:, schema:, foaf:,
+   rdf; dbo: shows on Elizabeth).
+4. **Books — in their vocabulary** — same books, schema.org terms. NOTE:
+   counts can differ between 2 and 4 — `ex:title ⊑ schema:name` is one-way
+   (the Duke!), so a book with only schema:name has no ex:title. If asked,
+   that's the answer: direction was a modeling decision.
+5. **Everything about Elizabeth — and who said it** — GRAPH ?source; rows
+   grouped by origin, including `-inferred` graphs (derivations have
+   provenance too).
+6. **The same — without trusting DBpedia** — FILTER NOT IN the two
+   integration-for-free graphs; only the room's facts remain. "Excluded,
+   not deleted." Honest caveat if pressed: derivations that OTHER labs
+   computed from excluded data live in those labs' inferred graphs — full
+   truth-maintenance is real engineering; this shows the primitive.
+7. **Query the notebook itself** — returns all 13 labs from the default
+   graph. (Mechanism: the leading comment mentions GRAPH, which switches
+   off the automatic lab-scoping — documented in the comment itself.)
+
+## Lab 13 — Contexts on the Fly (CONSTRUCT) — BUILT & VERIFIED
+
+**Bridge in:** "We don't need a global ontology. We just need contextual
+definitions… and we can build those on the fly."
+**Two sample queries:** (1) *Invent a vocabulary — right now*: CONSTRUCT
+mints `reporting#displayName` onto every Person — a vocabulary that did not
+exist five seconds ago, populated from three source dialects; the Result
+panel's Graph view shows the reshaped world. (2) *Define a new class on the
+fly*: CONSTRUCT types every pre-2000 book `reporting#TwentiethCenturyBook`
+— a class nobody declared, enumerated by query. (Depends on Lab 1's live
+`published` mapping.)
+**Bridge out:** straight into the Energy Instruments case study — "one of
+these queries saved a million dollars."
+
+### EI slide query (hypothetical, for the case-study slide)
+```sparql
+PREFIX ei: <https://energyinstruments.example/ns#>
+
+CONSTRUCT {
+  ?part a ei:DisposablePart .
+}
+WHERE {
+  ?part a ei:Part ;
+        ei:storedIn ?warehouse .
+
+  FILTER NOT EXISTS {
+    ?product a ei:Product ;
+             ei:status ei:Active ;
+             ei:usesPart ?part .
+  }
+}
+
+# ei:usesPart is transitive — the reasoner has already flattened
+# every level of every bill of materials. That's why this query
+# never has to mention sub-assemblies.
+```
+The footnote is the depth-charge: the query is *simple because the
+reasoning already happened*. Say the number after the room reads it.
+
 ## SPARQL section — REMINDERS
 
 - **"Query in whatever language makes sense to you" demo:** run the persons

@@ -297,7 +297,10 @@ the previous one raises:
    (2–3 slides — the market-coercion beat; designated flex cut if long).
    Then widen: utility vocabs (rdf/rdfs/xsd — how to say) vs domain vocabs
    (schema.org, Dublin Core, industry — what there is). Subclass, don't
-   reinvent. Do NOT name foaf — the DESCRIBE sleeper meets it first.
+   reinvent. **Callback ammo for the reveal: roughly half of the indexed
+   web already carries JSON-LD** — the dialect the room "met at 10am" is
+   the most widely deployed data format they've never heard of. (foaf note
+   superseded: it's introduced at Standing on Shoulders.)
 5. **"We don't need a global ontology. We never did."** — thesis restated,
    calling back the morning's 132–136; the EKG/EDW line lands here.
 6. **Lab 9 "Merging Graphs" placeholder is DELETED** — its content is Lab 7;
@@ -477,6 +480,41 @@ It's an emergent behavior — born from making your data mean something."
 client, connected via the API and KG — instantly understood the landscape.
 No prior knowledge. No custom prompt. No MCP. No custom tools. No generated
 SDK.
+
+## Lab 14 — Who Said That? (provenance — the capstone) — BUILT & VERIFIED
+
+**Surface:** fetch panel (left, pre-filled:
+`../datasets/elizabeth-gossip-record.jsonld` — "CelebWatch", a gossip site
+that hotlinks the queen's DBpedia IRI, asserts her birthday OFF BY ONE DAY,
+and one true fact: alternateName "Lilibet") | SPARQL panel (right) | Result
+(full-width below).
+**Live arc:** Fetch → read ("looks fine, right?") → Parse. The graph accepts
+it without complaint — *it's entertaining the idea.* Then the numbered
+queries:
+1. **When was Elizabeth born?** → TWO answers. "Is the graph broken? No.
+   It's doing what an educated mind does."
+2. **…says who?** → sources named. Note the gem: DBpedia's date comes from
+   an *-inferred* graph — the trusted answer is itself a derived fact with
+   its own receipt (DBpedia said dbo:birthDate; the schema form was
+   inferred, and the provenance says so).
+3. **Only sources we trust** → one answer. Nothing deleted.
+4. **What else did the tabloid claim?** → "Lilibet" — which happens to be
+   TRUE. Excluding the source dropped a true fact too: trust decisions are
+   coarse, and that's exactly why provenance beats deletion — the receipts
+   survive to be re-examined.
+**This lab is the stage for the Turn script below** — run the beats over
+these queries, landing "Acceptance isn't storage. Acceptance is a
+query-time decision. …Belief. Justified. And now — TRUE, with receipts."
+**Mind the tense — the queen is dead (2022):** "she WAS born," "her spouse
+WAS Philip." If anyone points out she died: that's a free beat, not a
+problem — *the graph doesn't know she's dead; nobody told it.* No deathDate
+exists anywhere in the day's data. "The graph only knows what it's been
+told — and it knows exactly who told it." Which is the whole lesson,
+restated by an audience member for free.
+**Deliberately NO early fester:** the conflict arrives here, in this lab,
+under control (rule 7b). The soft latent version — the merged book's
+double-shaped author from Lab 11 — is available as an optional pointable
+if the moment wants a second example.
 
 ## The Turn Nobody Expects (provenance / named graphs) — SCRIPT
 

@@ -26,7 +26,8 @@
         { "@id": "https://notebook.semantic.consulting/notebook1/#transitivity" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#querying-the-graph" },
-        { "@id": "https://notebook.semantic.consulting/notebook1/#contexts-on-the-fly" }
+        { "@id": "https://notebook.semantic.consulting/notebook1/#contexts-on-the-fly" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#who-said-that" }
       ]
     },
     {
@@ -555,6 +556,57 @@
           "@type": "sembook:SparqlResultPanel",
           "sembook:label": "Result",
           "sembook:cssClass": "overflow-hidden flex flex-col"
+        }
+      ]
+    },
+    {
+      "@id": "https://notebook.semantic.consulting/notebook1/#who-said-that",
+      "@type": "sembook:Lab",
+      "sembook:label": "Who Said That?",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#who-said-that-record",
+          "@type": "sembook:JsonLdPanel",
+          "sembook:label": "CelebWatch Record (Fetch it)",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:initialContent": "{}",
+          "sembook:fetchUrl": "../datasets/elizabeth-gossip-record.jsonld"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#who-said-that-sparql",
+          "@type": "sembook:SparqlPanel",
+          "sembook:label": "SPARQL",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:sampleQueries": [
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "1 · When was Elizabeth born?",
+              "sembook:sparql": "PREFIX schema: <http://schema.org/>\n\nSELECT DISTINCT ?birthDate WHERE {\n  <https://dbpedia.org/resource/Elizabeth_II> schema:birthDate ?birthDate .\n}"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "2 · …says who?",
+              "sembook:sparql": "PREFIX schema: <http://schema.org/>\n\nSELECT ?source ?birthDate WHERE {\n  GRAPH ?source {\n    <https://dbpedia.org/resource/Elizabeth_II> schema:birthDate ?birthDate .\n  }\n}\nORDER BY ?source"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "3 · Only sources we trust",
+              "sembook:sparql": "PREFIX schema: <http://schema.org/>\n\nSELECT ?source ?birthDate WHERE {\n  GRAPH ?source {\n    <https://dbpedia.org/resource/Elizabeth_II> schema:birthDate ?birthDate .\n  }\n  FILTER(?source NOT IN (\n    <https://notebook.semantic.consulting/notebook1/#who-said-that>,\n    <https://notebook.semantic.consulting/notebook1/#who-said-that-inferred>\n  ))\n}\nORDER BY ?source"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "4 · What else did the tabloid claim?",
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE {\n  GRAPH <https://notebook.semantic.consulting/notebook1/#who-said-that> {\n    ?s ?p ?o .\n  }\n}"
+            }
+          ]
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#who-said-that-result",
+          "@type": "sembook:SparqlResultPanel",
+          "sembook:label": "Result",
+          "sembook:cssClass": "col-span-2 overflow-hidden flex flex-col"
         }
       ]
     }

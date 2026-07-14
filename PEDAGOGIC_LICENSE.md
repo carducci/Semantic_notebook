@@ -129,6 +129,23 @@ pacing can't afford.
 become honest follow-your-nose dereferencing of term IRIs. The fiction of
 the system itself is permanent curriculum (control over what's in frame).
 
+## L7 — The gossip source is fictional, and wrong on purpose
+
+**The fudge:** the provenance capstone fetches
+`datasets/elizabeth-gossip-record.jsonld`, presented as a record from
+"CelebWatch" — an invented unreliable site that hotlinks the queen's real
+DBpedia IRI, uses schema.org directly (sloppy sites love it), asserts her
+birth date off by one day (1926-04-20; truth is 04-21), and one true fact
+(alternateName "Lilibet") so exclusion visibly costs something.
+
+**The honest version:** real unreliable data exists in abundance, but none
+of it is curatable to exactly one subtle falsehood and one charming truth
+in a ten-line record.
+
+**Unwind:** never — the controlled contradiction IS the lesson plan. The
+one-day error is deliberate: close enough to believe, checkable in one
+search, and it never propagates (no reasoning rule consumes birthDate).
+
 ---
 
 *Add entries as they're committed. If an entry stops being true (the concept

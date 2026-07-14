@@ -239,6 +239,23 @@ You're done when: you can explain the difference between a class someone
 asserted, a class the reasoner derived, and a class you just made up — and
 why the graph is comfortable with all three.
 
+## Lab 14 — Who Said That?
+
+One final source: a celebrity gossip site with a page about the queen.
+Fetch it, read it — it looks fine. Parse it.
+
+**Goal:** a knowledge graph can hold a contradiction without believing it —
+because every fact keeps its receipt.
+
+Run the queries in order. The graph now has two birth dates for one woman —
+and it isn't broken. Ask who said what. Then ask again, trusting only the
+sources you choose — and notice that nothing was deleted, and that
+excluding the tabloid also cost you a fact that happened to be true.
+
+You're done when: you can explain why "store it" and "believe it" are
+different operations — and why that difference is what your AI has been
+missing.
+
 ---
 
 ## References

@@ -6,9 +6,9 @@ browser — nothing to install. Each lab is one full screen; scroll (or use the
 menu) to move between them. **Parse** is your commit button: edit, parse,
 watch the graph.
 
-Reading the graph: **teal circles** are things with identity (an IRI). **Amber
-circles** are anonymous — the graph knows something is there but not *what*.
-**Gray boxes** are plain values. **Dashed** edges and *italic* rows are facts
+Reading the graph: **solid rings** are things with identity (an IRI). **Dashed
+rings** are anonymous — the graph knows something is there but not *what*.
+**Filled boxes** are plain values. **Dotted gold** edges and *italic* rows are facts
 the graph worked out on its own — you'll see your first one in Lab 5.
 
 ---
@@ -23,12 +23,12 @@ identity.
 
 1. Parse both documents as-is. Two islands.
 2. Give each record identity: add `@base` and map `id` to `@id` in a
-   `@context`. Watch amber turn teal.
+   `@context`. Watch the dashed rings turn solid.
 3. Map `author_id` so its value is understood as *a reference, not a string*:
    `"author_id": { "@type": "@id" }`. Watch the islands become one graph.
 4. Fetch the richer author record. Same IRI — so everything just attaches.
 
-You're done when: one connected graph, no amber nodes, and you can say *why*
+You're done when: one connected graph, no dashed rings, and you can say *why*
 the edge appeared.
 
 ## Lab 2 — Data and Context
@@ -64,17 +64,17 @@ the JSON it came from.
 ## Lab 4 — Defining Terms
 
 Open the Vocabulary tab: every term you've used today is listed — and almost
-all of them are amber. They have identity, but no meaning anyone wrote down.
+all of them are dashed. They have identity, but no meaning anyone wrote down.
 
 **Goal:** definitions are data. A term is a resource you can describe like any
 other.
 
 The editor holds a complete definition of `title`: what kind of thing it is
 (`rdf:Property`), a human label, a description, what values it takes
-(`rdfs:range`). Parse it — watch `title` turn teal in the vocabulary. Then
-work down the amber list and describe your own terms the same way.
+(`rdfs:range`). Parse it — watch `title` turn solid in the vocabulary. Then
+work down the dashed list and describe your own terms the same way.
 
-You're done when: the terms *you* created are teal, and you can explain what
+You're done when: the terms *you* created are solid, and you can explain what
 `rdfs:range` told the graph.
 
 ## Lab 5 — Classes and Subclasses
@@ -92,7 +92,7 @@ editor's comments — no need to hunt back through earlier labs. Watch the
 Entities tab as you parse. (As for Elizabeth — what *is* she, exactly? Sit
 with that one. The graph doesn't know either… yet.)
 
-Something will appear that you did not type. Find it. It's dashed for a
+Something will appear that you did not type. Find it. It's dotted gold for a
 reason: the graph *derived* it, and it can tell you exactly from which two
 statements. That's the difference between a database and a knowledge graph —
 and between retrieval and reasoning.
@@ -117,7 +117,7 @@ vocabulary you never used. Then work the commented list — and when you reach
 If it's true both ways, say it twice, and think about what a reasoner must
 conclude.
 
-You're done when: data you asserted this morning carries dashed triples in
+You're done when: data you asserted this morning carries dotted triples in
 the other vocabulary, and you can explain why `title` got one direction but
 `isbn` got two.
 
@@ -132,11 +132,11 @@ Fetch the record (the URL is given in the room) and *read it before you
 parse*. Notice two things: the queen's IRI is one your graph already knows —
 and near the bottom, DBpedia's vocabulary ships its own alignments to
 schema.org, as plain data. Now Parse, and watch the Full Graph: the foreign
-record attaches to *your* queen, and dashed facts climb through DBpedia's
+record attaches to *your* queen, and dotted facts climb through DBpedia's
 alignments into the same shared vocabulary your Lab 6 work aligned to. Two
 parties, no coordination, one graph.
 
-You're done when: you can trace one dashed fact end-to-end — which foreign
+You're done when: you can trace one dotted fact end-to-end — which foreign
 triple, through which alignment, landed where — and say who wrote each link
 in that chain (hint: not you).
 
@@ -174,7 +174,7 @@ spouse (`rdfs:subPropertyOf`); marriage points both ways
 (`owl:inverseOf`). Watch the graph after each parse.
 
 You're done when: one asserted fact has become four known facts, and you can
-say which dashed edge came from which line of semantics. None of them is a
+say which dotted edge came from which line of semantics. None of them is a
 guess. None of them can be hallucinated.
 
 ## Lab 10 — Transitivity

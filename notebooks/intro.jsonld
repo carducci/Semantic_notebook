@@ -12,7 +12,7 @@
     {
       "@id": "https://notebook.semantic.consulting/notebook1/",
       "@type": "sembook:Notebook",
-      "sembook:title": "An Engineer's Guide to the Semantic Layer",
+      "sembook:title": "Architecting the Semantic Layer",
       "sembook:labs": [
         { "@id": "https://notebook.semantic.consulting/notebook1/#identity" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context" },
@@ -115,7 +115,7 @@
           "@id": "https://notebook.semantic.consulting/notebook1/#introducing-turtle-jsonld",
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "JSON-LD",
-          "sembook:cssClass": "overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:cssClass": "overflow-hidden flex flex-col sem-divider-r",
           "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"https://catalog.example.net/\",\n    \"schema\": \"http://schema.org/\",\n    \"id\": \"@id\"\n  },\n  \"id\": \"/book/979-8868804090\",\n  \"@type\": \"schema:Book\",\n  \"schema:name\": \"Mastering Software Architecture\",\n  \"schema:isbn\": \"979-8868804090\",\n  \"schema:datePublished\": \"2025\",\n  \"schema:author\": {\n    \"id\": \"https://w3id.org/people/michael\",\n    \"schema:name\": \"Michael Carducci\"\n  }\n}"
         },
         {
@@ -347,7 +347,7 @@
           "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships-data",
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Data",
-          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col sem-divider-r",
           "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n\n# ── Our data ── one fact. That is all we are going to say.\n\n<https://w3id.org/people/michael> ex:husbandOf ex:kate .\n"
         },
         {
@@ -384,7 +384,7 @@
           "@id": "https://notebook.semantic.consulting/notebook1/#transitivity-data",
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Data",
-          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col sem-divider-r",
           "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix schema: <http://schema.org/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our data ── one conference, one hotel, one performer.\n\n<https://uberconf.com> a schema:EducationalEvent ;\n    rdfs:label \"UberConf\" ;\n    schema:performer <https://w3id.org/people/michael> ;\n    schema:location ex:WestinWestminster .\n\nex:WestinWestminster a schema:Hotel ;\n    rdfs:label \"Westin Westminster\" ;\n    ex:locatedIn ex:Westminster .\n\nex:Westminster rdfs:label \"Westminster\" ;\n    ex:locatedIn ex:Colorado ;\n    ex:locatedIn ex:DenverMetro .\n\nex:Colorado rdfs:label \"Colorado\" .\nex:DenverMetro rdfs:label \"Denver\" .\n\n<https://w3id.org/people/michael> ex:locatedIn ex:WestinWestminster .\n"
         },
         {
@@ -421,7 +421,7 @@
           "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-catalog",
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "Catalog Record (Fetch it)",
-          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col sem-divider-r",
           "sembook:initialContent": "{}",
           "sembook:fetchUrl": "../datasets/elizabeth-catalog-record.jsonld"
         },
@@ -570,7 +570,7 @@
           "@id": "https://notebook.semantic.consulting/notebook1/#who-said-that-record",
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "CelebWatch Record (Fetch it)",
-          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col sem-divider-r",
           "sembook:initialContent": "{}",
           "sembook:fetchUrl": "../datasets/elizabeth-gossip-record.jsonld"
         },

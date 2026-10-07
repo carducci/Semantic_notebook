@@ -27,7 +27,7 @@
           "@id": "https://notebook.semantic.consulting/notebook2/#side-by-side-jsonld",
           "@type": "sembook:JsonLdPanel",
           "sembook:label": "JSON-LD",
-          "sembook:cssClass": "overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:cssClass": "overflow-hidden flex flex-col sem-divider-r",
           "sembook:initialContent": "{\n  \"@context\": {\n    \"@base\": \"http://example.org/\",\n    \"schema\": \"http://schema.org/\",\n    \"id\": \"@id\",\n    \"type\": \"@type\"\n  },\n  \"id\": \"/Person/1\",\n  \"type\": \"schema:Person\",\n  \"schema:name\": \"Ada Lovelace\",\n  \"schema:birthDate\": \"1815-12-10\"\n}"
         },
         {

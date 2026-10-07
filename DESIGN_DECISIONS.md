@@ -395,6 +395,30 @@ New `this._instanceGroups`/`this._instanceCanon` maps mirror `_classGroups`/`_cl
 
 ---
 
+## Visual System
+
+### DDR-039 — Semantic Lounge: The Brand's Diagram Grammar Is the Notebook's Grammar
+
+**Context:** The notebook shipped with a Tailwind-slate palette: teal IRI nodes, amber blank nodes, gray literals, dashed violet inferred edges, emerald action buttons, purple selection. Michael's brand guide (Jackson Square, v1.0) and the lectern slide system (`../lectern`, Semantic Lounge theme) define one visual system for talks, workshops and sites. The guide's diagram grammar is explicitly *this notebook's* asserted-versus-inferred distinction made visible ("the line style tells you how we know a thing"), so the notebook and the slides must draw graphs identically.
+
+**Decision:** Adopt Semantic Lounge wholesale, with lectern's token names and values (`styles/tokens.css`) and the guide as tie-breaker where lectern and the guide disagree.
+
+- **Diagram grammar** (`scripts/theme.js#graphGrammar`, kept in sync with lectern's `.node`/`.edge`): asserted = solid Lace; inferred = dotted String light; fetched-from-elsewhere = dashed teal; the fact nobody typed = dotted red, once. Nodes are hollow Lace rings on the street (guide fig. D1); blank nodes are dashed Fog rings (no identity yet); literals are Balcony chips. Inferred class membership is a dotted String-light ring with an italic label. The fetched and reveal styles are defined but nothing produces them yet; provenance for fetched triples and a per-lab reveal edge are out of scope for now.
+- **Teal and red are data colors inside diagrams and nothing else** (pair rule C-01). This is why nodes are not teal, which is where the guide overrules lectern's original teal `.node` pill. A teal node would claim "fetched", and teal would appear dozens of times per screen.
+- **Code coloring carries meaning** (`components/editor-theme.js`, a port of lectern's `tools/build.py`): predicates teal, decided by position in the triple; structure (`@prefix`, `@`-keys, `a`, language tags, datatypes, SPARQL keywords) gold; comments Fog italic; everything else Lace. JSON-LD and Turtle color the same data the same way.
+- **String light is light, never a fill** (C-02): primary buttons are a lit edge; selection and focus are String light.
+- **Errors are not red.** Red means "the fact nobody typed"; a typo is the opposite. Errors are Lace on a raised surface with a String-light rule.
+- **Night by default, day on request.** Night is the stage register; day is the guide's paper palette for long reading. The toggle state is page chrome on a document event (`theme:changed`), never the lab-scoped bus (C9). CodeMirror themes read `var()`s and follow automatically; Cytoscape stylesheets are rebuilt from resolved tokens on the event.
+- **Fonts are inlined** (`styles/fonts.css`, data URIs, latin subset): DM Serif Display, Instrument Sans, DM Mono. No runtime font fetch (ADR-006 rev. 2).
+
+**Consequences:**
+- Supersedes the color and line-style details in DDR-031 (dashed inferred edges), DDR-032 (dashed/muted-teal inferred memberships) and the spec's Visual Treatment table. Their mechanisms are unchanged.
+- The amber→teal "identity lesson" in Labs 1 and 4 now plays as a dashed ring turning solid. Instructor and student notes are updated to match.
+- Any slide graphic exported under the old grammar (e.g. `lab9-local-graph.svg`) is stale.
+- A change to the grammar is made in two places, `scripts/theme.js` here and `_themes/semantic-lounge.css` in lectern, and the brand guide decides disagreements.
+
+---
+
 ## Deployment
 
 ### DDR-026 — Pre-Baked Datasets, No Cross-Origin Fetch

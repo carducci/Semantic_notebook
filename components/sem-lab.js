@@ -66,9 +66,9 @@ export class SemLab extends HTMLElement {
 
   renderSkeleton() {
     this.innerHTML = `
-      <div class="col-span-1 border-r border-slate-300 bg-slate-200 animate-pulse"></div>
-      <div class="col-span-1 bg-slate-200 animate-pulse"></div>
-      <div class="col-span-2 border-t border-slate-300 bg-slate-100 animate-pulse"></div>
+      <div class="col-span-1 sem-skeleton sem-divider-r"></div>
+      <div class="col-span-1 sem-skeleton"></div>
+      <div class="col-span-2 sem-skeleton" style="border-top:1px solid var(--rule)"></div>
     `;
   }
 
@@ -157,10 +157,12 @@ export class SemLab extends HTMLElement {
     } else if (panelDef['@type'] === 'sembook:TurtlePanel') {
       el.init(this._notebook, this._notebookDoc);
       this._notebook.subscribe(this.uri, el);
-    } else if (panelDef['@type'] === 'sembook:SparqlPanel' || panelDef['@type'] === 'sembook:SparqlResultPanel') {
-      // Neither reacts to graph:updated (they don't render a store projection on a
+    } else if (panelDef['@type'] === 'sembook:SparqlPanel' || panelDef['@type'] === 'sembook:SparqlResultPanel' || panelDef['@type'] === 'sembook:Nl2SparqlPanel') {
+      // None react to graph:updated (they don't render a store projection on a
       // schedule sem-lab drives) — SparqlResultPanel reacts to its own sparql:executed
-      // listener, registered inside init() itself, so no notebook.subscribe() here.
+      // listener, registered inside init() itself, and Nl2SparqlPanel only emits that
+      // event on Run, so no notebook.subscribe() here. Nl2SparqlPanel still needs init()
+      // to receive its notebook context and _labUri, exactly like the other two.
       el.init(this._notebook, this._notebookDoc);
     }
     // sembook:TabsPanel's nested panels are init'd inside _buildTabs.
@@ -196,10 +198,10 @@ export class SemLab extends HTMLElement {
       .filter(Boolean);
 
     const handle = document.createElement('div');
-    handle.className = `row-start-2 col-span-${colCount} flex items-center justify-center bg-slate-200 hover:bg-slate-300 cursor-row-resize select-none border-y border-slate-300`;
-    handle.innerHTML = '<div class="w-10 h-1 rounded-full bg-slate-400"></div>';
+    handle.className = `row-start-2 col-span-${colCount} flex items-center justify-center select-none sem-handle`;
+    handle.innerHTML = '<div class="sem-handle-grip"></div>';
 
-    const stripBase = `col-span-${colCount} flex w-full items-center justify-center gap-2 text-xs text-slate-500 bg-slate-100 hover:bg-slate-200 border-y border-slate-300 cursor-pointer hidden`;
+    const stripBase = `col-span-${colCount} flex w-full items-center justify-center gap-2 cursor-pointer hidden sem-strip`;
     const topStrip = document.createElement('button');
     topStrip.type = 'button';
     topStrip.className = `row-start-1 ${stripBase}`;
@@ -353,6 +355,14 @@ export class SemLab extends HTMLElement {
       return el;
     }
 
+    if (type === 'sembook:Nl2SparqlPanel') {
+      const el = document.createElement('sem-panel-nl2sparql');
+      el.setAttribute('uri', panelDef['@id'] || '');
+      el.setAttribute('label', panelDef['sembook:label'] || '');
+      if (panelDef['sembook:cssClass']) el.className = panelDef['sembook:cssClass'];
+      return el;
+    }
+
     // Unhandled panel types render as an empty placeholder container this iteration.
     const div = document.createElement('div');
     if (panelDef['sembook:cssClass']) div.className = panelDef['sembook:cssClass'];
@@ -385,13 +395,13 @@ export class SemLab extends HTMLElement {
     container.className = panelDef['sembook:cssClass'] || '';
 
     const tabBar = document.createElement('div');
-    tabBar.className = 'flex items-center gap-1 px-3 pt-2 border-b border-slate-300 bg-slate-50';
+    tabBar.className = 'flex items-center gap-1 px-3 sem-tabbar';
 
     const contentArea = document.createElement('div');
-    contentArea.className = 'flex-1 overflow-auto bg-white';
+    contentArea.className = 'flex-1 overflow-auto sem-well';
 
-    const activeTabClass = 'px-3 py-1.5 text-sm rounded-t bg-white border border-b-0 border-slate-300 text-slate-900';
-    const inactiveTabClass = 'px-3 py-1.5 text-sm rounded-t text-slate-500 hover:text-slate-700';
+    const activeTabClass = 'sem-tab is-active';
+    const inactiveTabClass = 'sem-tab';
 
     const children = panelDef['sembook:panels'] || [];
 
@@ -463,7 +473,7 @@ export class SemLab extends HTMLElement {
         this._notebook.subscribe(this.uri, el);
         this._cumulativePanels.push(el); // cumulative across labs — render on first view
       } else {
-        pane.innerHTML = `<p class="text-sm text-slate-400">${child['sembook:label']} — deferred to a future iteration.</p>`;
+        pane.innerHTML = `<p class="sem-empty">${child['sembook:label']} — deferred to a future iteration.</p>`;
       }
 
       btn.addEventListener('click', () => {

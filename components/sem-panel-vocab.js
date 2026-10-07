@@ -11,6 +11,7 @@ import {
   groupsByLabel,
   mergeHierarchyBindings
 } from '../scripts/parse-utils.js';
+import { graphGrammar, mix, SANS, fontsReady, onThemeChange } from '../scripts/theme.js';
 
 // ── Namespaces ───────────────────────────────────────────────────────────────
 // Row exclusion is about hiding the *description machinery*, not domain vocabulary.
@@ -52,56 +53,54 @@ const DESCRIBED_TYPES = [
   `${OWL}FunctionalProperty`, `${OWL}InverseFunctionalProperty`
 ];
 
-// ── Colour tokens ────────────────────────────────────────────────────────────
-// Reused verbatim from sem-panel-graph.js's blank-node→IRI transition — same values,
-// no new colour token. DESCRIBED reads like a settled IRI (teal, solid); identity-only
-// reads like an as-yet-unelaborated blank node (amber, dashed).
-const DESCRIBED_FILL   = '#0d9488';
-const DESCRIBED_BORDER = '#0f766e';
-const IDENTITY_FILL    = '#d97706';
-const IDENTITY_BORDER  = '#b45309';
+// ── Diagram grammar ──────────────────────────────────────────────────────────
+// From the shared grammar (scripts/theme.js), rebuilt on a day/night switch. A
+// DESCRIBED term reads like a settled IRI (solid Lace ring, as in the graph panel);
+// an identity-only term reads like an as-yet-unelaborated blank node (dashed fog).
+function termLook(described) {
+  return described
+    ? { color: 'var(--lace)', border: 'var(--lace)', style: 'solid' }
+    : { color: 'var(--fog)', border: 'var(--fog)', style: 'dashed' };
+}
 
-const classStylesheet = [
-  {
-    selector: 'node.class-node',
-    style: {
-      'shape': 'round-rectangle',
-      'border-width': 2,
-      'label': 'data(label)',
-      'text-valign': 'center',
-      'text-halign': 'center',
-      'font-size': '12px',
-      'font-weight': 'bold',
-      'color': '#ffffff',
-      'width': 'label',
-      'height': 'label',
-      'padding': '10px'
-    }
-  },
-  // Leaf-node fills use the solid tokens; compound parents get the same colour at low
-  // opacity (label anchored top) so their nested subclasses stay readable — the fill
-  // value is unchanged, only its opacity, so this introduces no new colour.
-  {
-    selector: 'node.class-node.described',
-    style: { 'background-color': DESCRIBED_FILL, 'border-color': DESCRIBED_BORDER, 'border-style': 'solid' }
-  },
-  {
-    selector: 'node.class-node.identity-only',
-    style: { 'background-color': IDENTITY_FILL, 'border-color': IDENTITY_BORDER, 'border-style': 'dashed' }
-  },
-  {
-    selector: 'node.class-node:parent',
-    style: { 'background-opacity': 0.15, 'text-valign': 'top', 'padding': '20px', 'text-margin-y': '-4px', 'color': DESCRIBED_BORDER }
-  },
-  {
-    selector: 'node.class-node.identity-only:parent',
-    style: { 'color': IDENTITY_BORDER }
-  },
-  {
-    selector: 'node:selected',
-    style: { 'border-color': '#7c3aed', 'border-width': 3 }
-  }
-];
+function classStylesheet() {
+  const g = graphGrammar();
+  const t = g.tokens;
+  return [
+    {
+      selector: 'node.class-node',
+      style: {
+        'shape': 'round-rectangle',
+        'background-color': t.street,
+        'border-width': 2,
+        'label': 'data(label)',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'font-family': SANS,
+        'font-size': '12px',
+        'font-weight': 600,
+        'width': 'label',
+        'height': 'label',
+        'padding': '10px'
+      }
+    },
+    {
+      selector: 'node.class-node.described',
+      style: { 'border-color': t.lace, 'border-style': 'solid', 'color': t.lace }
+    },
+    {
+      selector: 'node.class-node.identity-only',
+      style: { 'border-color': t.fog, 'border-style': 'dashed', 'color': t.fog }
+    },
+    // Compound parents become a faint container (label anchored top) so their nested
+    // subclasses stay readable; ring color and style still say described/identity-only.
+    {
+      selector: 'node.class-node:parent',
+      style: { 'background-color': mix(t.lace, t.street, 5), 'text-valign': 'top', 'padding': '20px', 'text-margin-y': '-4px' }
+    },
+    { selector: 'node:selected', style: g.selected }
+  ];
+}
 
 // fCoSE, not grid: vocabulary classes are mostly disconnected (there are no edges between
 // them — subclassing is compound containment, not an edge). Grid was the original choice
@@ -166,10 +165,11 @@ export class SemPanelVocab extends HTMLElement {
     // height split, which left the Properties list unreadably short whenever the Classes
     // graph was busy; a tab gives whichever view is active the full column height.
     const leftCol = document.createElement('div');
-    leftCol.style.cssText = 'display:flex;flex-direction:column;height:100%;min-width:0;border-right:1px solid #e2e8f0;';
+    leftCol.style.cssText = 'display:flex;flex-direction:column;height:100%;min-width:0;border-right:1px solid var(--rule);';
 
     const tabBar = document.createElement('div');
-    tabBar.style.cssText = 'flex:none;display:flex;gap:0.25rem;padding:0.25rem 0.5rem 0;background:#f8fafc;border-bottom:1px solid #e2e8f0;';
+    tabBar.className = 'sem-tabbar';
+    tabBar.style.cssText = 'flex:none;display:flex;gap:0.25rem;padding:0 0.5rem;';
     this._classesTab = this._tabButton('Classes');
     this._propsTab = this._tabButton('Properties');
     this._classesTab.addEventListener('click', () => this._showTab('classes'));
@@ -212,10 +212,12 @@ export class SemPanelVocab extends HTMLElement {
       this._cy?.fit(undefined, classLayout.padding);
     });
     this._resizeObserver.observe(this._classesPane);
+    this._offTheme = onThemeChange(() => this._cy?.style(classStylesheet()));
   }
 
   disconnectedCallback() {
     this._resizeObserver?.disconnect();
+    this._offTheme?.();
     this._cy?.destroy();
     this._cy = null;
   }
@@ -225,7 +227,8 @@ export class SemPanelVocab extends HTMLElement {
     btn.type = 'button';
     btn.dataset.label = label;
     btn.textContent = label;
-    btn.style.cssText = 'flex:none;padding:0.375rem 0.75rem;font-size:0.75rem;font-weight:600;letter-spacing:0.03em;border:none;border-bottom:2px solid transparent;background:transparent;color:#64748b;cursor:pointer;';
+    btn.className = 'sem-tab';
+    btn.style.flex = 'none';
     return btn;
   }
 
@@ -250,8 +253,7 @@ export class SemPanelVocab extends HTMLElement {
   }
 
   _styleTab(btn, active) {
-    btn.style.color = active ? '#0f766e' : '#64748b';
-    btn.style.borderBottomColor = active ? '#0d9488' : 'transparent';
+    btn.classList.toggle('is-active', active);
   }
 
   // Append a live count to a tab label so the inactive tab still advertises its contents
@@ -321,6 +323,8 @@ export class SemPanelVocab extends HTMLElement {
         propBindings, groupsByLabel(propEntries), 'property', 'parentProperty'
       );
       this._propGroups = propGroupOf;
+
+      await fontsReady(); // canvas labels must measure in the brand faces, not the fallback
 
       this._renderClasses(mergedClasses, describedSet);
       this._renderProperties(mergedProps, describedSet);
@@ -503,7 +507,7 @@ export class SemPanelVocab extends HTMLElement {
     this._cy = cytoscape({
       container: this._classesPane,
       elements,
-      style: classStylesheet,
+      style: classStylesheet(),
       layout: classLayout
     });
 
@@ -519,7 +523,7 @@ export class SemPanelVocab extends HTMLElement {
 
   _renderEmptyClasses() {
     this._classesPane.innerHTML =
-      '<p style="color:#94a3b8;font-size:0.8rem;padding:0.75rem;">No classes in use yet</p>';
+      '<p class="sem-empty" style="padding:0.75rem;">No classes in use yet</p>';
   }
 
   // ── Properties (indented flat list) ──────────────────────────────────────────
@@ -576,9 +580,7 @@ export class SemPanelVocab extends HTMLElement {
   }
 
   _propRow(iri, depth, described) {
-    const fill = described ? DESCRIBED_FILL : IDENTITY_FILL;
-    const border = described ? DESCRIBED_BORDER : IDENTITY_BORDER;
-    const borderStyle = described ? 'solid' : 'dashed';
+    const look = termLook(described);
     const pad = 8 + depth * 16;
     const selected = iri === this._selectedIri;
 
@@ -588,19 +590,19 @@ export class SemPanelVocab extends HTMLElement {
     row.style.cssText =
       `display:flex;align-items:center;gap:0.5rem;width:100%;text-align:left;` +
       `padding:0.375rem 0.5rem 0.375rem ${pad}px;` +
-      `border:none;border-left:3px ${borderStyle} ${border};` +
-      `background:${selected ? '#ede9fe' : 'transparent'};cursor:pointer;font-size:0.8rem;`;
+      `border:none;cursor:pointer;font-size:13px;color:var(--lace);` +
+      `background:${selected ? 'color-mix(in srgb, var(--string) 8%, transparent)' : 'transparent'};`;
     row.innerHTML =
       `<span style="display:inline-block;width:11px;height:11px;border-radius:2px;` +
-      `background:${fill};border:1.5px ${borderStyle} ${border};flex:none;"></span>` +
-      `<span style="color:#1e293b;word-break:break-all;">${localName(iri)}</span>`;
+      `border:1.5px ${look.style} ${look.border};flex:none;"></span>` +
+      `<span style="color:${look.color};word-break:break-all;">${localName(iri)}</span>`;
     row.addEventListener('click', () => this._select(iri));
     return row;
   }
 
   _renderEmptyProps() {
     this._propsPane.innerHTML =
-      '<p style="color:#94a3b8;font-size:0.8rem;padding:0.75rem;">No properties in use yet</p>';
+      '<p class="sem-empty" style="padding:0.75rem;">No properties in use yet</p>';
   }
 
   // ── Selection + detail ───────────────────────────────────────────────────────
@@ -610,7 +612,8 @@ export class SemPanelVocab extends HTMLElement {
 
     // Reflect selection in the property list (re-tint rows) and the class graph.
     this._propsPane.querySelectorAll('button[data-iri]').forEach(row => {
-      row.style.background = row.dataset.iri === iri ? '#ede9fe' : 'transparent';
+      row.style.background = row.dataset.iri === iri
+        ? 'color-mix(in srgb, var(--string) 8%, transparent)' : 'transparent';
     });
     if (this._cy) {
       this._cy.$(':selected').unselect();
@@ -632,27 +635,27 @@ export class SemPanelVocab extends HTMLElement {
     const bindings = await this.notebook.query(this._detailQuery(group));
     const label = localName(termIri);
     const groupNote = group.length > 1
-      ? `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${group.join(' / ')}<br><span style="font-style:italic;">one name, ${group.length} distinct terms — the IRIs above tell them apart</span></span>`
-      : `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${termIri}</span>`;
+      ? `<span class="sem-iri">${group.join(' / ')}<br><span style="font-style:italic;">one name, ${group.length} distinct terms — the IRIs above tell them apart</span></span>`
+      : `<span class="sem-iri">${termIri}</span>`;
 
-    let html = `<h3 style="font-size:0.875rem;font-weight:600;color:#0f766e;margin-bottom:0.75rem;">
+    let html = `<h3 class="sem-detail-title">
       ${label}
       ${groupNote}
     </h3>`;
 
     if (bindings.length === 0) {
-      html += '<p style="color:#94a3b8;font-size:0.875rem;">No triples asserted</p>';
+      html += '<p class="sem-empty">No triples asserted</p>';
     } else {
-      html += '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">';
+      html += '<table class="sem-rows">';
       for (const b of bindings) {
         const prop = b.get('property').value;
         const val = b.get('value').value;
         html += `
-          <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:0.375rem 0.5rem 0.375rem 0;color:#64748b;white-space:nowrap;vertical-align:top;">
+          <tr>
+            <td class="sem-pred">
               ${localName(prop)}
             </td>
-            <td style="padding:0.375rem 0;color:#1e293b;word-break:break-all;">
+            <td>
               ${val}
             </td>
           </tr>`;
@@ -665,7 +668,7 @@ export class SemPanelVocab extends HTMLElement {
 
   _renderEmptyDetail() {
     this._detailPane.innerHTML =
-      '<p style="color:#94a3b8;font-size:0.875rem;">Select a class or property</p>';
+      '<p class="sem-empty">Select a class or property</p>';
   }
 }
 

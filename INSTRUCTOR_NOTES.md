@@ -54,15 +54,38 @@ grouped last in @graph).
 ## Lab 1 — Identity and Connection (deck 1a–1c)
 
 **Seed:** two plain-JSON islands (GEB book / Hofstadter author), no context.
-**Live arc (four states):** raw parse (blank amber nodes, two islands) →
-add `@base` + map `id` → `@id` (nodes teal, IRIs appear, still two islands) →
+**Live arc (four states):** raw parse (blank nodes as dashed rings, two islands) →
+add `@base` + map `id` → `@id` (rings go solid, IRIs appear, still two islands) →
 map `author_id` to `{"@type": "@id"}` (THE edge snaps, one graph) → Fetch
 `hofstadter-extended.jsonld` into Document B (properties explode, same IRI, no
 mapping).
 **Discrepancy event:** the edge snap — one line of context connects two systems.
 **Gotchas:** the term-mapping pass (deck Lab 1c) maps `title`, `published`,
 etc. to `https://example.com/ns#…` — later labs assume those IRIs exist, do
-not skip it. Amber → teal is the identity lesson; narrate the color change.
+not skip it. Dashed ring → solid ring is the identity lesson; narrate the change.
+**LANDMINE — edit the id VALUES, not just the context:** ids must become
+path form (`"/Book/Id/441"`, `"/Author/Id/872"`, `"/Org/Id/34"`) during the
+live work, or `@base` resolves GEB to `https://example.com/441` and every
+later lab's reference (Lab 5 seed, cheatsheets) points at a different node.
+**End state — Document A (verified):**
+```json
+{
+  "@context": {
+    "@base": "https://example.com/",
+    "id": "@id",
+    "title": "https://example.com/ns#title",
+    "published": "https://example.com/ns#published",
+    "author_id": { "@id": "https://example.com/ns#author", "@type": "@id" }
+  },
+  "id": "/Book/Id/441",
+  "title": "Gödel, Escher, Bach",
+  "author_id": "/Author/Id/872",
+  "published": 1979
+}
+```
+**End state — Document B:** same context pattern (`name` →
+`https://example.com/ns#name`, `affiliation_id` → `ex:affiliation` with
+`"@type": "@id"`), `"id": "/Author/Id/872"`, `"affiliation_id": "/Org/Id/34"`.
 
 ## Lab 2 — Data and Context (deck Lab 2)
 
@@ -79,6 +102,25 @@ and the leftover collision the room fixes by applying the pattern.
 **Tabs:** Local Graph + Vocabulary only.
 **Gotchas:** keep everything in `ex:` — no schema.org here; the queen's
 DBpedia IRI is a plant for the merging lab, don't dwell on it.
+**End state — the completed @context (verified; Lab 11's merge depends on
+the isbn line):**
+```json
+{
+  "@context": {
+    "title": "https://example.com/ns#title",
+    "isbn": "https://example.com/ns#isbn",
+    "name": "https://example.com/ns#name",
+    "about": {
+      "@id": "https://example.com/ns#about",
+      "@context": { "title": "https://example.com/ns#positionHeld" }
+    },
+    "author": {
+      "@id": "https://example.com/ns#author",
+      "@context": { "title": "https://example.com/ns#jobTitle" }
+    }
+  }
+}
+```
 
 ## Lab 3 — Two Syntaxes, One Graph (deck Lab 3; callout moves to after slide 202)
 
@@ -104,8 +146,8 @@ rdf:Property; rdfs:label; rdfs:comment; rdfs:range xsd:string` (the slides'
 definition in legal Turtle — note the deck's `rdfs:Property` slides are being
 corrected to `rdf:Property`).
 **Live arc:** open on the Vocabulary tab: every term the morning used sits
-there **amber — identity without description**. Parse the seed; `title` turns
-teal. The exercise: work down the amber list writing rough RDFS definitions.
+there **dashed — identity without description**. Parse the seed; `title` turns
+solid. The exercise: work down the dashed list writing rough RDFS definitions.
 Optionally pull back the curtain on `implied:` here (`@vocab` — "the tool has
 been catching your unmapped keys all morning").
 **Discrepancy event:** the term itself becomes a node with properties —
@@ -113,6 +155,20 @@ definitions are data, same graph, same syntax.
 **Tabs:** Vocabulary (default) + Local Graph.
 **Gotchas:** zero inference fires here by design (range axioms have no data
 in this lab's graph). Don't define `subClassOf` yet — that's Lab 5's powder.
+**End state — the exercise's worked-down list (representative; any subset
+the room reaches is fine, seed's `ex:title` block plus):**
+```turtle
+ex:name a rdf:Property ; rdfs:label "Name" ;
+    rdfs:comment "The name of a person or organization" ; rdfs:range xsd:string .
+ex:author a rdf:Property ; rdfs:label "Author" ;
+    rdfs:comment "Connects a work to the person who wrote it" .
+ex:published a rdf:Property ; rdfs:label "Published" ;
+    rdfs:comment "Year of first publication" ; rdfs:range xsd:integer .
+ex:isbn a rdf:Property ; rdfs:label "ISBN" ;
+    rdfs:comment "International Standard Book Number" ; rdfs:range xsd:string .
+ex:positionHeld a rdf:Property ; rdfs:label "Position held" .
+ex:jobTitle a rdf:Property ; rdfs:label "Job title" .
+```
 
 ## Lab 5 — Classes and Subclasses (deck Labs 5+6, slides 246/250)
 
@@ -120,7 +176,7 @@ in this lab's graph). Don't define `subClassOf` yet — that's Lab 5's powder.
 244's definition), plus one claim: GEB `a ex:Book`. Below it, a commented
 roster of the classes the day has implied but never declared (`ex:Author`,
 `schema:Person`, `ex:Organization`) — unlike properties, undeclared classes
-have no amber reference list in any panel, so the seed carries the worklist.
+have no dashed reference list in any panel, so the seed carries the worklist.
 Inference-silent on Parse — no `subClassOf` in the seed.
 **Live arc:** declare `ex:Author a rdfs:Class`, then the hierarchy —
 `ex:Author rdfs:subClassOf schema:Person` (note: **crossing dialects** — your
@@ -133,7 +189,7 @@ classification arrives in Lab 7, from DBpedia's knowledge, not the room's —
 "suddenly the queen is a person, and nobody here said so." (If an eager
 attendee types her anyway, nothing breaks — Lab 7's derivation is simply
 absorbed and the beat softens.)
-**Discrepancy event:** the first dashed edge of the day — Sally's dot appears
+**Discrepancy event:** the first dotted gold edge of the day — Sally's dot appears
 *inside the Person container* though nobody typed her there; the reasoner
 derived it from the hierarchy (rdfs9). Then it compounds: every Author is a
 Person, free, forever.
@@ -146,6 +202,21 @@ The seed's comment block doubles as the cheatsheet: the cast's full IRIs are
 right there — nobody should be scrolling back through labs to copy an IRI.
 Optional stretch: `rdfs:domain ex:isbn ex:Book`, then assert a brand-new
 resource with only an `ex:isbn` — it gets typed `ex:Book` out of thin air.
+**End state (verified; queen deliberately absent):**
+```turtle
+ex:Book a rdfs:Class ;
+    rdfs:label "Book" ; rdfs:comment "A published written work" .
+ex:Author a rdfs:Class ;
+    rdfs:subClassOf schema:Person .
+ex:Organization a rdfs:Class .
+
+<https://example.com/Book/Id/441> a ex:Book .
+<https://example.com/Book/Id/8268> a ex:Book .
+<https://example.com/Author/Id/872> a ex:Author .
+<https://example.com/Author/Id/35626> a ex:Author .
+<https://w3id.org/people/michael> a ex:Author .
+<https://example.com/Org/Id/34> a ex:Organization .
+```
 
 ## Lab 6 — Merging Vocabularies (deck Labs 7+8)
 
@@ -172,7 +243,7 @@ with the candidates commented as questions (`author`? `Book`? `isbn` —
   and RDFS already has one word for 'the special case of': `subPropertyOf`.
   One line, one direction, and the graph knows a title will serve anywhere a
   name is asked for."
-- Parse, then the bloom: two dashed `schema:name` triples appear on the
+- Parse, then the bloom: two dotted `schema:name` triples appear on the
   *morning's* records. "Nobody edited the publisher's data. Nobody wrote a
   migration. We told the graph one true thing, and it re-read everything it
   already knew."
@@ -184,7 +255,7 @@ with the candidates commented as questions (`author`? `Book`? `isbn` —
   `ex:title ≡ schema:name ≡ ex:name` — *your own two properties just merged*.
   Hofstadter's name "Douglas Hofstadter" is now also his title; every book's
   title is its `ex:name`. Nothing errors — the graph did exactly what you
-  said, globally, retroactively, in dashed edges. Rule of thumb for the room:
+  said, globally, retroactively, in dotted edges. Rule of thumb for the room:
   **one-way arrows can safely converge on a shared hub; two-way arrows
   through a hub weld everything they touch into one property.** "Is it true
   in both directions?" is the modeling question of this lab — isbn passes,
@@ -209,11 +280,23 @@ bloom across the whole morning).
 **Note:** ADR-038 (cumulative reasoning) is what makes all of this real —
 axioms parsed here act on the whole morning's data, and the isbn bridge built
 here detonates again when the foreign dataset arrives in Lab 7.
+**End state (verified; Labs 7/11/12 depend on the isbn and Book lines):**
+```turtle
+ex:title  rdfs:subPropertyOf schema:name .    # one-way — the Duke
+ex:name   rdfs:subPropertyOf schema:name .
+ex:author rdfs:subPropertyOf schema:author .
+
+ex:Book   rdfs:subClassOf schema:Book .
+schema:Book rdfs:subClassOf ex:Book .         # classes: true both ways
+
+ex:isbn   rdfs:subPropertyOf schema:isbn .
+schema:isbn rdfs:subPropertyOf ex:isbn .      # equivalence, built by hand
+```
 
 ### The bridge out of Lab 6 (Pledge / Turn / Prestige)
 
 - **Pledge:** declarative alignment, shown. Classes converged, properties
-  deduped, dashed dialect triples across the morning's data.
+  deduped, dotted dialect triples across the morning's data.
 - **Turn (rapid-fire takahashi):** "You might be thinking 'ok cool, we mapped
   two schemas… in a really weird way…' — That's not what just happened. We
   *learned* something about the semantics. We expressed what we learned as
@@ -242,7 +325,7 @@ Read it with the room first: dbo: terms nobody has seen, and — scroll down —
 schema:Person`, `dbo:birthName ⊑ schema:name`; DBpedia genuinely publishes
 these). No comment syntax exists in JSON — the pointing IS the callout.
 **Live arc:** Fetch → read → Parse → Full Graph: the foreign record attaches
-to the *existing* queen node (same IRI since Lab 2), and the dashed climb
+to the *existing* queen node (same IRI since Lab 2), and the dotted climb
 happens — queen and Philip derive `schema:Person` through DBpedia's own
 chain, birth name lands on `schema:name` where the morning's data already
 converges. Zero local mapping was written.
@@ -250,7 +333,7 @@ converges. Zero local mapping was written.
 understood* — the room's Lab-6 work and DBpedia's published alignments meet
 at the schema.org hub without coordination. **The queen beat:** she was
 deliberately left unclassified in Lab 5 (the "notice who's missing" plant) —
-now she materializes into the Person container, dashed, classified by
+now she materializes into the Person container, dotted, classified by
 someone else's knowledge: "suddenly the queen is a person — and nobody in
 this room said so."
 **Tabs:** Local Graph (default) + Entities + Vocabulary.
@@ -349,7 +432,7 @@ ex:wifeOf owl:inverseOf ex:husbandOf .
 ```
 **Staging:** parse Data first — two nodes, one edge, nothing else. Then add
 the semantics one line at a time, parsing after each: subPropertyOf →
-*michael marriedTo kate* (dashed); SymmetricProperty → *kate marriedTo
+*michael marriedTo kate* (dotted); SymmetricProperty → *kate marriedTo
 michael*; inverseOf → *kate wifeOf michael*. **One asserted fact, three
 derived facts** (verified). "I said one thing. The graph now knows four."
 **Do NOT promise `owl:propertyChainAxiom`** (uncle = brother∘parent, etc.) —
@@ -440,11 +523,13 @@ SPARQL: look at Full Graph. That thing on screen is a knowledge graph. It
 was never built. It *emerged*.
 
 **Slide asset delivered:** `C:\Users\micha\OneDrive\Documents\talks\lab9-local-graph.svg`
-— Lab 9's local-graph end state in the tool's exact visual grammar (teal
+— Lab 9's local-graph end state in the tool's *pre-reskin* visual grammar (teal
 IRI nodes, solid gray asserted edges, dashed violet inferred), laid out
-clean: michael/kate with 1 solid + 3 dashed edges, semantics cluster to the
+clean: michael/kate with 1 solid + 3 inferred edges, semantics cluster to the
 right. (Live Cytoscape export was unusable — layout doesn't settle in the
-headless env.)
+headless env.) **Stale since the Semantic Lounge reskin:** the tool now draws the
+brand's diagram grammar (hollow Lace rings, solid Lace asserted, dotted String-light
+inferred); regenerate before using it on a slide.
 
 ## SPARQL section — AGREED PROGRESSION (Michael, 2026-07-12)
 

@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<!-- Belt-and-suspenders alongside styles/tokens.css's `color-scheme: light` — a
-     meta tag is parsed before any external stylesheet loads, so it's the earliest
-     possible signal to opt this (light-only) app out of browser forced-dark repaint. -->
-<meta name="color-scheme" content="light" />
-<title>Semantic Notebook — An Engineer's Guide to the Semantic Layer</title>
+<!-- Both schemes are declared (night default, day via data-theme), so the browser never
+     applies its forced-dark repaint — which crushed CodeMirror's translucent active-line
+     highlight when this app was light-only. The meta is parsed before any stylesheet. -->
+<meta name="color-scheme" content="dark light" />
+<!-- Restore the viewer's day/night choice before first paint (no flash of the wrong
+     mode). Storage may be unavailable; night is the default either way. -->
+<script>try { if (localStorage.getItem('sem-theme') === 'day') document.documentElement.dataset.theme = 'day'; } catch (e) {}</script>
+<title>Semantic Notebook — Architecting the Semantic Layer</title>
 <!-- ALL runtime libraries are vendored under /vendor/globals/ (exact source
      versions in that directory's PROVENANCE.md) — no CDN fetches at runtime.
      Same rationale as the CodeMirror vendoring below, generalized after the
@@ -53,6 +56,8 @@
   cytoscape.use(cytoscapeCola);
   cytoscape.use(cytoscapeFcose);
 </script>
+<!-- Semantic Lounge: brand faces inlined as data URIs (no runtime fetch, ADR-006), then tokens. -->
+<link rel="stylesheet" href="../styles/fonts.css">
 <link rel="stylesheet" href="../styles/tokens.css">
 
 <!-- CodeMirror and its dependency graph, vendored locally under /vendor/codemirror/
@@ -85,11 +90,11 @@
 }
 </script>
 </head>
-<body class="bg-slate-100">
+<body>
 
 <!-- Page-level throbber: present in static HTML from the start, removed by bootstrap.js once notebook:ready fires. -->
-<div id="page-throbber" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900">
-  <div class="h-12 w-12 rounded-full border-4 border-slate-600 border-t-white animate-spin"></div>
+<div id="page-throbber" class="fixed inset-0 z-50 flex items-center justify-center sem-throbber">
+  <div class="sem-spinner"></div>
 </div>
 
 <!-- snap-y/snap-mandatory + overflow-y-scroll turns the stack of 100vh labs below
@@ -118,35 +123,38 @@
   lab-class="pt-12 box-border snap-start snap-always"
   class="block h-screen overflow-y-scroll snap-y snap-mandatory">
 
-  <nav id="lab-nav" class="fixed top-0 inset-x-0 z-40 h-12 flex items-center gap-3 px-4 bg-slate-900/95 text-slate-100 text-sm backdrop-blur">
+  <nav id="lab-nav" class="fixed top-0 inset-x-0 z-40 h-12 flex items-center gap-3 px-4 text-sm sem-nav">
     <button
       id="lab-nav-toggle"
       type="button"
       aria-expanded="false"
       aria-controls="lab-nav-drawer"
       aria-label="Toggle lab navigation"
-      class="-ml-1 flex h-8 w-8 flex-col items-center justify-center gap-1 rounded hover:bg-white/10">
+      class="-ml-1 flex h-8 w-8 flex-col items-center justify-center gap-1 sem-nav-btn">
       <span class="block h-0.5 w-4 bg-current"></span>
       <span class="block h-0.5 w-4 bg-current"></span>
       <span class="block h-0.5 w-4 bg-current"></span>
     </button>
-    <span class="font-semibold tracking-wide">An Engineer's Guide to the Semantic Layer</span>
+    <span class="sem-nav-title whitespace-nowrap">Architecting the Semantic Layer</span>
     <!-- Populated by build-nav.js with the active lab ("Lab 5 · Classes and Subclasses").
          Empty until the first lab intersects; build-nav owns all its updates. -->
-    <span id="lab-nav-current" class="truncate text-slate-300"></span>
+    <span id="lab-nav-current" class="sem-sign truncate" hidden></span>
+    <!-- Day/night: night is the stage default; day is the guide's paper mode, for long reading. -->
+    <button id="theme-toggle" type="button" class="sem-theme-toggle ml-auto"></button>
   </nav>
 
   <!-- Backdrop and drawer sit below the fixed nav bar (top-12), not over it,
        so the hamburger button stays clickable while the drawer is open. -->
   <div
     id="lab-nav-backdrop"
-    class="fixed inset-x-0 top-12 bottom-0 z-40 bg-slate-900/50 opacity-0 pointer-events-none transition-opacity duration-200">
+    class="fixed inset-x-0 top-12 bottom-0 z-40 sem-backdrop opacity-0 pointer-events-none transition-opacity duration-200">
   </div>
 
   <aside
     id="lab-nav-drawer"
     aria-hidden="true"
-    class="fixed left-0 top-12 bottom-0 z-50 w-64 -translate-x-full transform bg-slate-900 p-4 text-sm text-slate-100 transition-transform duration-200 overflow-y-auto">
+    class="fixed left-0 top-12 bottom-0 z-50 w-64 -translate-x-full transform p-4 text-sm transition-transform duration-200 overflow-y-auto sem-drawer">
+    <p class="sem-drawer-eyebrow mb-3">// labs</p>
     <!-- Anchor links are generated at runtime by scripts/build-nav.js from the
          notebook definition's sembook:labs list — do not hand-author them here,
          that's exactly the drift this was built to avoid. -->
@@ -176,6 +184,9 @@
 <script type="module">
   import { bootstrap } from '../scripts/bootstrap.js';
   import { buildNav } from '../scripts/build-nav.js';
+  import { wireThemeToggle } from '../scripts/theme.js';
+
+  wireThemeToggle(document.getElementById('theme-toggle'));
 
   document.addEventListener('notebook:ready', (e) => {
     buildNav(document.getElementById('lab-nav-links'), e.detail.notebookDoc);

@@ -10,6 +10,7 @@ import {
   mergeHierarchyBindings,
   META_VOCAB_NAMESPACES
 } from '../scripts/parse-utils.js';
+import { graphGrammar, mix, SANS, fontsReady, onThemeChange } from '../scripts/theme.js';
 
 const OWL = 'http://www.w3.org/2002/07/owl#';
 const RDFS = 'http://www.w3.org/2000/01/rdf-schema#';
@@ -34,15 +35,15 @@ function dedupeInferredRows(bindings, keyOf) {
 // Property/value table shared by the instance view and the class-assertions view.
 // Inferred rows render italic; everything else about the row is identical.
 function propertyTableHtml(rows) {
-  let html = '<table style="width:100%;border-collapse:collapse;font-size:0.8rem;">';
+  let html = '<table class="sem-rows">';
   for (const { prop, val, inferred } of rows) {
-    const italic = inferred ? 'font-style:italic;' : '';
+    const cls = inferred ? ' sem-inferred' : '';
     html += `
-      <tr style="border-bottom:1px solid #f1f5f9;">
-        <td style="padding:0.375rem 0.5rem 0.375rem 0;color:#64748b;white-space:nowrap;vertical-align:top;${italic}">
+      <tr>
+        <td class="sem-pred${cls}">
           ${localName(prop)}
         </td>
-        <td style="padding:0.375rem 0;color:#1e293b;word-break:break-all;${italic}">
+        <td class="${cls.trim()}">
           ${val}
         </td>
       </tr>`;
@@ -52,72 +53,54 @@ function propertyTableHtml(rows) {
 }
 
 function sectionLabelHtml(text) {
-  return `<h4 style="font-size:0.7rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin:1rem 0 0.25rem;">${text}</h4>`;
+  return `<h4 class="sem-section-h">${text}</h4>`;
 }
 
-const entityStylesheet = [
-  {
-    selector: 'node.class-node',
-    style: {
-      'shape': 'round-rectangle',
-      'background-color': '#f0fdfa',
-      'border-width': 2,
-      'border-color': '#0d9488',
-      'color': '#0f766e',
-      'label': 'data(label)',
-      'text-valign': 'top',
-      'text-halign': 'center',
-      'font-size': '12px',
-      'font-weight': 'bold',
-      'padding': '24px',
-      'text-margin-y': '-4px'
-    }
-  },
-  {
-    selector: 'node.instance-node',
-    style: {
-      'shape': 'ellipse',
-      'background-color': '#0d9488',
-      'border-width': 0,
-      'color': '#ffffff',
-      'label': 'data(label)',
-      'text-valign': 'center',
-      'text-halign': 'center',
-      'font-size': '10px',
-      'width': 48,
-      'height': 48
-    }
-  },
-  // Inferred membership — this instance is in this set because the reasoner derived it,
-  // not because anyone typed it. Muted fill + dashed border + italic label, matching the
-  // dashed-inferred visual grammar the graph panels already use (ADR-031).
-  {
-    selector: 'node.instance-node.inferred',
-    style: {
-      'background-color': '#99f6e4',
-      'border-width': 2,
-      'border-style': 'dashed',
-      'border-color': '#0d9488',
-      'color': '#0f766e',
-      'font-style': 'italic'
-    }
-  },
-  {
-    selector: 'node:selected',
-    style: {
-      'border-color': '#7c3aed',
-      'border-width': 3,
-      'background-color': '#ede9fe'
-    }
-  },
-  {
-    selector: 'node.instance-node:selected',
-    style: {
-      'background-color': '#7c3aed',
-      'border-width': 0
-    }
-  }
-];
+// From the shared diagram grammar (scripts/theme.js), rebuilt on a day/night switch.
+// A class is a set drawn as a faint container; its instances are the same hollow
+// Lace rings as IRI nodes in the graph panel.
+function entityStylesheet() {
+  const g = graphGrammar();
+  const t = g.tokens;
+  return [
+    {
+      selector: 'node.class-node',
+      style: {
+        'shape': 'round-rectangle',
+        'background-color': mix(t.lace, t.street, 5),
+        'border-width': 1.5,
+        'border-color': mix(t.lace, t.street, 35),
+        'color': t.lace,
+        'label': 'data(label)',
+        'text-valign': 'top',
+        'text-halign': 'center',
+        'font-family': SANS,
+        'font-size': '12px',
+        'font-weight': 600,
+        'padding': '24px',
+        'text-margin-y': '-4px'
+      }
+    },
+    {
+      selector: 'node.instance-node',
+      style: {
+        ...g.node,
+        'shape': 'ellipse',
+        'label': 'data(label)',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'font-size': '10px',
+        'width': 48,
+        'height': 48
+      }
+    },
+    // Inferred membership — this instance is in this set because the reasoner derived it,
+    // not because anyone typed it: a dotted string-light ring and italic label, the same
+    // inferred grammar the graph panels use for edges (ADR-031).
+    { selector: 'node.instance-node.inferred', style: g.inferredNode },
+    { selector: 'node:selected', style: g.selected }
+  ];
+}
 
 // fCoSE, not plain cose: cose predates Cytoscape's compound-node support. It doesn't pack
 // disconnected components apart, so separate class sets (Person, Book, City, ...) pile on
@@ -206,10 +189,11 @@ export class SemPanelEntity extends HTMLElement {
     // graph gets all remaining height; Cytoscape targets _graphContainer, not _leftPane,
     // so a graph:updated rebuild that clears the graph never wipes the toolbar).
     this._leftPane = document.createElement('div');
-    this._leftPane.style.cssText = 'display:flex;flex-direction:column;width:100%;height:100%;border-right:1px solid #e2e8f0;';
+    this._leftPane.style.cssText = 'display:flex;flex-direction:column;width:100%;height:100%;border-right:1px solid var(--rule);';
 
     const toolbar = document.createElement('div');
-    toolbar.style.cssText = 'flex:none;display:flex;align-items:center;gap:0.25rem;padding:0.25rem 0.5rem;background:#f8fafc;border-bottom:1px solid #e2e8f0;';
+    toolbar.className = 'sem-toolbar';
+    toolbar.style.cssText = 'flex:none;display:flex;align-items:center;gap:0.25rem;padding:0.25rem 0.5rem;';
     this._scopeButtons.mine = this._scopeButton('Mine', 'mine', "This lab's data only");
     this._scopeButtons.all = this._scopeButton('All', 'all', 'Everything asserted so far, across all labs up to this one');
     toolbar.appendChild(this._scopeButtons.mine);
@@ -235,11 +219,12 @@ export class SemPanelEntity extends HTMLElement {
       this._cy?.fit(undefined, entityLayout.padding);
     });
     this._resizeObserver.observe(this._graphContainer);
+    this._offTheme = onThemeChange(() => this._cy?.style(entityStylesheet()));
 
     // Right pane — property viewer
     this._rightPane = document.createElement('div');
     this._rightPane.style.cssText = 'width:100%;height:100%;overflow-y:auto;padding:1rem;';
-    this._rightPane.innerHTML = '<p style="color:#94a3b8;font-size:0.875rem;">Select a class or entity</p>';
+    this._rightPane.innerHTML = '<p class="sem-empty">Select a class or entity</p>';
 
     this.appendChild(this._leftPane);
     this.appendChild(this._rightPane);
@@ -250,7 +235,8 @@ export class SemPanelEntity extends HTMLElement {
     btn.type = 'button';
     btn.textContent = label;
     btn.title = title;
-    btn.style.cssText = 'flex:none;padding:0.25rem 0.625rem;font-size:0.75rem;font-weight:600;letter-spacing:0.03em;border:1px solid #e2e8f0;border-radius:0.375rem;background:transparent;color:#64748b;cursor:pointer;';
+    btn.className = 'sem-toggle';
+    btn.style.flex = 'none';
     btn.addEventListener('click', () => this._setScope(scope));
     return btn;
   }
@@ -258,9 +244,7 @@ export class SemPanelEntity extends HTMLElement {
   _syncScopeButtons() {
     for (const [scope, btn] of Object.entries(this._scopeButtons)) {
       const active = scope === this._scope;
-      btn.style.background = active ? '#0d9488' : 'transparent';
-      btn.style.color = active ? '#ffffff' : '#64748b';
-      btn.style.borderColor = active ? '#0d9488' : '#e2e8f0';
+      btn.classList.toggle('is-active', active);
     }
   }
 
@@ -349,10 +333,11 @@ export class SemPanelEntity extends HTMLElement {
         if (group) el.data.fullLabel = group.join(' ≡ ');
       }
       // The inference reveal: derived memberships place the same instance inside
-      // additional class containers, styled dashed/italic. Only memberships, never
+      // additional class containers, styled dotted/italic. Only memberships, never
       // hierarchy structure — inferred subClassOf transitivity would make the
       // first-parent-wins nesting order-dependent and flatten Author out of Person.
       this._appendInferredMembers(elements, inferredMembers);
+      await fontsReady(); // canvas labels must measure in the brand faces, not the fallback
       this._renderHierarchy(elements);
     } catch (err) {
       console.error('EntityPanel query failed:', err);
@@ -398,7 +383,7 @@ export class SemPanelEntity extends HTMLElement {
   }
 
   // Place reasoner-derived memberships into the already-built compound hierarchy: the
-  // same instance appears inside each additional class container, dashed/italic. Rules:
+  // same instance appears inside each additional class container, dotted/italic. Rules:
   //   • class AND instance are each canonicalized through their own equivalence map, so
   //     a membership inferred against schema:Person lands in the merged Person container,
   //     and an inferred membership for either alias of a merged instance lands on the
@@ -444,7 +429,7 @@ export class SemPanelEntity extends HTMLElement {
 
     if (elements.length === 0) {
       this._graphContainer.innerHTML =
-        '<p style="color:#94a3b8;font-size:0.875rem;padding:1rem;">No classes defined yet</p>';
+        '<p class="sem-empty" style="padding:1rem;">No classes defined yet</p>';
       return;
     }
 
@@ -452,7 +437,7 @@ export class SemPanelEntity extends HTMLElement {
     this._cy = cytoscape({
       container: this._graphContainer,
       elements,
-      style: entityStylesheet,
+      style: entityStylesheet(),
       layout: entityLayout
     });
 
@@ -651,9 +636,9 @@ export class SemPanelEntity extends HTMLElement {
 
     const className = localName(classIri);
     const groupNote = group.length > 1
-      ? `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${group.join(' ≡ ')}</span>`
-      : `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${classIri}</span>`;
-    let html = `<h3 style="font-size:0.875rem;font-weight:600;color:#0f766e;margin-bottom:0.75rem;">
+      ? `<span class="sem-iri">${group.join(' ≡ ')}</span>`
+      : `<span class="sem-iri">${classIri}</span>`;
+    let html = `<h3 class="sem-detail-title">
       ${className}
       ${groupNote}
     </h3>`;
@@ -661,19 +646,18 @@ export class SemPanelEntity extends HTMLElement {
     html += sectionLabelHtml('Assertions');
     html += assertionRows.length
       ? propertyTableHtml(assertionRows)
-      : '<p style="color:#94a3b8;font-size:0.875rem;">None</p>';
+      : '<p class="sem-empty">None</p>';
 
     html += sectionLabelHtml(`Members · ${memberRows.length}`);
     if (memberRows.length === 0) {
-      html += '<p style="color:#94a3b8;font-size:0.875rem;">No instances defined</p>';
+      html += '<p class="sem-empty">No instances defined</p>';
     } else {
       html += '<ul style="list-style:none;padding:0;margin:0;">';
       for (const { iri, label, inferred } of memberRows) {
-        const italic = inferred ? 'font-style:italic;' : '';
         html += `
-          <li style="padding:0.375rem 0;border-bottom:1px solid #f1f5f9;font-size:0.875rem;${italic}">
-            <span style="color:#0d9488;font-weight:500;">${label}</span>
-            <span style="color:#94a3b8;font-size:0.75rem;display:block;">${iri}</span>
+          <li class="sem-list-row${inferred ? ' sem-inferred' : ''}">
+            <span class="sem-list-label">${label}</span>
+            <span class="sem-iri">${iri}</span>
           </li>`;
       }
       html += '</ul>';
@@ -736,15 +720,15 @@ export class SemPanelEntity extends HTMLElement {
     }));
 
     const groupNote = group.length > 1
-      ? `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${group.join(' ≡ ')}</span>`
-      : `<span style="color:#94a3b8;font-size:0.75rem;font-weight:400;display:block;word-break:break-all;">${instanceIri}</span>`;
-    let html = `<h3 style="font-size:0.875rem;font-weight:600;color:#0f766e;margin-bottom:0.75rem;">
+      ? `<span class="sem-iri">${group.join(' ≡ ')}</span>`
+      : `<span class="sem-iri">${instanceIri}</span>`;
+    let html = `<h3 class="sem-detail-title">
       ${label}
       ${groupNote}
     </h3>`;
 
     if (rows.length === 0) {
-      html += '<p style="color:#94a3b8;font-size:0.875rem;">No properties asserted</p>';
+      html += '<p class="sem-empty">No properties asserted</p>';
     } else {
       html += propertyTableHtml(rows);
     }
@@ -755,7 +739,7 @@ export class SemPanelEntity extends HTMLElement {
   async _renderPropertyPane() {
     if (!this._selectedIri) {
       this._rightPane.innerHTML =
-        '<p style="color:#94a3b8;font-size:0.875rem;">Select a class or entity</p>';
+        '<p class="sem-empty">Select a class or entity</p>';
       return;
     }
     if (this._selectedType === 'class') {
@@ -767,6 +751,7 @@ export class SemPanelEntity extends HTMLElement {
 
   disconnectedCallback() {
     this._resizeObserver?.disconnect();
+    this._offTheme?.();
     this._cy?.destroy();
     this._cy = null;
   }

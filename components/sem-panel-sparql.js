@@ -2,8 +2,7 @@
 // and resolved via the import map in index.html — see that directory for exact
 // versions. Same vendoring rationale as sem-panel-turtle.js/turtle-writer.js (ADR-006).
 import { EditorView, basicSetup } from 'codemirror';
-import { StreamLanguage } from '@codemirror/language';
-import { sparql as sparqlMode } from '@codemirror/legacy-modes/mode/sparql';
+import { editorTheme, sparqlLanguage } from './editor-theme.js';
 import { keymap } from '@codemirror/view';
 import { indentWithTab } from '@codemirror/commands';
 import { findPanelNode } from './jsonld-panel-shared.js';
@@ -13,44 +12,9 @@ function createEditor(parent, initialContent, onChange) {
     doc: initialContent,
     extensions: [
       basicSetup,
-      StreamLanguage.define(sparqlMode),
+      sparqlLanguage,
       keymap.of([indentWithTab]),
-      EditorView.theme({
-        '&': {
-          height: '100%',
-          fontSize: '13px',
-          fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace'
-        },
-        '.cm-scroller': {
-          overflow: 'auto',
-          lineHeight: '1.6'
-        },
-        '.cm-content': {
-          padding: '8px 0'
-        },
-        '.cm-gutters': {
-          backgroundColor: '#f8fafc',
-          borderRight: '1px solid #e2e8f0',
-          color: '#94a3b8',
-          fontSize: '11px'
-        },
-        '.cm-activeLineGutter': {
-          backgroundColor: '#cbd5e1'
-        },
-        // See sem-panel-turtle-writer.js for why this must be translucent, not opaque.
-        '.cm-activeLine': {
-          backgroundColor: 'rgba(37, 99, 235, 0.15)'
-        },
-        '.cm-selectionBackground': {
-          backgroundColor: '#93c5fd !important'
-        },
-        '&.cm-focused .cm-selectionBackground': {
-          backgroundColor: '#60a5fa !important'
-        },
-        '.cm-content ::selection': {
-          backgroundColor: '#93c5fd !important'
-        }
-      }),
+      ...editorTheme(),
       EditorView.updateListener.of(update => {
         if (update.docChanged) {
           onChange(view.state.doc.toString());
@@ -92,16 +56,16 @@ export class SemPanelSparql extends HTMLElement {
         <span class="sem-panel-label">${this.label || 'SPARQL'}</span>
         <div class="flex items-center gap-2">
           <select
-            class="flex-1 min-w-0 ml-3.5 text-xs font-mono border border-slate-300 rounded px-2 py-1 bg-white"
+            class="flex-1 min-w-0 ml-3.5 sem-input"
             data-role="sample-select">
             <option value="" selected disabled>Sample queries…</option>
           </select>
         </div>
       </div>
       <div style="flex:1;overflow:hidden;min-height:0;" data-role="editor"></div>
-      <div data-role="error" class="hidden px-3 py-2 text-xs text-red-600 bg-red-50 border-t border-red-200"></div>
+      <div data-role="error" class="hidden sem-error"></div>
       <div class="sem-panel-bar sem-panel-bar--footer flex items-center justify-end gap-2">
-        <button class="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700"
+        <button class="sem-btn sem-btn--primary"
           data-role="run-btn">Run</button>
       </div>
     `;

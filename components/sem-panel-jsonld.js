@@ -32,17 +32,17 @@ export class SemPanelJsonLd extends HTMLElement {
         <span class="sem-panel-label">${this.label}</span>
         <div class="flex items-center gap-2">
           <input type="text" placeholder="IRI…"
-            class="flex-1 min-w-0 ml-3.5 text-xs font-mono border border-slate-300 rounded px-2 py-1"
+            class="flex-1 min-w-0 ml-3.5 sem-input"
             data-role="fetch-input" />
-          <button class="shrink-0 text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300"
+          <button class="shrink-0 sem-btn"
             data-role="fetch-btn">Fetch</button>
         </div>
-        <div data-role="fetch-error" class="hidden text-xs text-red-600"></div>
+        <div data-role="fetch-error" class="hidden sem-error sem-error--inline"></div>
       </div>
       <div style="flex:1;overflow:hidden;min-height:0;" data-role="editor"></div>
-      <div data-role="error" class="hidden px-3 py-2 text-xs text-red-600 bg-red-50 border-t border-red-200"></div>
+      <div data-role="error" class="hidden sem-error"></div>
       <div class="sem-panel-bar sem-panel-bar--footer flex items-center justify-end gap-2">
-        <button class="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700"
+        <button class="sem-btn sem-btn--primary"
           data-role="parse-btn">Parse</button>
       </div>
     `;

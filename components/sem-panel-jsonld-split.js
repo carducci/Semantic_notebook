@@ -45,28 +45,28 @@ export class SemPanelJsonLdSplit extends HTMLElement {
         <span class="sem-panel-label">${this.label}</span>
         <div class="flex items-center gap-2">
           <input type="text" placeholder="IRI…"
-            class="flex-1 min-w-0 ml-3.5 text-xs font-mono border border-slate-300 rounded px-2 py-1"
+            class="flex-1 min-w-0 ml-3.5 sem-input"
             data-role="fetch-input" />
-          <button class="shrink-0 text-xs px-2 py-1 rounded bg-slate-200 text-slate-700 hover:bg-slate-300"
+          <button class="shrink-0 sem-btn"
             data-role="fetch-btn">Fetch</button>
         </div>
-        <div data-role="fetch-error" class="hidden text-xs text-red-600"></div>
+        <div data-role="fetch-error" class="hidden sem-error sem-error--inline"></div>
       </div>
       <div style="flex:1;display:grid;grid-template-columns:65fr 35fr;overflow:hidden;min-height:0;">
-        <div style="display:flex;flex-direction:column;overflow:hidden;min-height:0;border-right:1px solid #e2e8f0;">
-          <div class="px-3 py-1 text-xs font-medium text-slate-500 bg-slate-50 border-b border-slate-200">Body</div>
+        <div style="display:flex;flex-direction:column;overflow:hidden;min-height:0;border-right:1px solid var(--rule);">
+          <div class="px-3 py-1 sem-note sem-toolbar">Body</div>
           <div style="flex:1;overflow:hidden;min-height:0;" data-role="body-editor"></div>
-          <div data-role="body-error" class="hidden px-3 py-2 text-xs text-red-600 bg-red-50 border-t border-red-200"></div>
+          <div data-role="body-error" class="hidden sem-error"></div>
         </div>
         <div style="display:flex;flex-direction:column;overflow:hidden;min-height:0;">
-          <div class="px-3 py-1 text-xs font-medium text-slate-500 bg-slate-50 border-b border-slate-200">@context</div>
+          <div class="px-3 py-1 sem-note sem-toolbar">@context</div>
           <div style="flex:1;overflow:hidden;min-height:0;" data-role="context-editor"></div>
-          <div data-role="context-error" class="hidden px-3 py-2 text-xs text-red-600 bg-red-50 border-t border-red-200"></div>
+          <div data-role="context-error" class="hidden sem-error"></div>
         </div>
       </div>
-      <div data-role="error" class="hidden px-3 py-2 text-xs text-red-600 bg-red-50 border-t border-red-200"></div>
+      <div data-role="error" class="hidden sem-error"></div>
       <div class="sem-panel-bar sem-panel-bar--footer flex items-center justify-end gap-2">
-        <button class="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700"
+        <button class="sem-btn sem-btn--primary"
           data-role="parse-btn">Parse</button>
       </div>
     `;

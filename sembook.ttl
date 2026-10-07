@@ -62,7 +62,7 @@ sembook:GraphPanel
     rdfs:subClassOf sembook:Panel ;
     rdfs:label "Graph Panel"@en ;
     rdfs:comment
-        "A Cytoscape.js graph visualization panel. Renders the results of its SPARQL query as a node-edge diagram. Visually distinguishes asserted triples (solid), inferred triples (dashed), and externally fetched triples (dotted). The Cytoscape instance is created on first intersection and kept alive thereafter."@en .
+        "A Cytoscape.js graph visualization panel. Renders the results of its SPARQL query as a node-edge diagram. Visually distinguishes asserted triples (solid), inferred triples (dotted), and externally fetched triples (dashed). The Cytoscape instance is created on first intersection and kept alive thereafter."@en .
 
 sembook:EntityPanel
     a owl:Class ;
@@ -112,6 +112,13 @@ sembook:SparqlResultPanel
     rdfs:label "SPARQL Result Panel"@en ;
     rdfs:comment
         "Renders the result of a companion SparqlPanel's most recently executed query, received via a sparql:executed event rather than a static sembook:sparql attribute. Offers three views — Table (always available), Turtle, and Graph — the latter two enabled only when the result is triple-shaped (a SELECT projecting exactly ?s ?p ?o, or a CONSTRUCT/DESCRIBE quad stream)."@en .
+
+sembook:Nl2SparqlPanel
+    a owl:Class ;
+    rdfs:subClassOf sembook:Panel ;
+    rdfs:label "NL→SPARQL Panel"@en ;
+    rdfs:comment
+        "A panel that translates a natural-language question into a SPARQL SELECT query using an LLM. It serializes the cumulative ontology (asserted and inferred, every lab up to and including its own) as Turtle, sends it with the question to the Anthropic Messages API, and loads the returned query into an editable SPARQL surface. The learner runs the query with a Run button, which executes it against the quad store and hands the result to a companion SparqlResultPanel via a sparql:executed event — the same read-only, explicit-commit model as SparqlPanel. It never mutates the graph. The API call is the one deliberate exception to local-only execution (constraint C5, which names NL→SPARQL translation as the escape hatch)."@en .
 
 sembook:SampleQuery
     a owl:Class ;
@@ -226,6 +233,14 @@ sembook:sparql
         a owl:Class ;
         owl:unionOf ( sembook:Panel sembook:SampleQuery )
     ] ;
+    rdfs:range xsd:string .
+
+sembook:apiModel
+    a owl:DatatypeProperty ;
+    rdfs:label "API model"@en ;
+    rdfs:comment
+        "The Anthropic model identifier a Nl2SparqlPanel uses for natural-language-to-SPARQL translation. Declared in the notebook definition so the model can change without touching component code; the runtime falls back to a built-in default when absent."@en ;
+    rdfs:domain sembook:Nl2SparqlPanel ;
     rdfs:range xsd:string .
 
 sembook:scope

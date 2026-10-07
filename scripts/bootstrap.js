@@ -44,7 +44,7 @@ export async function bootstrap(notebookUri) {
   } catch (err) {
     console.error('Bootstrap failed:', err);
     // Show error state — do not leave throbber up forever
-    if (throbber) throbber.innerHTML = `<p class="text-red-500">Failed to load notebook: ${err.message}</p>`;
+    if (throbber) throbber.innerHTML = `<p class="sem-fatal">! Failed to load notebook: ${err.message}</p>`;
     return;
   }
 

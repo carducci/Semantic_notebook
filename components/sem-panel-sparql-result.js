@@ -1,7 +1,8 @@
 // cytoscape, cytoscapeCola, cola are loaded globally via <script> tags in index.html
 // (see sem-panel-graph.js) — no module import needed. N3 likewise (n3.min.js script tag).
 import { sparqlToElements, quadsToElements, localName } from '../scripts/parse-utils.js';
-import { stylesheet, layout } from './sem-panel-graph.js';
+import { buildStylesheet, layout } from './sem-panel-graph.js';
+import { onThemeChange } from '../scripts/theme.js';
 import { createTurtleViewer } from './sem-panel-turtle.js';
 
 export class SemPanelSparqlResult extends HTMLElement {
@@ -87,11 +88,15 @@ export class SemPanelSparqlResult extends HTMLElement {
       this._cy?.fit(undefined, layout.padding);
     });
     this._resizeObserver.observe(this._graphPane);
+
+    // Cytoscape paints to canvas and can't follow var(); restyle it on a day/night switch.
+    this._offTheme = onThemeChange(() => this._cy?.style(buildStylesheet()));
   }
 
   disconnectedCallback() {
     this.notebook?.removeEventListener('sparql:executed', this._onExecuted);
     this._resizeObserver?.disconnect();
+    this._offTheme?.();
     this._cy?.destroy();
     this._cy = null;
     this._turtleView?.destroy();
@@ -157,17 +162,15 @@ export class SemPanelSparqlResult extends HTMLElement {
       const active = this._activeView === name;
       const enabled = elig[name];
       btn.disabled = !enabled;
-      btn.style.cssText = `font-size:0.75rem;padding:0.25rem 0.625rem;border-radius:0.375rem;border:1px solid transparent;${
-        enabled ? 'cursor:pointer;' : 'cursor:not-allowed;opacity:0.4;'
-      }${
-        active && enabled ? 'background:#0d9488;color:#ffffff;' : 'background:transparent;color:#64748b;'
-      }`;
+      btn.className = active && enabled ? 'sem-toggle is-active' : 'sem-toggle';
+      btn.style.cssText = enabled ? '' : 'cursor:not-allowed;opacity:0.4;';
     }
   }
 
   _emptyMessage(text) {
     const p = document.createElement('p');
-    p.style.cssText = 'color:#94a3b8;font-size:0.875rem;padding:0.75rem;';
+    p.className = 'sem-empty';
+    p.style.padding = '0.75rem';
     p.textContent = text;
     return p;
   }
@@ -185,7 +188,7 @@ export class SemPanelSparqlResult extends HTMLElement {
 
     if (result.resultType === 'boolean') {
       const div = document.createElement('div');
-      div.style.cssText = 'padding:0.75rem;font-size:0.875rem;font-family:monospace;';
+      div.style.cssText = 'padding:0.75rem;font-size:13px;font-family:var(--font-mono);color:var(--lace);';
       div.textContent = result.value ? 'true' : 'false';
       this._tablePane.appendChild(div);
       return;
@@ -206,14 +209,13 @@ export class SemPanelSparqlResult extends HTMLElement {
     }
 
     const table = document.createElement('table');
-    table.style.cssText = 'width:100%;border-collapse:collapse;font-size:0.75rem;font-family:"JetBrains Mono","Fira Code","Cascadia Code",monospace;';
+    table.className = 'sem-results';
 
     const thead = document.createElement('thead');
     const headRow = document.createElement('tr');
     for (const h of headers) {
       const th = document.createElement('th');
       th.textContent = h;
-      th.style.cssText = 'text-align:left;padding:0.375rem 0.5rem;background:#f8fafc;border-bottom:1px solid #e2e8f0;position:sticky;top:0;color:#334155;';
       headRow.appendChild(th);
     }
     thead.appendChild(headRow);
@@ -223,13 +225,12 @@ export class SemPanelSparqlResult extends HTMLElement {
       const tr = document.createElement('tr');
       for (const term of row) {
         const td = document.createElement('td');
-        td.style.cssText = 'padding:0.375rem 0.5rem;border-bottom:1px solid #f1f5f9;white-space:nowrap;';
         if (term) {
           td.textContent = term.termType === 'Literal' ? `"${term.value}"` : localName(term.value);
           td.title = term.value;
         } else {
           td.textContent = '—';
-          td.style.color = '#cbd5e1';
+          td.className = 'is-unbound';
         }
         tr.appendChild(td);
       }
@@ -288,7 +289,7 @@ export class SemPanelSparqlResult extends HTMLElement {
     this._cy = cytoscape({
       container: this._graphPane,
       elements,
-      style: stylesheet,
+      style: buildStylesheet(),
       layout
     });
 

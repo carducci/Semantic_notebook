@@ -481,9 +481,12 @@ The panel holds a Cytoscape instance reference. This is the one intentional exce
 
 | Triple type | Node style | Edge style |
 |---|---|---|
-| Asserted | Solid border, full color | Solid line |
-| Inferred | Dashed border, muted color | Dashed line |
-| Fetched (external) | Dotted border, accent color | Dotted line |
+| Asserted | Hollow Lace ring | Solid Lace line |
+| Inferred | Dotted String-light ring, italic label | Dotted String-light line |
+| Fetched (external) | Teal ring *(reserved)* | Dashed teal line *(reserved)* |
+| The fact nobody typed (a lab's reveal) | — | Dotted red line, once *(reserved)* |
+
+This is the brand guide's diagram grammar (Jackson Square v1.0, fig. D1), shared with the lectern slide theme. See DDR-039.
 
 ---
 

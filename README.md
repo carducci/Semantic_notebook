@@ -16,7 +16,7 @@ Labs stack vertically and the notebook scrolls like a document — deep-linkable
 
 - **Everything runs in the browser.** An in-memory quad store (N3.js), a SPARQL 1.1 engine (Comunica), and an RDFS/OWL reasoner all execute client-side. No server round-trip for any core teaching operation — the audience sees exactly what's happening, and the demo survives conference wifi.
 - **One lab, one named graph.** The lab's own IRI is the named graph IRI. Infrastructure (the notebook's own definition — labs, panels, layout) lives in the default graph and is filtered out of every panel; only teaching content is ever visualized.
-- **Reasoning is automatic.** Every Parse re-runs the reasoner. Inferred triples land in a companion graph and render distinctly — dashed edges, italic property rows — so asserted and derived knowledge are always visually distinguishable.
+- **Reasoning is automatic.** Every Parse re-runs the reasoner. Inferred triples land in a companion graph and render distinctly (dotted gold edges, italic property rows), so asserted and derived knowledge are always visually distinguishable.
 - **No framework.** Native Web Components, no build step, no bundler. Every component — lab or panel — shares one lifecycle contract. Layout is Tailwind utility classes declared directly in the notebook's own JSON-LD.
 - **A SPARQL query is the entire configuration surface for any panel.** What a panel shows is just what its query returns — which means a new panel type is a new query, not a new vocabulary.
 

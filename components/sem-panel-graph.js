@@ -2,97 +2,61 @@
 // (cytoscape.use(cytoscapeCola) is also registered there) — no module import needed.
 
 import { sparqlToElements, localName } from '../scripts/parse-utils.js';
+import { graphGrammar, fontsReady, onThemeChange } from '../scripts/theme.js';
 
-export const stylesheet = [
-  // IRI nodes — solid, teal
-  {
-    selector: 'node.iri',
-    style: {
-      'shape': 'ellipse',
-      'background-color': '#0d9488',
-      'border-width': 2,
-      'border-color': '#0f766e',
-      'color': '#ffffff',
-      'label': 'data(label)',
-      'text-valign': 'center',
-      'text-halign': 'center',
-      'font-size': '11px',
-      'width': 'label',
-      'height': 'label',
-      'padding': '8px'
-    }
-  },
-  // Blank nodes — amber, warning-coded
-  {
-    selector: 'node.blank',
-    style: {
-      'shape': 'ellipse',
-      'background-color': '#d97706',
-      'border-width': 2,
-      'border-style': 'dashed',
-      'border-color': '#b45309',
-      'color': '#ffffff',
-      'label': 'data(label)',
-      'text-valign': 'center',
-      'text-halign': 'center',
-      'font-size': '11px',
-      'width': 40,
-      'height': 40
-    }
-  },
-  // Literal nodes — rounded rectangle, light gray
-  {
-    selector: 'node.literal',
-    style: {
-      'shape': 'round-rectangle',
-      'background-color': '#f1f5f9',
-      'border-width': 1,
-      'border-color': '#cbd5e1',
-      'color': '#475569',
-      'label': 'data(label)',
-      'text-valign': 'center',
-      'text-halign': 'center',
-      'font-size': '10px',
-      'width': 'label',
-      'height': 'label',
-      'padding': '6px'
-    }
-  },
-  // Asserted edges — IRI to IRI
-  {
-    selector: 'edge.asserted',
-    style: {
-      'width': 1.5,
-      'line-color': '#94a3b8',
-      'target-arrow-color': '#94a3b8',
-      'target-arrow-shape': 'triangle',
-      'curve-style': 'bezier',
-      'label': 'data(label)',
-      'font-size': '9px',
-      'color': '#64748b',
-      'text-rotation': 'autorotate',
-      'text-background-color': '#ffffff',
-      'text-background-opacity': 0.8,
-      'text-background-padding': '2px'
-    }
-  },
-  // Inferred edges — dashed, muted
-  {
-    selector: 'edge.inferred',
-    style: {
-      'width': 1.5,
-      'line-color': '#c4b5fd',
-      'line-style': 'dashed',
-      'target-arrow-color': '#c4b5fd',
-      'target-arrow-shape': 'triangle',
-      'curve-style': 'bezier',
-      'label': 'data(label)',
-      'font-size': '9px',
-      'color': '#8b5cf6',
-      'text-rotation': 'autorotate'
-    }
-  }
-];
+// Built from the brand's diagram grammar (scripts/theme.js#graphGrammar — the same
+// grammar lectern's slides draw) rather than literal colors, and rebuilt on a
+// day/night switch: Cytoscape paints to canvas, so it can't follow CSS var()s.
+export function buildStylesheet() {
+  const g = graphGrammar();
+  return [
+    // IRI nodes — a hollow Lace ring: a thing with identity
+    {
+      selector: 'node.iri',
+      style: {
+        ...g.node,
+        'shape': 'ellipse',
+        'label': 'data(label)',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'width': 'label',
+        'height': 'label',
+        'padding': '8px'
+      }
+    },
+    // Blank nodes — a dashed fog ring: no identity yet
+    {
+      selector: 'node.blank',
+      style: {
+        ...g.blank,
+        'shape': 'ellipse',
+        'label': 'data(label)',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'width': 40,
+        'height': 40
+      }
+    },
+    // Literal nodes — rounded chip: a value, not a thing
+    {
+      selector: 'node.literal',
+      style: {
+        ...g.literal,
+        'shape': 'round-rectangle',
+        'label': 'data(label)',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'width': 'label',
+        'height': 'label',
+        'padding': '6px'
+      }
+    },
+    // Asserted edges — solid Lace: somebody typed this
+    { selector: 'edge.asserted', style: g.edgeAsserted },
+    // Inferred edges — dotted string light: the reasoner derived this (ADR-031)
+    { selector: 'edge.inferred', style: g.edgeInferred }
+  ];
+}
 
 export const layout = {
   name: 'cola',
@@ -144,10 +108,12 @@ export class SemPanelGraph extends HTMLElement {
       this._cy?.fit(undefined, layout.padding);
     });
     this._resizeObserver.observe(this);
+    this._offTheme = onThemeChange(() => this._cy?.style(buildStylesheet()));
   }
 
   disconnectedCallback() {
     this._resizeObserver?.disconnect();
+    this._offTheme?.();
   }
 
   // Called by sem-lab when graph:updated fires for this lab
@@ -158,6 +124,7 @@ export class SemPanelGraph extends HTMLElement {
     try {
       const bindings = await this.notebook.query(sparql);
       const elements = sparqlToElements(bindings);
+      await fontsReady(); // canvas labels must measure in DM Mono, not the fallback
       this._renderCytoscape(elements);
     } catch (err) {
       console.error('GraphPanel query failed:', err);
@@ -170,7 +137,7 @@ export class SemPanelGraph extends HTMLElement {
       this._cy = cytoscape({
         container: this,
         elements,
-        style: stylesheet,
+        style: buildStylesheet(),
         layout
       });
 

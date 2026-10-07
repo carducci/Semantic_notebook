@@ -1,34 +1,166 @@
-:root {
-  /* This app has no dark theme yet — without this, OS-level dark mode triggers
-     the browser's forced-dark repaint heuristic, which crushes CodeMirror's
-     subtle same-hue active-line highlight (e.g. #f8fafc on a near-white editor
-     background) to indistinguishable. */
-  color-scheme: light;
+/* ============================================================================
+   Semantic Lounge — the Jackson Square register, notebook edition.
+   Token names and values are lectern's (_themes/semantic-lounge.css), which are
+   the brand guide v1.0's exact values; where lectern and the guide disagree, the
+   guide wins and lectern is changed to match (graph styles especially — the
+   guide's diagram grammar is this notebook's asserted/inferred distinction).
 
-  --color-teal-700: #0f766e;
-  --color-teal-600: #0d9488;
-  --color-teal-50:  #f0fdfa;
-  --color-amber:    #d97706;
-  --color-slate-200: #e2e8f0;
-  --color-slate-400: #94a3b8;
-  --color-slate-500: #64748b;
-  --color-slate-800: #1e293b;
-  --color-purple:   #7c3aed;
-  --color-purple-50: #ede9fe;
+   Night is the default (screens, stages). Day is the guide's paper palette, for
+   long reading; toggled by data-theme on <html> (see scripts/theme.js). Only the
+   values move between modes; every role holds across both.
+   ============================================================================ */
+
+:root {
+  color-scheme: dark;
+
+  /* Jackson Square — night (exact guide values) */
+  --street: #0D1014;   /* wet cobblestone ground */
+  --balcony: #171B21;  /* raised surfaces; cast iron */
+  --raised: #1E232B;   /* a step above balcony (guide --bg3) */
+  --lace: #F4EFE6;     /* text */
+  --fog: #A9ADB5;      /* secondary text */
+  --string: #FFD27A;   /* string light: dots, rules, links, labels, focus (C-02) — never a flat fill behind text */
+  --teal: #22A7A1;     /* the pair; in diagrams, "fetched from elsewhere" */
+  --red: #E5452F;      /* the pair; in diagrams, "the fact nobody typed" */
+  --cabildo: #2B4C9B;  /* background washes only (C-03) */
+  --sign-bg: #0A0B0D;  /* street-sign black */
+  --rule: #272C34;     /* hairlines — tables and panel frames only; elsewhere the string-light rule */
+  --code-fg: #E7E9EC;
+
+  --font-display: "DM Serif Display", Georgia, serif;
+  --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  /* Fibonacci type scale (T-02) */
+  --fs-13: 13px; --fs-17: 17px; --fs-21: 21px; --fs-34: 34px;
 }
+
+/* Day: the guide's paper palette (lectern's .slide.paper overrides). */
+:root[data-theme="day"] {
+  color-scheme: light;
+  --street: #F6F2EA; --balcony: #ECE6D8; --raised: #E3DCCB; --lace: #16181D; --fog: #5E6168;
+  --string: #7A5C1C; --teal: #127A75; --red: #B8321F; --sign-bg: #16181D;
+  --rule: #D9D3C6; --code-fg: #1B1F24;
+}
+
+body { color: var(--lace); font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+/* On <html>, not <body>, so the washes span the viewport even when body is a narrow column. */
+html {
+  background-color: var(--street);
+  /* C-03 — two washes, once each: Cabildo blue (top-left), gaslight gold (top-right).
+     Backgrounds only; panels sit on top of them, so they never fall behind body text. */
+  background-image:
+    radial-gradient(70% 70% at 0% 0%, color-mix(in srgb, var(--cabildo) 22%, transparent), transparent 50%),
+    radial-gradient(70% 70% at 100% 0%, color-mix(in srgb, var(--string) 10%, transparent), transparent 52%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+:root[data-theme="day"] {
+  background-image:
+    radial-gradient(70% 70% at 0% 0%, color-mix(in srgb, var(--cabildo) 8%, transparent), transparent 50%),
+    radial-gradient(70% 70% at 100% 0%, color-mix(in srgb, var(--string) 8%, transparent), transparent 52%);
+}
+::selection { background: color-mix(in srgb, var(--string) 35%, transparent); }
+:focus-visible { outline: 2px solid var(--string); outline-offset: 2px; }
+
+/* The string-light rule: a dotted line of lights, 16px spacing, 1.3px dots. */
+.sem-dots {
+  background: radial-gradient(circle, var(--string) 1.3px, transparent 1.9px) left center / 16px 3px repeat-x;
+}
+
+/* Street-sign label — lectern's (canonical on michaelcarducci.com): Instrument Sans,
+   uppercase, 0.16em tracking, Lace text, transparent, double Lace hairline, square.
+   One per section; in the notebook a section is a lab. */
+.sem-sign {
+  display: inline-block;
+  font-family: var(--font-body); font-weight: 600; font-size: 11px;
+  letter-spacing: .16em; text-transform: uppercase; line-height: 1.4;
+  color: var(--lace); background: transparent;
+  border: 1px solid var(--lace); outline: 1px solid var(--lace); outline-offset: 2px;
+  border-radius: 0; padding: .2em .8em;
+}
+
+/* ── Page chrome ─────────────────────────────────────────────────────────── */
+.sem-nav {
+  background: color-mix(in srgb, var(--street) 92%, transparent);
+  color: var(--lace);
+  backdrop-filter: blur(8px);
+}
+.sem-nav::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; opacity: .7;
+  background: radial-gradient(circle, var(--string) 1.3px, transparent 1.9px) left center / 16px 3px repeat-x;
+}
+.sem-nav-title { font-family: var(--font-display); font-size: var(--fs-21); font-weight: 400; line-height: 1; }
+.sem-nav-btn { color: var(--fog); border-radius: 4px; }
+.sem-nav-btn:hover { color: var(--lace); background: color-mix(in srgb, var(--lace) 8%, transparent); }
+.sem-theme-toggle {
+  font-family: var(--font-mono); font-size: var(--fs-13); color: var(--fog);
+  background: transparent; border: 1px solid var(--rule); border-radius: 4px;
+  padding: 2px 10px; cursor: pointer; white-space: nowrap;
+}
+.sem-theme-toggle:hover { color: var(--lace); border-color: var(--fog); }
+.sem-theme-toggle b { color: var(--string); font-weight: 400; }
+
+.sem-drawer { background: var(--balcony); color: var(--lace); border-right: 1px solid var(--rule); }
+.sem-drawer-eyebrow { font-family: var(--font-mono); font-size: var(--fs-13); color: var(--fog); }
+.sem-drawer-link {
+  display: block; padding: .45rem .75rem; border-left: 2px solid transparent;
+  color: var(--fog); font-size: 14px; text-decoration: none;
+}
+.sem-drawer-link:hover { color: var(--lace); background: color-mix(in srgb, var(--lace) 5%, transparent); }
+.sem-drawer-link.is-active { color: var(--lace); border-left-color: var(--string); }
+.sem-backdrop { background: color-mix(in srgb, var(--street) 60%, transparent); }
+
+.sem-throbber { background: var(--street); }
+.sem-spinner {
+  width: 3rem; height: 3rem; border-radius: 9999px;
+  border: 3px solid var(--rule); border-top-color: var(--string);
+  animation: sem-spin 1s linear infinite;
+}
+@keyframes sem-spin { to { transform: rotate(360deg); } }
+.sem-fatal { color: var(--lace); font-family: var(--font-mono); font-size: var(--fs-13); }
+
+.sem-skeleton { background: var(--balcony); animation: sem-pulse 2s ease-in-out infinite; }
+@keyframes sem-pulse { 50% { opacity: .55; } }
+
+/* Row resizer and collapsed strips (sem-lab) */
+.sem-handle { background: var(--balcony); border-block: 1px solid var(--rule); cursor: row-resize; }
+.sem-handle:hover { background: var(--raised); }
+.sem-handle-grip { width: 2.5rem; height: 3px; border-radius: 9999px; background: var(--fog); opacity: .6; }
+.sem-strip {
+  background: var(--balcony); border-block: 1px solid var(--rule);
+  color: var(--fog); font-family: var(--font-mono); font-size: var(--fs-13);
+}
+.sem-strip:hover { color: var(--lace); background: var(--raised); }
+
+/* Tabs (sem-lab TabsPanel) */
+.sem-tabbar { background: var(--balcony); border-bottom: 1px solid var(--rule); }
+.sem-tab {
+  padding: .5rem .75rem; font-size: var(--fs-13); font-weight: 500; letter-spacing: .02em;
+  color: var(--fog); background: transparent; border: 0; border-bottom: 2px solid transparent;
+  margin-bottom: -1px; cursor: pointer;
+}
+.sem-tab:hover { color: var(--lace); }
+.sem-tab.is-active { color: var(--lace); border-bottom-color: var(--string); }
+.sem-well { background: var(--street); }
+
+/* ── Panel chrome ───────────────────────────────────────────────────────── */
+.sem-panel { background: var(--balcony); color: var(--lace); }
+.sem-divider-r { border-right: 1px solid var(--rule); }
 
 /* Shared panel chrome — keeps CodeMirror panels (JSON-LD, Turtle, ...) framed by
    equal-height header/footer bars so their editors align top and bottom, and
    ensures every panel label renders in the same font. */
 .sem-panel-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #334155;
+  font-family: var(--font-mono);
+  font-size: var(--fs-13);
+  font-weight: 400;
+  color: var(--fog);
 }
 
 .sem-panel-bar {
   padding: 0.5rem 0.75rem;
-  background: #f8fafc;
+  background: var(--balcony);
   flex-shrink: 0;
   box-sizing: border-box;
 }
@@ -38,13 +170,96 @@
    round to, so both bars are pinned to that exact measured height — this is
    what makes the two editors' tops/bottoms coincide pixel-for-pixel. */
 .sem-panel-bar--header {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--rule);
   height: 71.4px;
   overflow: hidden;
 }
 
 .sem-panel-bar--footer {
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--rule);
   height: 44.8px;
   overflow: hidden;
+}
+
+.sem-input {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--lace); background: var(--street);
+  border: 1px solid var(--rule); border-radius: 4px; padding: .25rem .5rem;
+}
+.sem-input::placeholder { color: var(--fog); opacity: .7; }
+.sem-input:focus { outline: none; border-color: var(--string); }
+select.sem-input option { background: var(--balcony); color: var(--lace); }
+
+/* Buttons. String light is light, never a fill (C-02): the primary action is a
+   lit edge, and hover makes the edge glow rather than flooding the button. */
+.sem-btn {
+  font-family: var(--font-body); font-size: 12px; font-weight: 500; letter-spacing: .02em;
+  color: var(--fog); background: transparent;
+  border: 1px solid var(--rule); border-radius: 4px; padding: .25rem .6rem; cursor: pointer;
+}
+.sem-btn:hover { color: var(--lace); border-color: var(--fog); }
+.sem-btn:disabled { opacity: .5; cursor: default; }
+.sem-btn--primary { color: var(--string); border-color: var(--string); padding: .35rem .9rem; }
+.sem-btn--primary:hover {
+  color: var(--string); border-color: var(--string);
+  box-shadow: 0 0 0 1px var(--string), 0 0 14px color-mix(in srgb, var(--string) 35%, transparent);
+}
+
+/* Errors. Red is reserved for "the fact nobody typed" — a typo is the opposite of
+   that, so errors are Lace on a raised surface, marked by a string-light rule. */
+.sem-error {
+  padding: .5rem .75rem; font-family: var(--font-mono); font-size: 12px; line-height: 1.5;
+  color: var(--lace); background: var(--raised);
+  border-top: 1px solid var(--rule); border-left: 2px solid var(--string);
+}
+.sem-error::before { content: "! "; color: var(--string); }
+.sem-error--inline { padding: 0; background: none; border: 0; }
+
+.sem-muted { color: var(--fog); }
+.sem-empty { color: var(--fog); font-size: var(--fs-13); }
+.sem-note { font-family: var(--font-mono); font-size: 12px; color: var(--fog); }
+
+/* ── Explorer detail panes (entity, vocabulary) ─────────────────────────── */
+.sem-toolbar { background: var(--balcony); border-bottom: 1px solid var(--rule); }
+.sem-toggle {
+  padding: .25rem .625rem; font-size: 12px; font-weight: 600; letter-spacing: .03em;
+  color: var(--fog); background: transparent;
+  border: 1px solid var(--rule); border-radius: 4px; cursor: pointer;
+}
+.sem-toggle:hover { color: var(--lace); }
+.sem-toggle.is-active { color: var(--string); border-color: var(--string); }
+.sem-detail { color: var(--lace); }
+.sem-detail-title { font-size: 15px; font-weight: 600; color: var(--lace); margin-bottom: .75rem; }
+.sem-iri {
+  display: block; font-family: var(--font-mono); font-size: 12px; font-weight: 400;
+  color: var(--fog); word-break: break-all;
+}
+.sem-section-h {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 400;
+  color: var(--string); letter-spacing: .04em; margin: 1rem 0 .25rem;
+}
+.sem-rows { width: 100%; border-collapse: collapse; font-size: var(--fs-13); }
+.sem-rows tr, .sem-list-row { border-bottom: 1px solid var(--rule); }
+.sem-rows td { padding: .375rem 0; vertical-align: top; color: var(--lace); word-break: break-all; }
+.sem-rows td.sem-pred { padding-right: .5rem; color: var(--fog); white-space: nowrap; word-break: normal; }
+/* M-08: upright for what is asserted, italic for what is inferred. */
+.sem-inferred { font-style: italic; }
+.sem-list-row { padding: .375rem 0; font-size: var(--fs-13); }
+.sem-list-label { color: var(--lace); font-weight: 500; }
+.sem-pick-row { padding: .25rem .5rem; border-left: 2px solid transparent; cursor: pointer; font-size: var(--fs-13); color: var(--lace); }
+.sem-pick-row:hover { background: color-mix(in srgb, var(--lace) 5%, transparent); }
+.sem-pick-row.is-selected { border-left-color: var(--string); background: color-mix(in srgb, var(--string) 8%, transparent); }
+
+/* SPARQL results table */
+.sem-results { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+.sem-results th {
+  position: sticky; top: 0; text-align: left; padding: .375rem .5rem; font-weight: 400;
+  color: var(--fog); background: var(--balcony); border-bottom: 1px solid var(--rule);
+}
+.sem-results td { padding: .375rem .5rem; border-bottom: 1px solid var(--rule); white-space: nowrap; color: var(--lace); }
+.sem-results td.is-unbound { color: var(--fog); opacity: .6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sem-spinner, .sem-skeleton { animation: none; }
+  * { transition-duration: 0s !important; }
 }

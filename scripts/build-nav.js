@@ -17,8 +17,8 @@ function findNotebookNode(notebookDoc) {
   );
 }
 
-const INACTIVE_LINK_CLASS = 'block rounded px-3 py-2 border-l-2 border-transparent text-slate-300 hover:bg-white/10 hover:text-white';
-const ACTIVE_LINK_CLASS = 'block rounded px-3 py-2 border-l-2 border-white bg-white/10 text-white';
+const INACTIVE_LINK_CLASS = 'sem-drawer-link';
+const ACTIVE_LINK_CLASS = 'sem-drawer-link is-active';
 
 export function buildNav(linksEl, notebookDoc) {
   const notebookNode = findNotebookNode(notebookDoc);
@@ -63,7 +63,11 @@ export function buildNav(linksEl, notebookDoc) {
 // chrome authored in each notebook's index.html; absent span, no-op.
 function setCurrentLabHeading(heading) {
   const el = document.getElementById('lab-nav-current');
-  if (el) el.textContent = heading;
+  if (!el) return;
+  // The heading is a street sign (one per section, and a lab is a section) — an
+  // empty sign would be a bare double hairline, so it stays hidden until it has a name.
+  el.textContent = heading;
+  el.hidden = !heading;
 }
 
 // Highlights whichever nav link corresponds to the <sem-lab> currently

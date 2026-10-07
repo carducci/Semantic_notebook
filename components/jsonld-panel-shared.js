@@ -19,6 +19,7 @@ import { json } from '@codemirror/lang-json';
 // the behavior this swap was for.
 import { keymap } from '@codemirror/view';
 import { indentWithTab } from '@codemirror/commands';
+import { editorTheme, jsonldColoring } from './editor-theme.js';
 
 export function createEditor(parent, initialContent, onChange) {
   const view = new EditorView({
@@ -26,54 +27,9 @@ export function createEditor(parent, initialContent, onChange) {
     extensions: [
       basicSetup,
       json(),
+      jsonldColoring,
       keymap.of([indentWithTab]),
-      EditorView.theme({
-        '&': {
-          height: '100%',
-          fontSize: '13px',
-          fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", monospace'
-        },
-        '.cm-scroller': {
-          overflow: 'auto',
-          lineHeight: '1.6'
-        },
-        '.cm-content': {
-          padding: '8px 0'
-        },
-        '.cm-gutters': {
-          backgroundColor: '#f8fafc',
-          borderRight: '1px solid #e2e8f0',
-          color: '#94a3b8',
-          fontSize: '11px'
-        },
-        '.cm-activeLineGutter': {
-          backgroundColor: '#cbd5e1'
-        },
-        // Per CodeMirror's own guidance (opaque line-decoration backgrounds
-        // "never worked" — https://discuss.codemirror.net/t/various-themes-activeline-selections-not-visible/7473):
-        // decoration backgrounds must be translucent, or they paint over and
-        // hide layers rendered underneath them, like the selection layer. An
-        // opaque activeLine background made text selected on the active line
-        // invisible even though it was technically still selected/copyable.
-        '.cm-activeLine': {
-          backgroundColor: 'rgba(37, 99, 235, 0.15)'
-        },
-        // CodeMirror's own selection layer (drawn via basicSetup's drawSelection
-        // extension) has no default styling here, so it inherits whatever the
-        // browser's dark-mode remapping does to its near-transparent default —
-        // pin it to an explicit, solid, saturated color instead. !important
-        // because drawSelection's generated rule has matching specificity and
-        // can load after this theme.
-        '.cm-selectionBackground': {
-          backgroundColor: '#93c5fd !important'
-        },
-        '&.cm-focused .cm-selectionBackground': {
-          backgroundColor: '#60a5fa !important'
-        },
-        '.cm-content ::selection': {
-          backgroundColor: '#93c5fd !important'
-        }
-      }),
+      ...editorTheme(),
       EditorView.updateListener.of(update => {
         if (update.docChanged) {
           onChange(view.state.doc.toString());

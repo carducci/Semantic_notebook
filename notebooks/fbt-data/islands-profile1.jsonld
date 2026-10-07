@@ -1,0 +1,10 @@
+{
+  "@context": {
+    "customer_id": "@id",
+    "name": "urn:example:vocab:name",
+    "segment": "urn:example:vocab:segment"
+  },
+  "customer_id": "urn:example:customer:441",
+  "name": "James Larson",
+  "segment": "Consumer"
+}

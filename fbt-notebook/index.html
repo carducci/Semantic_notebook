@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- Belt-and-suspenders alongside styles/tokens.css's `color-scheme: light` — a
+     meta tag is parsed before any external stylesheet loads, so it's the earliest
+     possible signal to opt this (light-only) app out of browser forced-dark repaint. -->
+<meta name="color-scheme" content="light" />
+<title>Semantic Notebook — First Bank &amp; Trust</title>
+<!-- ALL runtime libraries are vendored under /vendor/globals/ (exact source
+     versions in that directory's PROVENANCE.md) — no CDN fetches at runtime.
+     Same rationale as the CodeMirror vendoring below. See ADR-006 rev. 2. -->
+<script src="../vendor/globals/tailwindcss-play.js"></script>
+<!-- n3 1.26.0: the first release line that ships N3.Reasoner, which
+     materialization (scripts/notebook-context.js) needs. See ADR-031. -->
+<script src="../vendor/globals/n3.min.js"></script>
+<script src="../vendor/globals/jsonld.min.js"></script>
+<!-- Comunica (official comunica-browser UMD build of @comunica/query-sparql@2.10.0,
+     exposes window.Comunica) — scripts/notebook-context.js reads the global. -->
+<script src="../vendor/globals/comunica-browser.js"></script>
+
+<!-- Cytoscape.js -->
+<script src="../vendor/globals/cytoscape.min.js"></script>
+
+<!-- Cola.js (peer dependency of cytoscape-cola) — must load before cytoscape-cola.js -->
+<script src="../vendor/globals/cola.js"></script>
+
+<script>
+  // webcola's UMD build only exposes itself as window.cola, but cytoscape-cola's
+  // browser build looks for window.webcola — alias it before cytoscape-cola loads.
+  window.webcola = window.cola;
+</script>
+
+<!-- Cytoscape Cola layout — for cluster-aware force-directed layout (graph panels) -->
+<script src="../vendor/globals/cytoscape-cola.js"></script>
+
+<!-- fCoSE layout (compound-aware, packs disconnected components) — entity explorer only. -->
+<script src="../vendor/globals/layout-base.js"></script>
+<script src="../vendor/globals/cose-base.js"></script>
+<script src="../vendor/globals/cytoscape-fcose.js"></script>
+
+<script>
+  cytoscape.use(cytoscapeCola);
+  cytoscape.use(cytoscapeFcose);
+</script>
+<link rel="stylesheet" href="../styles/tokens.css">
+
+<!-- CodeMirror and its dependency graph, vendored locally under /vendor/codemirror/. -->
+<script type="importmap">
+{
+  "imports": {
+    "codemirror": "../vendor/codemirror/codemirror.js",
+    "@codemirror/autocomplete": "../vendor/codemirror/codemirror-autocomplete.js",
+    "@codemirror/commands": "../vendor/codemirror/codemirror-commands.js",
+    "@codemirror/language": "../vendor/codemirror/codemirror-language.js",
+    "@codemirror/lint": "../vendor/codemirror/codemirror-lint.js",
+    "@codemirror/search": "../vendor/codemirror/codemirror-search.js",
+    "@codemirror/state": "../vendor/codemirror/codemirror-state.js",
+    "@codemirror/view": "../vendor/codemirror/codemirror-view.js",
+    "@codemirror/lang-json": "../vendor/codemirror/codemirror-lang-json.js",
+    "@codemirror/legacy-modes/mode/turtle": "../vendor/codemirror/codemirror-legacy-modes-turtle.js",
+    "@codemirror/legacy-modes/mode/sparql": "../vendor/codemirror/codemirror-legacy-modes-sparql.js",
+    "@lezer/common": "../vendor/codemirror/lezer-common.js",
+    "@lezer/highlight": "../vendor/codemirror/lezer-highlight.js",
+    "@lezer/lr": "../vendor/codemirror/lezer-lr.js",
+    "@lezer/json": "../vendor/codemirror/lezer-json.js",
+    "style-mod": "../vendor/codemirror/style-mod.js",
+    "crelt": "../vendor/codemirror/crelt.js",
+    "w3c-keyname": "../vendor/codemirror/w3c-keyname.js",
+    "@marijn/find-cluster-break": "../vendor/codemirror/marijn-find-cluster-break.js"
+  }
+}
+</script>
+</head>
+<body class="bg-slate-100">
+
+<!-- Page-level throbber: present in static HTML from the start, removed by bootstrap.js once notebook:ready fires. -->
+<div id="page-throbber" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900">
+  <div class="h-12 w-12 rounded-full border-4 border-slate-600 border-t-white animate-spin"></div>
+</div>
+
+<sem-notebook
+  uri="https://notebook.semantic.consulting/fbt/"
+  lab-class="pt-12 box-border snap-start snap-always"
+  class="block h-screen overflow-y-scroll snap-y snap-mandatory">
+
+  <nav id="lab-nav" class="fixed top-0 inset-x-0 z-40 h-12 flex items-center gap-3 px-4 bg-slate-900/95 text-slate-100 text-sm backdrop-blur">
+    <button
+      id="lab-nav-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="lab-nav-drawer"
+      aria-label="Toggle lab navigation"
+      class="-ml-1 flex h-8 w-8 flex-col items-center justify-center gap-1 rounded hover:bg-white/10">
+      <span class="block h-0.5 w-4 bg-current"></span>
+      <span class="block h-0.5 w-4 bg-current"></span>
+      <span class="block h-0.5 w-4 bg-current"></span>
+    </button>
+    <span class="font-semibold tracking-wide">First Bank &amp; Trust — Semantic Layer</span>
+    <span id="lab-nav-current" class="truncate text-slate-300"></span>
+  </nav>
+
+  <div
+    id="lab-nav-backdrop"
+    class="fixed inset-x-0 top-12 bottom-0 z-40 bg-slate-900/50 opacity-0 pointer-events-none transition-opacity duration-200">
+  </div>
+
+  <aside
+    id="lab-nav-drawer"
+    aria-hidden="true"
+    class="fixed left-0 top-12 bottom-0 z-50 w-64 -translate-x-full transform bg-slate-900 p-4 text-sm text-slate-100 transition-transform duration-200 overflow-y-auto">
+    <nav id="lab-nav-links" class="flex flex-col gap-1"></nav>
+  </aside>
+
+  <!-- <sem-lab> elements are generated here at notebook:ready by sem-notebook,
+       one per sembook:labs entry. -->
+
+</sem-notebook>
+
+<!-- sem-notebook.js must stay above the inline bootstrap module below: its
+     notebook:ready listener (which generates the <sem-lab> elements) has to be
+     registered before buildNav's, so the labs exist when buildNav looks them up. -->
+<script type="module" src="../components/sem-notebook.js"></script>
+<script type="module" src="../components/sem-lab.js"></script>
+<script type="module" src="../components/sem-panel-jsonld.js"></script>
+<script type="module" src="../components/sem-panel-jsonld-split.js"></script>
+<script type="module" src="../components/sem-panel-graph.js"></script>
+<script type="module" src="../components/sem-panel-entity.js"></script>
+<script type="module" src="../components/sem-panel-vocab.js"></script>
+<script type="module" src="../components/sem-panel-turtle.js"></script>
+<script type="module" src="../components/sem-panel-turtle-writer.js"></script>
+<script type="module" src="../components/sem-panel-sparql.js"></script>
+<script type="module" src="../components/sem-panel-sparql-result.js"></script>
+<script type="module" src="../components/sem-panel-nl2sparql.js"></script>
+<script type="module">
+  import { bootstrap } from '../scripts/bootstrap.js';
+  import { buildNav } from '../scripts/build-nav.js';
+
+  document.addEventListener('notebook:ready', (e) => {
+    buildNav(document.getElementById('lab-nav-links'), e.detail.notebookDoc);
+  });
+
+  bootstrap('../notebooks/fbt.jsonld');
+</script>
+
+</body>
+</html>

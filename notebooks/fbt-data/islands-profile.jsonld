@@ -1,0 +1,8 @@
+{
+  "@context": {
+    "customer_id": "@id"
+  },
+  "customer_id": "urn:example:customer:441",
+  "name": "James Larson",
+  "segment": "Consumer"
+}

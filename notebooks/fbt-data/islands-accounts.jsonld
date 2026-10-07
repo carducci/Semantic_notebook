@@ -1,0 +1,10 @@
+{
+  "@context": {
+    "account_id": "@id",
+    "customer_id": { "@type": "@id" }
+  },
+  "account_id": "urn:example:account:L-8877",
+  "customer_id": "urn:example:customer:441",
+  "product": "Vehicle Loan",
+  "balance": 24000
+}

@@ -1,0 +1,312 @@
+{
+  "@context": {
+    "sembook": "https://notebook.semantic.consulting/vocab#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "sembook:labs": {
+      "@container": "@list"
+    },
+    "sembook:panels": {
+      "@container": "@list"
+    },
+    "sembook:sampleQueries": {
+      "@container": "@list"
+    }
+  },
+  "@graph": [
+    {
+      "@id": "https://notebook.semantic.consulting/fbt/",
+      "@type": "sembook:Notebook",
+      "sembook:title": "The Semantic Layer in Practice — First Bank & Trust",
+      "sembook:labs": [
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#islands"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#modeling"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#ncino"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#iri-moment"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#sparql"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#magicland"
+        }
+      ]
+    },
+    {
+      "@id": "https://notebook.semantic.consulting/fbt/#islands",
+      "@type": "sembook:Lab",
+      "sembook:label": "Two Islands",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[45vh_55vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#islands-profile",
+          "@type": "sembook:JsonLdPanel",
+          "sembook:label": "Customer Profile",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:initialContent": "{\n  \"customer_id\": \"441\",\n  \"name\": \"James Larson\",\n  \"segment\": \"Consumer\"\n}",
+          "sembook:fetchUrl": "../notebooks/fbt-data/islands-profile.jsonld"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#islands-accounts",
+          "@type": "sembook:JsonLdPanel",
+          "sembook:label": "Accounts",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:initialContent": "{\n  \"account_id\": \"L-8877\",\n  \"customer_id\": \"441\",\n  \"product\": \"Vehicle Loan\",\n  \"balance\": 24000\n}",
+          "sembook:fetchUrl": "../notebooks/fbt-data/islands-accounts.jsonld"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#islands-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "col-span-2 overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://notebook.semantic.consulting/fbt/#islands-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Graph",
+              "sembook:scope": {
+                "@id": "sembook:CumulativeScope"
+              },
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/fbt/#islands> } }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "https://notebook.semantic.consulting/fbt/#modeling",
+      "@type": "sembook:Lab",
+      "sembook:label": "Modeling the Source",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[1fr] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#modeling-editor",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "Modeling the Vocabulary",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:initialContent": "@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .\n@prefix ex:   <urn:example:vocab:> .\n@prefix mdm:  <urn:example:mdm:> .\n@prefix cust: <urn:example:customer:> .\n\n# ── Core-banking vocabulary (basic RDFS) ─────────────────────────────\nex:Customer a rdfs:Class ; rdfs:label \"Customer\" ;\n  rdfs:comment \"A person or organization that holds one or more products with the bank. Every ConsumerCustomer and BusinessCustomer is a Customer.\" .\nex:ConsumerCustomer a rdfs:Class ; rdfs:subClassOf ex:Customer ; rdfs:label \"Consumer Customer\" ;\n  rdfs:comment \"An individual retail customer (a person, not a business). Use this class to restrict a query to personal-banking customers.\" .\nex:BusinessCustomer a rdfs:Class ; rdfs:subClassOf ex:Customer ; rdfs:label \"Business Customer\" ;\n  rdfs:comment \"A commercial/organizational customer (a business entity), as opposed to an individual consumer.\" .\n\nex:Account a rdfs:Class ; rdfs:label \"Account\" ;\n  rdfs:comment \"A deposit account the customer keeps money in with the bank (what the customer OWNS). Checking and Savings are the kinds of Account. Deposit accounts are distinct from loans, which the customer OWES.\" .\nex:Checking a rdfs:Class ; rdfs:subClassOf ex:Account ; rdfs:label \"Checking\" ;\n  rdfs:comment \"A checking (transactional) deposit account.\" .\nex:Savings a rdfs:Class ; rdfs:subClassOf ex:Account ; rdfs:label \"Savings\" ;\n  rdfs:comment \"A savings deposit account. Its ex:balance is how much the customer holds in savings.\" .\n\n# ── Properties (typed + described; no rdfs:domain — those are bold assertions) ──\nex:name a rdf:Property ; rdfs:label \"name\" ;\n  rdfs:comment \"The full name of a customer, a string (e.g. \\\"James Larson\\\").\" .\nex:segment a rdf:Property ; rdfs:label \"segment\" ;\n  rdfs:comment \"A relationship/marketing segment label on a customer, e.g. \\\"Consumer\\\".\" .\nex:heldBy a rdf:Property ; rdfs:label \"held by\" ;\n  rdfs:comment \"Links a product (a deposit Account OR a loan) to the Customer who holds it. To find everything a customer holds, match: ?product ex:heldBy ?customer.\" .\nex:openedDate a rdf:Property ; rdfs:label \"opened date\" ;\n  rdfs:comment \"The date (xsd:date) a deposit account was opened. Use it for account age / tenure, e.g. accounts opened more than five years ago.\" .\nex:balance a rdf:Property ; rdfs:label \"balance\" ;\n  rdfs:comment \"The current balance of an account, a decimal amount in US dollars.\" .\n\n# ── Classify our customer ────────────────────────────────────────\ncust:441 a ex:ConsumerCustomer .\n\n# ── Bridge: core-banking vocabulary → golden master data (MDM) ──────\nmdm:Party a rdfs:Class ; rdfs:label \"Party\" ;\n  rdfs:comment \"The master-data concept for any customer/counterparty (person or organization). ex:Customer and nCino's Borrower both roll up to mdm:Party.\" .\nmdm:Product a rdfs:Class ; rdfs:label \"Product\" ;\n  rdfs:comment \"The master-data concept for anything a customer holds with the bank — BOTH deposit accounts AND loans. To count everything a customer has (their 'products'), use mdm:Product. A customer whose 'only product' is a vehicle loan holds nothing matching (?p a mdm:Product ; ex:heldBy ?customer) except that vehicle loan.\" .\n\nex:Customer rdfs:subClassOf mdm:Party .\nex:Account  rdfs:subClassOf mdm:Product ."
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#modeling-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://notebook.semantic.consulting/fbt/#modeling-local-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Local Graph",
+              "sembook:scope": {
+                "@id": "sembook:LocalScope"
+              },
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/fbt/#modeling> } }"
+            },
+            {
+              "@id": "https://notebook.semantic.consulting/fbt/#modeling-full-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Full Graph",
+              "sembook:scope": {
+                "@id": "sembook:CumulativeScope"
+              },
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/fbt/#modeling> } }"
+            },
+            {
+              "@id": "https://notebook.semantic.consulting/fbt/#modeling-entities",
+              "@type": "sembook:EntityPanel",
+              "sembook:label": "Entities",
+              "sembook:scope": {
+                "@id": "sembook:CumulativeScope"
+              },
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/fbt/#modeling> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
+            },
+            {
+              "@id": "https://notebook.semantic.consulting/fbt/#modeling-vocabulary",
+              "@type": "sembook:VocabularyPanel",
+              "sembook:label": "Vocabulary",
+              "sembook:scope": {
+                "@id": "sembook:CumulativeScope"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "https://notebook.semantic.consulting/fbt/#ncino",
+      "@type": "sembook:Lab",
+      "sembook:label": "Another System — nCino",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[1fr] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#ncino-editor",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "nCino Data + Bridge",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:initialContent": "@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .\n@prefix ex:    <urn:example:vocab:> .\n@prefix mdm:   <urn:example:mdm:> .\n@prefix ncino: <urn:example:ncino:> .\n@prefix cust:  <urn:example:customer:> .\n@prefix acct:  <urn:example:account:> .\n\n# ═══ nCino loan-origination system — its own vocabulary, bridged to ours ═══\nncino:Borrower a rdfs:Class ; rdfs:subClassOf ex:Customer ; rdfs:label \"Borrower\" ;\n  rdfs:comment \"nCino's term for a customer who holds a loan. Every Borrower is also an ex:Customer (and thus an mdm:Party). Not every customer is a Borrower — only those with a loan.\" .\nncino:Loan a rdfs:Class ; rdfs:subClassOf mdm:Product ; rdfs:label \"Loan\" ;\n  rdfs:comment \"A credit product the customer OWES the bank (as opposed to a deposit Account, which the customer owns). A Loan is an mdm:Product. VehicleLoan and HomeEquityLoan are kinds of Loan.\" .\nncino:VehicleLoan a rdfs:Class ; rdfs:subClassOf ncino:Loan ; rdfs:label \"Vehicle Loan\" ;\n  rdfs:comment \"A loan secured by a vehicle (auto loan). Use this exact class to identify vehicle loans.\" .\nncino:HomeEquityLoan a rdfs:Class ; rdfs:subClassOf ncino:Loan ; rdfs:label \"Home Equity Loan\" ;\n  rdfs:comment \"A loan secured by the equity in the borrower's home.\" .\n\nncino:borrower a rdf:Property ; rdfs:subPropertyOf ex:heldBy ; rdfs:label \"borrower\" ;\n  rdfs:comment \"Links a loan to the Borrower (customer) who holds it. It is a sub-property of ex:heldBy, so a loan is automatically 'held by' its borrower — letting loans and deposit accounts be queried uniformly as things ex:heldBy a customer.\" .\nncino:maturityDate a rdf:Property ; rdfs:label \"maturity date\" ;\n  rdfs:comment \"The date (xsd:date) a loan is scheduled to be fully repaid. 'A loan maturing within six months' means ncino:maturityDate is between today and six months from today.\" .\nncino:loanAmount a rdf:Property ; rdfs:label \"loan amount\" ;\n  rdfs:comment \"The original principal of the loan, a decimal amount in US dollars.\" .\nncino:originatedOn a rdf:Property ; rdfs:label \"originated on\" ;\n  rdfs:comment \"The date (xsd:date) the loan was originated/booked.\" .\n\nex:memberSince a rdf:Property ; rdfs:label \"member since\" ;\n  rdfs:comment \"The date (xsd:date) a customer's relationship with the bank began. Use it for customer tenure, e.g. customers who have banked with us for more than five years.\" .\n\n# ═══ TOP: new facts about the customer from Lab 1 (James Larson, cust:441) ═══\n# Core banking knows him as customer 441; nCino also knows him as a Borrower.\ncust:441 a ncino:Borrower ; ex:name \"James Larson\" ; ex:memberSince \"2009-04-01\"^^xsd:date .\nacct:L-8877 a ncino:VehicleLoan ; ncino:borrower cust:441 ;\n  ncino:loanAmount 18400.00 ; ncino:originatedOn \"2022-01-15\"^^xsd:date ; ncino:maturityDate \"2027-01-15\"^^xsd:date .\n\n# ═══ BURIED: the rest of the book — seed data for the SPARQL demos ═══\ncust:712 a ex:ConsumerCustomer, ncino:Borrower ; ex:name \"Robert Halverson\" ; ex:memberSince \"2015-06-01\"^^xsd:date .\nacct:L-8880 a ncino:VehicleLoan ; ncino:borrower cust:712 ; ncino:loanAmount 12000.00 ; ncino:maturityDate \"2026-10-15\"^^xsd:date .\n\ncust:553 a ex:ConsumerCustomer, ncino:Borrower ; ex:name \"Patricia Olson\" ; ex:memberSince \"2011-03-01\"^^xsd:date .\nacct:L-8878 a ncino:VehicleLoan ; ncino:borrower cust:553 ; ncino:loanAmount 15500.00 ; ncino:maturityDate \"2026-11-30\"^^xsd:date .\nacct:L-8879 a ncino:HomeEquityLoan ; ncino:borrower cust:553 ; ncino:loanAmount 85000.00 ; ncino:maturityDate \"2031-04-01\"^^xsd:date .\n\ncust:615 a ex:ConsumerCustomer, ncino:Borrower ; ex:name \"Susan Meyer\" ; ex:memberSince \"2012-09-01\"^^xsd:date .\nacct:L-8881 a ncino:VehicleLoan ; ncino:borrower cust:615 ; ncino:loanAmount 21000.00 ; ncino:maturityDate \"2026-12-20\"^^xsd:date .\nacct:C-3301 a ex:Checking ; ex:heldBy cust:615 ; ex:openedDate \"2013-01-10\"^^xsd:date ; ex:balance 4200.00 .\nacct:S-2201 a ex:Savings ; ex:heldBy cust:615 ; ex:openedDate \"2013-01-10\"^^xsd:date ; ex:balance 24500.00 .\n\ncust:627 a ex:ConsumerCustomer, ncino:Borrower ; ex:name \"Frank Delgado\" ; ex:memberSince \"2018-02-01\"^^xsd:date .\nacct:L-8882 a ncino:VehicleLoan ; ncino:borrower cust:627 ; ncino:loanAmount 19000.00 ; ncino:maturityDate \"2027-01-05\"^^xsd:date .\nacct:S-2203 a ex:Savings ; ex:heldBy cust:627 ; ex:openedDate \"2019-05-01\"^^xsd:date ; ex:balance 15000.00 .\n\ncust:803 a ex:ConsumerCustomer ; ex:name \"Diane Thome\" ; ex:memberSince \"2006-11-01\"^^xsd:date .\nacct:C-3302 a ex:Checking ; ex:heldBy cust:803 ; ex:openedDate \"2007-02-01\"^^xsd:date ; ex:balance 3100.00 .\nacct:S-2202 a ex:Savings ; ex:heldBy cust:803 ; ex:openedDate \"2007-02-01\"^^xsd:date ; ex:balance 8000.00 .\n\ncust:901 a ex:BusinessCustomer, ncino:Borrower ; ex:name \"Northland Auto LLC\" ; ex:memberSince \"2016-04-01\"^^xsd:date .\nacct:L-8890 a ncino:VehicleLoan ; ncino:borrower cust:901 ; ncino:loanAmount 42000.00 ; ncino:maturityDate \"2026-12-01\"^^xsd:date ."
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#ncino-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://notebook.semantic.consulting/fbt/#ncino-full-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Full Graph",
+              "sembook:scope": {
+                "@id": "sembook:CumulativeScope"
+              },
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/fbt/#ncino> } }"
+            },
+            {
+              "@id": "https://notebook.semantic.consulting/fbt/#ncino-entities",
+              "@type": "sembook:EntityPanel",
+              "sembook:label": "Entities",
+              "sembook:scope": {
+                "@id": "sembook:CumulativeScope"
+              },
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/fbt/#ncino> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
+            },
+            {
+              "@id": "https://notebook.semantic.consulting/fbt/#ncino-vocabulary",
+              "@type": "sembook:VocabularyPanel",
+              "sembook:label": "Vocabulary",
+              "sembook:scope": {
+                "@id": "sembook:CumulativeScope"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    
+    {
+      "@id": "https://notebook.semantic.consulting/fbt/#iri-moment",
+      "@type": "sembook:Lab",
+      "sembook:label": "The IRI Regret",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[1fr] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#iri-moment-editor",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "Bridging to HTTP IRIs",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-r border-slate-200",
+          "sembook:initialContent": "@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix owl:   <http://www.w3.org/2002/07/owl#> .\n@prefix fbt:   <urn:fbt:vocab:> .\n\n# ── owl:sameAs bridge: URN → HTTP IRI ────────────────────────────────────\n# When the HTTP IRI namespace is ready, the bridge is one triple per entity.\n# The URN namespace stays valid — no data migration, no breaking change.\n\n# Placeholder: uncomment and update when HTTP IRIs are minted\n# <urn:fbt:cb:customer:CB-441> owl:sameAs <https://api.firstbankandtrust.com/customers/G-1001> .\n# <urn:fbt:ncino:loan:NCINO-8877> owl:sameAs <https://api.firstbankandtrust.com/loans/NCINO-8877> .\n\n# ── Tombstone: remove the planted error from Lab 2 ───────────────────────\n# In Lab 2, cb:dateOfBirth was incorrectly typed as xsd:string.\n# The SHACL validation surfaced it. Below is the correct declaration.\n# The wrong triple is tombstoned: the old graph state is versioned via git,\n# not deleted from history. The semantic layer is additive.\n\n# (No new triples needed — the correction was parsing the right xsd:date\n#  datatype in Lab 2's updated content. This lab records the correction\n#  decision and introduces owl:sameAs as the identity bridge mechanism.)"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#iri-moment-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://notebook.semantic.consulting/fbt/#iri-moment-full-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Full Graph",
+              "sembook:scope": {
+                "@id": "sembook:CumulativeScope"
+              },
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/fbt/#iri-moment> } }"
+            },
+            {
+              "@id": "https://notebook.semantic.consulting/fbt/#iri-moment-entities",
+              "@type": "sembook:EntityPanel",
+              "sembook:label": "Entities",
+              "sembook:scope": {
+                "@id": "sembook:CumulativeScope"
+              },
+              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/fbt/#iri-moment> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
+            }
+          ]
+        }
+      ]
+    },
+    
+    
+    {
+      "@id": "https://notebook.semantic.consulting/fbt/#sparql",
+      "@type": "sembook:Lab",
+      "sembook:label": "SPARQL: The Payoff",
+      "sembook:cssClass": "grid grid-rows-[50vh_50vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#sparql-query",
+          "@type": "sembook:SparqlPanel",
+          "sembook:label": "SPARQL Query",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col border-b border-slate-200",
+          "sembook:initialContent": "PREFIX ex: <urn:example:vocab:>\n# Show me all customers (asks at the canonical level — subtypes roll up by inference)\nSELECT ?name WHERE {\n  ?customer a ex:Customer ;\n    ex:name ?name .\n}\nORDER BY ?name",
+          "sembook:sampleQueries": [
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "1 · All customers",
+              "sembook:sparql": "PREFIX ex: <urn:example:vocab:>\n# Show me all customers (asks at the canonical level — subtypes roll up by inference)\nSELECT ?name WHERE {\n  ?customer a ex:Customer ;\n    ex:name ?name .\n}\nORDER BY ?name"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "2 · All consumer customers",
+              "sembook:sparql": "PREFIX ex: <urn:example:vocab:>\n# Show me all consumer customers\nSELECT ?name WHERE {\n  ?customer a ex:ConsumerCustomer ;\n    ex:name ?name .\n}\nORDER BY ?name"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "3 · All borrowers (nCino's term)",
+              "sembook:sparql": "PREFIX ex: <urn:example:vocab:>\nPREFIX ncino: <urn:example:ncino:>\n# Same question, nCino's own term for the same people\nSELECT ?name WHERE {\n  ?borrower a ncino:Borrower ;\n    ex:name ?name .\n}\nORDER BY ?name"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "4 · Account open 5+ years",
+              "sembook:sparql": "PREFIX ex: <urn:example:vocab:>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n# Customers with an account open more than 5 years\nSELECT DISTINCT ?name ?opened WHERE {\n  ?customer a ex:Customer ;\n    ex:name ?name .\n  ?account ex:heldBy ?customer ;\n    a ex:Account ;\n    ex:openedDate ?opened .\n  FILTER(?opened <= \"2021-08-12\"^^xsd:date)\n}\nORDER BY ?opened"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "5 · Vehicle loans maturing in 6 months",
+              "sembook:sparql": "PREFIX ncino: <urn:example:ncino:>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n# Vehicle loans maturing within 6 months\nSELECT ?loan ?maturity WHERE {\n  ?loan a ncino:VehicleLoan ;\n    ncino:maturityDate ?maturity .\n  FILTER(?maturity <= \"2027-02-12\"^^xsd:date)\n}\nORDER BY ?maturity"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "6 · Only a vehicle loan, maturing in 6 months",
+              "sembook:sparql": "PREFIX ex: <urn:example:vocab:>\nPREFIX ncino: <urn:example:ncino:>\nPREFIX mdm: <urn:example:mdm:>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n# Customers whose ONLY product is a vehicle loan maturing within 6 months\nSELECT ?name ?maturity WHERE {\n  ?customer a ex:ConsumerCustomer ;\n    ex:name ?name .\n  ?loan a ncino:VehicleLoan ;\n    ncino:borrower ?customer ;\n    ncino:maturityDate ?maturity .\n  FILTER(?maturity <= \"2027-02-12\"^^xsd:date)\n  FILTER NOT EXISTS {\n    ?other a mdm:Product ;\n      ex:heldBy ?customer .\n    FILTER NOT EXISTS { ?other a ncino:VehicleLoan }\n  }\n}\nORDER BY ?name"
+            }
+          ]
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#sparql-result",
+          "@type": "sembook:SparqlResultPanel",
+          "sembook:label": "Results",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col"
+        }
+      ]
+    },
+    {
+      "@id": "https://notebook.semantic.consulting/fbt/#magicland",
+      "@type": "sembook:Lab",
+      "sembook:label": "Welcome to Magicland",
+      "sembook:cssClass": "grid grid-rows-[60vh_40vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#magicland-nl2sparql",
+          "@type": "sembook:Nl2SparqlPanel",
+          "sembook:label": "Natural Language → SPARQL",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:apiModel": "claude-opus-4-5"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/fbt/#magicland-result",
+          "@type": "sembook:SparqlResultPanel",
+          "sembook:label": "Results",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col"
+        }
+      ]
+    }
+  ]
+}

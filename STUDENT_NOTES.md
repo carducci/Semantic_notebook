@@ -72,10 +72,24 @@ a book's title, a royal position, or a job. Humans read past this; machines can'
 
 **Goal:** meaning is contextual, and context can be written down.
 
-The `@context` pane is data too. See how the queen's `title` is resolved
-differently *inside* the `about` object. Then finish the job: the author's
-`title` is still colliding with the book's, and `isbn` and `name` are still
-unmapped "magic strings." Map them to your own terms.
+### Lab 2a: The glossary
+
+Nothing in the `@context` defines `title`, `isbn`, or `name` yet; the graph
+calls them `implied:`. Define them: map each key to a term of your own, such as
+`https://example.com/ns#title`. Parse.
+
+*Pause here. Look at the other `title` in the document.*
+
+### Lab 2b: Same word, different thing
+
+The queen's `title` is "Queen of the United Kingdom." The author's is
+"Biographer." Both just landed on the term you minted for a book's title. Is
+that what they mean?
+
+A URI is what tells two meanings apart, so give each its own. The `@context`
+inside `about` and `author` lets one key resolve differently in different
+places. Use it to give the queen's `title` and the author's `title` terms of
+their own.
 
 You're done when: three different `title` meanings resolve to three different
 properties, and nothing in the graph says `implied:` anymore.

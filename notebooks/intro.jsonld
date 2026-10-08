@@ -80,7 +80,7 @@
           "sembook:label": "Book Record",
           "sembook:cssClass": "overflow-hidden flex flex-col",
           "sembook:initialContent": "{\n  \"@id\": \"https://example.com/Book/Id/8268\",\n  \"title\": \"Elizabeth the Queen: The Life of a Modern Monarch\",\n  \"isbn\": \"0812979796\",\n  \"about\": {\n    \"@id\": \"https://dbpedia.org/resource/Elizabeth_II\",\n    \"name\": \"Elizabeth Windsor\",\n    \"title\": \"Queen of the United Kingdom\"\n  },\n  \"author\": {\n    \"@id\": \"https://example.com/Author/Id/35626\",\n    \"name\": \"Sally Bedell Smith\",\n    \"title\": \"Biographer\"\n  }\n}",
-          "sembook:initialContext": "{\n  \"@context\": {\n    \"title\": \"https://example.com/ns#title\",\n    \"about\": {\n      \"@id\": \"https://example.com/ns#about\",\n      \"@context\": {\n        \"title\": \"https://example.com/ns#positionHeld\"\n      }\n    },\n    \"author\": {\n      \"@id\": \"https://example.com/ns#author\"\n    }\n  }\n}"
+          "sembook:initialContext": "{\n  \"@context\": {\n    \"about\": {\n      \"@id\": \"https://example.com/ns#about\",\n      \"@context\": {}\n    },\n    \"author\": {\n      \"@id\": \"https://example.com/ns#author\",\n      \"@context\": {}\n    }\n  }\n}"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-tabs",

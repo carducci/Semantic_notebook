@@ -94,18 +94,27 @@ these IRIs.
 
 ## Lab 2 — Data and Context (deck Lab 2)
 
-**Seed:** Elizabeth biography record, body uses bare `@id`s (slide 130). The
-context maps `title` → `ex:title` and demonstrates the nested-context pattern
-once (`about.title` → `ex:positionHeld`). `name` and `isbn` are deliberately
-unmapped (`implied:` predicates); the author's `title` deliberately inherits
-the outer mapping — "Biographer" lands on `ex:title`.
-**Live arc:** read the collision (three `title`s), walk the nested-context
-resolution for the queen, then let the room fix the author's title and map
-`isbn`/`name` themselves.
-**Discrepancy event:** same key, different meanings, resolved per-context —
-and the leftover collision the room fixes by applying the pattern.
+**Seed:** Elizabeth biography record, ids already fully qualified (slide 130). The
+context holds only `about` and `author`, each with an EMPTY nested `@context` (the
+scaffold shows where scoped mappings go). Nothing is mapped for `title`, `isbn`, or
+`name`; they all surface as `implied:` predicates. (Oct 7: the old seed carried
+`title` → `ex:title` and `about.title` → `ex:positionHeld`; both are now the room's
+job. Reorder the slides so the deck lands here before the problem is pointed out.)
+**Live arc:** first the room builds "the canonical glossary," and everyone reaches
+for `ns#title` without much thought (map `isbn` and `name` the same way). Then walk
+to the next `title`, the queen's: the same IRI would say a royal position is a book
+title. Now the room sees that the URI is what disambiguates. Give each meaning its
+own IRI with a scoped context (`about.title` → `ex:positionHeld`, `author.title` →
+`ex:jobTitle`).
+**Discrepancy event:** same key, different meanings, and the first instinct
+(reuse the term already minted) is wrong here.
+**Green path / robots:** the reuse reflex is the "simple robot": it sees a key and
+reaches for a term. Plant the seed for the "smart robot": when it sees a concept it
+has already defined, it reuses it (and knows when the concept is NOT the same).
+Michael does not mind the repetition from Lab 1d; it mirrors a real situation
+the room will meet at work.
 **Tabs:** Local Graph + Vocabulary only.
-**Gotchas:** keep everything in `ex:` — no schema.org here; the queen's
+**Gotchas:** keep everything in `ex:`, no schema.org here; the queen's
 DBpedia IRI is a plant for the merging lab, don't dwell on it.
 **End state — the completed @context (verified; Lab 11's merge depends on
 the isbn line):**

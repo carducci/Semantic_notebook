@@ -545,7 +545,7 @@
             {
               "@type": "sembook:SampleQuery",
               "sembook:label": "6 · The same — without trusting DBpedia",
-              "sembook:sparql": "SELECT ?source ?p ?o WHERE {\n  GRAPH ?source {\n    <https://dbpedia.org/resource/Elizabeth_II> ?p ?o\n  }\n  FILTER(?source NOT IN (\n    <https://notebook.semantic.consulting/notebook1/#integration-for-free>,\n    <https://notebook.semantic.consulting/notebook1/#integration-for-free-inferred>\n  ))\n}\nORDER BY ?source"
+              "sembook:sparql": "SELECT ?source ?p ?o WHERE {\n  GRAPH ?source {\n    <https://dbpedia.org/resource/Elizabeth_II> ?p ?o\n  }\n  FILTER(?source NOT IN (\n    <https://notebook.semantic.consulting/notebook1/#integration-for-free>,\n    <https://notebook.semantic.consulting/notebook1/#integration-for-free-inferred>,\n    <https://notebook.semantic.consulting/notebook1/#nature-of-relationships-inferred>\n  ))\n}\nORDER BY ?source"
             },
             {
               "@type": "sembook:SampleQuery",

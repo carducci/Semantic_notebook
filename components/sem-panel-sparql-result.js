@@ -220,13 +220,39 @@ export class SemPanelSparqlResult extends HTMLElement {
     }
     thead.appendChild(headRow);
 
+    // Local names collide across vocabularies (ex:author vs schema:author, ex:Book vs
+    // schema:Book), which makes rows like `author subPropertyOf author` unreadable. Only
+    // when two DIFFERENT IRIs in this result share a local name do we add a prefix.
+    const KNOWN_NS = {
+      'https://example.com/ns#': 'ex', 'http://schema.org/': 'schema',
+      'https://dbpedia.org/ontology/': 'dbo', 'http://www.w3.org/2000/01/rdf-schema#': 'rdfs',
+      'http://www.w3.org/1999/02/22-rdf-syntax-ns#': 'rdf', 'http://www.w3.org/2002/07/owl#': 'owl',
+      'http://www.w3.org/2001/XMLSchema#': 'xsd', 'http://xmlns.com/foaf/0.1/': 'foaf',
+      'https://catalog.worldlib.example/ns#': 'lib'
+    };
+    const byLocal = new Map();
+    for (const row of rows) {
+      for (const term of row) {
+        if (!term || term.termType === 'Literal') continue;
+        const ln = localName(term.value);
+        if (!byLocal.has(ln)) byLocal.set(ln, new Set());
+        byLocal.get(ln).add(term.value);
+      }
+    }
+    const display = (iri) => {
+      const ln = localName(iri);
+      if ((byLocal.get(ln)?.size || 0) < 2) return ln;
+      const ns = iri.slice(0, iri.length - ln.length);
+      return KNOWN_NS[ns] ? `${KNOWN_NS[ns]}:${ln}` : ln;
+    };
+
     const tbody = document.createElement('tbody');
     for (const row of rows) {
       const tr = document.createElement('tr');
       for (const term of row) {
         const td = document.createElement('td');
         if (term) {
-          td.textContent = term.termType === 'Literal' ? `"${term.value}"` : localName(term.value);
+          td.textContent = term.termType === 'Literal' ? `"${term.value}"` : display(term.value);
           td.title = term.value;
         } else {
           td.textContent = '—';

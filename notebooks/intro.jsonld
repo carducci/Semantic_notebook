@@ -177,7 +177,7 @@
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology ──────────────────────────────────────\n\nex:title\n    rdfs:label \"\"@en-US .\n\nex:published\n    rdfs:label \"\"@en-US .\n\nex:author\n    rdfs:label \"\"@en-US .\n\nex:name\n    rdfs:label \"\"@en-US .\n\nex:affiliation\n    rdfs:label \"\"@en-US .\n\nex:isbn\n    rdfs:label \"\"@en-US .\n\nex:about\n    rdfs:label \"\"@en-US .\n\nex:positionHeld\n    rdfs:label \"\"@en-US .\n\nex:jobTitle\n    rdfs:label \"\"@en-US .\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology ──────────────────────────────────────\n#\n# The comments say what each term means. Fill in the label: what do we call it?\n\nex:title\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"The title of a published work\"@en-US .\n\nex:published\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"The year a work was first published\"@en-US .\n\nex:author\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"Connects a work to the person who wrote it\"@en-US .\n\nex:name\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"The name of a person or organization\"@en-US .\n\nex:affiliation\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"Connects a person to the organization they belong to\"@en-US .\n\nex:isbn\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"International Standard Book Number\"@en-US .\n\nex:about\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"Connects a work to its subject\"@en-US .\n\nex:positionHeld\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"A role someone holds, such as a monarch's title\"@en-US .\n\nex:jobTitle\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"The title of someone's job\"@en-US .\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#labels-and-comments-tabs",
@@ -393,7 +393,7 @@
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Semantics",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n@prefix dbo: <https://dbpedia.org/ontology/> .\n\n# ── Our ontology ── what do these relationships MEAN?\n#\n# ex:marriedTo: if Michael is married to Kate, is Kate married to Michael?\n#   And ex:bestFriendOf: is Michael Draco's best friend? Should it be?\n#\n# ex:authorOf and ex:author: the same relationship, read from opposite ends.\n#   Some of our data says \"this book has an author.\" Some says \"this person wrote a book.\"\n#\n# dbo:spouse: DBpedia's word for the same thing as ex:marriedTo.\n#   Philip and Elizabeth have been in the graph since Lab 9.\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n@prefix dbo: <https://dbpedia.org/ontology/> .\n\n# ── Our ontology ── what do these relationships MEAN?\n#\n# ex:marriedTo: if Michael is married to Kate, is Kate married to Michael?\n#   And ex:bestFriendOf: is Michael Draco's best friend? Should it be?\n#\n# ex:authorOf and ex:author: the same relationship, read from opposite ends.\n#   Some of our data says \"this book has an author.\" Some says \"this person wrote a book.\"\n#\n# dbo:spouse: DBpedia's word for the same thing as ex:marriedTo.\n#   Philip and Elizabeth have been in the graph since Lab 9.\n#\n# ── Your turn ── pick a relationship from your own world (mentorOf and mentee?\n#   siblingOf? reportsTo?). Write two facts about it in Data, then say how it\n#   works here. Predict what the graph will derive before you parse.\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships-tabs",
@@ -430,7 +430,7 @@
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Semantics",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n\n# ── Our ontology ──\n#\n# If I am in the hotel, and the hotel is in the city,\n# and the city is in the state… where am I?\n#\n# The graph does not know yet. Teach it what \"located in\" means.\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n\n# ── Our ontology ──\n#\n# If I am in the hotel, and the hotel is in the city,\n# and the city is in the state… where am I?\n#\n# The graph does not know yet. Teach it what \"located in\" means.\n#\n# Optional, if you finish early: write your own chain in Data (reportsTo up an\n# org chart? partOf?) and say what kind of property it is.\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#transitivity-tabs",
@@ -621,7 +621,7 @@
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Semantics",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix schema: <http://schema.org/> .\n\n# ── Our ontology ── write some rules. Make them sound reasonable.\n#\n# Toppings go on pizzas. So what is the domain of ex:hasTopping?\n#\n# Everyone knows names are something people have. So what is the domain of schema:name?\n#\n# The reasoner will believe every rule you give it. That is the point of this lab.\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix schema: <http://schema.org/> .\n\n# ── Our ontology ── write some rules. Make them sound reasonable.\n#\n# Toppings go on pizzas. So what is the domain of ex:hasTopping?\n#\n# Everyone knows names are something people have. So what is the domain of schema:name?\n#\n# The reasoner will believe every rule you give it. That is the point of this lab.\n#\n# Now write one rule of your own that sounds reasonable. Predict what it\n# breaks before you parse.\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie-tabs",

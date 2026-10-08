@@ -300,18 +300,19 @@ ex:about a rdf:Property .
 
 ## Lab 5 — Labels and Comments (NEW Oct 7; slide Lab 5 "turtle writer")
 
-**Design (Michael):** a new Turtle writer where the room adds `rdfs:label` and
-`rdfs:comment` to the terms. The seed scaffolds a placeholder for EVERY term in the
-vocabulary: one term and an empty `rdfs:label`, ending in a period. The room adds the
-semicolon and the `rdfs:comment` themselves (Oct 7 decision). The empty string carries
-`@en-US` "because why not."
+**Design (Michael, revised Oct 8):** a Turtle writer where the room supplies the
+`rdfs:label`; the `rdfs:comment` is already written for every term (the comment says
+what a term MEANS, the label says what we CALL it). The student's work is nine labels,
+typed into empty `""@en-US` strings (the earlier plan had them also write nine comments;
+cut as repetitive). The `@en-US` tag "because why not."
 **Seed (nine blocks, like this):**
 ```turtle
 ex:title
-    rdfs:label ""@en-US .
+    rdfs:label ""@en-US ;
+    rdfs:comment "The title of a published work"@en-US .
 ```
 (`title published author name affiliation isbn about positionHeld jobTitle`, in that order.)
-**Live arc:** fill each label, change the period to a semicolon and add a comment; Parse; select a term in the Vocabulary tab and the
+**Live arc:** fill each label; Parse; select a term in the Vocabulary tab and the
 detail pane shows label and comment next to the type and range from Lab 4. Same graph, more triples.
 **Tabs:** Vocabulary (default) + Local Graph.
 **Gotchas:** descriptive triples only (label, comment); no domain, no classes yet. The
@@ -653,6 +654,13 @@ dbo:spouse owl:equivalentProperty ex:marriedTo .
   `equivalentProperty` into `subPropertyOf` in both directions (a dotted
   subPropertyOf loop on `spouse` is a harmless artifact).
 - The Local Graph gets busy by line 3; zoom or pan to Philip and Elizabeth.
+**Rep 4, "Your turn" (added Oct 8; unscaffolded):** after the three given
+declarations the room invents a relationship from their own world, writes two
+Data facts, declares its nature (symmetric, inverse, or equivalent), and
+PREDICTS the derivation before parsing. Nobody gives them the line. Examples
+that work: `ex:mentorOf` owl:inverseOf `ex:mentee`; `ex:siblingOf` a
+owl:SymmetricProperty. Walk the room; the common miss is declaring a
+symmetric property on something directional (bestFriendOf's lesson, again).
 **The beat on `authorOf`:** "We don't just name things differently. We think
 about relationships differently." Half the datasets say *author* (work to
 person); half say *authorOf* (person to work). Both perspectives coexist.
@@ -681,6 +689,9 @@ ex:locatedIn a owl:TransitiveProperty .
 **Payoff (verified):** five derived edges bloom at once — michael is in
 Westminster, in "Denver," in Colorado; the Hyatt too. One line of
 semantics; the graph closes the whole chain.
+**Optional rep (Oct 8):** for those who finish early, write a chain of their own
+in Data (reportsTo up an org chart, partOf) and declare it transitive; predict
+the edge count. Not required.
 **The Denver aside (lean, keep):** the conference ads say "Denver, CO" —
 Westminster isn't in Denver proper. `ex:DenverMetro` is a *different
 resource* that happens to carry the label "Denver," and it's the one the ad
@@ -835,6 +846,12 @@ retroactively. Valid is not sound."
 **Retraction (optional, 20 seconds):** delete the line, re-parse; the damage
 vanishes (verified: five Persons before, eight with the axiom, five after).
 That is the derivation-over-assertion argument made visible.
+**Rep 3, "your own bad rule" (added Oct 8):** after the two given lines each
+student writes one rule that sounds reasonable and predicts the damage. A
+verified biter from the Lab 11 data: `ex:locatedIn rdfs:domain ex:Hotel .`
+makes Michael, Westminster and the Hyatt's whole chain hotels. Others invite
+themselves: any domain or range that is true of the example in front of you
+and false of the rest of the graph. Debrief by sampling two or three.
 **Payoff:** Lab 16 queries 5 to 7.
 
 ## Lab 16 — Who Said That? (provenance — the capstone) — BUILT & VERIFIED
@@ -1003,3 +1020,55 @@ reasoning already happened*. Say the number after the room reads it.
 - **Tie this demo back to multi-agent systems** when the deck reaches that
   section — an agent that speaks *any* of the aligned dialects can query the
   graph; nobody coordinated. Michael asked to be reminded at that deck beat.
+
+---
+
+## APPENDIX: Final state of every lab (catch-up blocks; verified headless)
+
+Use these to rescue anyone who fell behind: paste, Parse, move on. Parse is
+the only commit and reasoning is cumulative, so labs can be caught up in
+order. The ones later labs DEPEND on are marked **needed**.
+
+**Lab 1 (needed: Lab 1d IRIs).** Document A and Document B, both parsed. See
+"Lab 1 runbook" 1d above (terms minted: `ex:title`, `ex:published`, `ex:author`,
+`ex:name`, `ex:affiliation`).
+**Lab 2 (needed: isbn, positionHeld, jobTitle).** The `@context` pane, parsed. See
+"Lab 2 runbook" above (title, isbn, name, about{title:positionHeld},
+author{title:jobTitle}).
+**Lab 3.** No edits; Parse the seed (the publisher's catalog book).
+**Lab 4.** The nine property declarations. See "Lab 4 runbook".
+**Lab 5.** Nine labels. Final state (comments are seeded, labels are the student's):
+```turtle
+ex:title        rdfs:label "Title"@en-US ;         rdfs:comment "The title of a published work"@en-US .
+ex:published    rdfs:label "Published"@en-US ;     rdfs:comment "The year a work was first published"@en-US .
+ex:author       rdfs:label "Author"@en-US ;        rdfs:comment "Connects a work to the person who wrote it"@en-US .
+ex:name         rdfs:label "Name"@en-US ;          rdfs:comment "The name of a person or organization"@en-US .
+ex:affiliation  rdfs:label "Affiliation"@en-US ;   rdfs:comment "Connects a person to the organization they belong to"@en-US .
+ex:isbn         rdfs:label "ISBN"@en-US ;          rdfs:comment "International Standard Book Number"@en-US .
+ex:about        rdfs:label "About"@en-US ;         rdfs:comment "Connects a work to its subject"@en-US .
+ex:positionHeld rdfs:label "Position held"@en-US ; rdfs:comment "A role someone holds, such as a monarch's title"@en-US .
+ex:jobTitle     rdfs:label "Job title"@en-US ;     rdfs:comment "The title of someone's job"@en-US .
+```
+(prefixes: `ex:`, `rdfs:`.)
+**Lab 6.** See "Lab 6 runbook" (ex:Book, ex:Author, ex:Organization; two subClassOf).
+**Lab 7 (needed: isbn domain).** See "Lab 7 runbook" step 2.
+**Lab 8 (needed: isbn both ways, Book both ways).** See "End state (verified)" in Lab 8.
+**Lab 9 (needed).** Fetch the DBpedia record, then Parse.
+**Lab 10.** Data = the three facts (marriedTo kate, bestFriendOf draco, authorOf the catalog book). Semantics:
+```turtle
+ex:marriedTo a owl:SymmetricProperty .
+ex:authorOf owl:inverseOf ex:author .
+dbo:spouse owl:equivalentProperty ex:marriedTo .
+```
+plus the room's own fourth relationship (free-form).
+**Lab 11.** Data = UberConf / Hyatt Westminster seed; Semantics: `ex:locatedIn a owl:TransitiveProperty .` (optional own chain).
+**Lab 12 (needed for Labs 13 and 16 to merge the book).** Fetch the catalog record, Parse; Semantics: `schema:isbn a owl:InverseFunctionalProperty .` (prefixes `schema:`, `owl:`).
+**Lab 13.** No edits; run sample queries 1 to 8 from the dropdown.
+**Lab 14.** No edits; run the two CONSTRUCT samples.
+**Lab 15.** Data = the sundae and Margherita seed; Semantics:
+```turtle
+ex:hasTopping rdfs:domain ex:Pizza .
+schema:name rdfs:domain schema:Person .
+```
+plus the room's own bad rule (for example `ex:locatedIn rdfs:domain ex:Hotel .`).
+**Lab 16.** Fetch the CelebWatch record, Parse; run sample queries 1 to 7.

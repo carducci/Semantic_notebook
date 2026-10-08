@@ -158,13 +158,13 @@ read.
 **Goal:** descriptions are data too. A label is what we call a thing; a comment
 says what it means.
 
-The editor holds a placeholder for every term in your vocabulary: one term and
-an empty label. Fill in the label, then add a comment of your own; a semicolon
-keeps the same term going. The `@en-US` after each string says which language
-it's written in. Parse, then select a term in the Vocabulary tab and see what
-the graph now knows about it.
+Every term in your vocabulary is in the editor with a comment already written:
+the comment says what the term *means*. The label is empty. Fill it in: what
+do we *call* this thing, in words a person would say? The `@en-US` after each
+string says which language it's written in. Parse, then select a term in the
+Vocabulary tab and see what the graph now knows about it.
 
-You're done when every term has a label and a comment you'd show a colleague.
+You're done when every term has a label you'd show a colleague.
 
 ## Lab 6: Classes and Subclasses
 
@@ -262,6 +262,11 @@ panel's questions one declaration at a time, parsing after each.
    `ex:marriedTo`. Declare them `owl:equivalentProperty`, and look at
    Elizabeth and Philip.
 
+4. **Your turn.** Pick a relationship from your own world (a mentor and
+   mentee? siblings? who reports to whom?). Write two facts about it in
+   Data, then say how it works in Semantics. Before you parse, predict
+   what the graph will derive. Nobody gives you the line this time.
+
 You're done when: you can say which dotted edge came from which line of
 semantics, and which datasets learned something they never said. None of it
 is a guess; none of it can be hallucinated.
@@ -276,6 +281,10 @@ inside all of it.
 Parse the data and look at the graph: a chain of `locatedIn` links, each
 one step long. The graph does not know where Michael is beyond the hotel.
 Teach it what "located in" *means* (that it carries through) and parse.
+
+*Optional, if you finish early:* write a chain of your own in Data (who
+reports to whom up an org chart? what is part of what?) and say what kind of
+property it is. Predict how many new edges appear.
 
 You're done when: you can explain why five new edges appeared from one
 declaration, and why the ads saying the conference is in "Denver" aren't
@@ -343,6 +352,10 @@ Parse the Data. Then, in Semantics, state that toppings belong to pizzas
 have (`schema:name rdfs:domain schema:Person`). Parse after each line and
 watch the Local Graph. Look at what happened to the sundae, and then notice
 what happened to the books from this morning.
+
+Then write one rule of your own that sounds reasonable. Predict what it
+breaks before you parse, and look for the damage (the Local Graph shows only
+this lab; the damage may be elsewhere in the day's data).
 
 You're done when: you can say why nothing in the data was wrong, and why the
 reasoner was right to conclude what it did.

@@ -786,6 +786,20 @@ cascading knowledge). Verbal beat: the sundae becomes a pizza because of the
 rules. Lab 16 pays it off: provenance ignores the lab called "Lying Liars Who
 Lie." Two examples, two registers: this one is visceral and self-inflicted;
 CelebWatch/DBpedia (Lab 16) is the grounded, real-life one.
+**KEY BEATS (Michael riffs the delivery live; these are the ones that must land):**
+1. Slide 516, verbal: the sundae becomes a pizza because of `:hasTopping`
+   (domain Pizza). Nothing in the data was wrong.
+2. The reasoner is valid, never sound: it checks that conclusions follow from
+   premises, not that premises are true. Your axioms are premises.
+3. The lab is the room writing bad rules, globally and retroactively
+   (cumulative reasoning reaches back into the morning's books).
+4. Derivation is retractable: delete the line, re-parse, the damage is gone.
+   Compare an ETL that copied bad rows.
+5. Three tools, three questions: provenance (who said it), derivation (undo it),
+   SHACL (what must be true; domain/range never reject, they only conclude).
+6. Aristotle (slide 518): the graph entertains every idea, including yours.
+7. Payoff in Lab 16: ignore the lab called "Lying Liars Who Lie" the same way
+   we ignore the tabloid. The liar is you; the tabloid is the world.
 **Why it works:** validity vs soundness. The reasoner guarantees the first
 (if the premises hold, the conclusion follows) and never the second (it does
 not check premises, and your axioms are premises). OWL justifies the

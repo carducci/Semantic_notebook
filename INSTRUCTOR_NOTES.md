@@ -5,6 +5,16 @@ the one discrepancy event the lab exists for, and stage gotchas. Companion to
 the deck ("An Engineer's Guide to the Semantic Layer"); deck cue points refer to
 slide numbers as of 2026-07-12 and shift as the deck is renumbered.
 
+**State saving (Oct 8, ADR-039):** the notebook now saves each attendee's
+work in their browser (every Parse, plus the text of every editor), restores it
+on load, and returns them to the lab they were on. A reload, a closed tab, a
+laptop that slept, or a crash no longer costs the room anything. "Start over" is
+in the menu (it asks first). Gotchas: same browser and device only; a private
+window starts empty and does not save; a shared laptop shares state; to test as
+a fresh attendee use a private window or "Start over". If someone is lost,
+"Start over" plus the paste-in blocks in the APPENDIX at the end gets them back
+fast. Seeds you fix later still reach anyone who has not edited that editor.
+
 **Standing rules (apply to every lab):** phenomenon before name; one
 discrepancy event per lab; seeds fire zero visible inference before Lab 7;
 schema.org stays "some other system's dialect" until the web-scale reveal;

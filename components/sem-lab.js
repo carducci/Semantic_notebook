@@ -125,6 +125,14 @@ export class SemLab extends HTMLElement {
     // Runs after the subtree is connected, so each panel's connectedCallback — which
     // builds its render container — has already fired.
     for (const el of this._cumulativePanels) el.onGraphUpdated(this.uri);
+
+    // Local state saving: when this lab's own graph was restored from an earlier visit,
+    // the single-lab panels (Local Graph, Turtle Reader) need their first render too,
+    // since nothing here will Parse. Skipped for labs with nothing committed.
+    if (this._notebook?.persist?.restoredCount) {
+      const own = this._notebook.store.getQuads(null, null, null, N3.DataFactory.namedNode(this.uri));
+      if (own.length > 0) this._notebook._notifySubscribers(this.uri);
+    }
   }
 
   // Matches a two-value grid-rows-[A_B] track (e.g. "40vh_60vh") in the lab's

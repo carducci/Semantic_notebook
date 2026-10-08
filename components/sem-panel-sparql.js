@@ -79,7 +79,10 @@ export class SemPanelSparql extends HTMLElement {
     this._editorView = createEditor(
       this._editorContainer,
       this._editorContent || '# Write SPARQL here — no GRAPH/FROM clause implicitly\n# scopes to everything you\'ve built so far, reasoning included\nSELECT * WHERE {\n  ?s ?p ?o\n}\n',
-      (content) => { this._editorContent = content; }
+      (content) => {
+        this._editorContent = content;
+        this.notebook?.persist?.saveEditor(this.uri, content, this._seed);
+      }
     );
 
     this._renderSampleOptions();
@@ -92,7 +95,9 @@ export class SemPanelSparql extends HTMLElement {
     const lab = graph.find(n => n['@id'] === this._labUri);
     if (!lab) return;
     const panelNode = findPanelNode(lab['sembook:panels'], this.uri);
-    const initialContent = panelNode?.['sembook:initialContent'];
+    this._seed = panelNode?.['sembook:initialContent'];
+    const saved = this.notebook?.persist?.getEditor(this.uri);
+    const initialContent = saved !== undefined ? saved : this._seed;
     if (!initialContent) return;
     this._editorContent = initialContent;
     if (this._editorView) {

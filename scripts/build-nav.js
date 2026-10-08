@@ -101,7 +101,10 @@ function observeActiveLab(linksBySlug, headingsBySlug) {
     for (const [slug, link] of linksBySlug) {
       link.className = slug === activeSlug ? ACTIVE_LINK_CLASS : INACTIVE_LINK_CLASS;
     }
-    if (activeSlug) setCurrentLabHeading(headingsBySlug.get(activeSlug) || '');
+    if (activeSlug) {
+      setCurrentLabHeading(headingsBySlug.get(activeSlug) || '');
+      document.dispatchEvent(new CustomEvent('lab:active', { detail: { slug: activeSlug } }));
+    }
   }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
 
   for (const slug of linksBySlug.keys()) {

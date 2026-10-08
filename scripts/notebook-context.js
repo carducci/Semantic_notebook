@@ -35,6 +35,7 @@ export class NotebookContext extends EventTarget {
     this._fragmentOwnership = new Map(); // fragmentUri → quad[]
     this._prefixes = new Map();          // labUri → merged prefix object
     this._rulesStore = null;             // lazily-parsed N3 ruleset (see _getRulesStore)
+    this.persist = null;                 // optional Persistence (local state saving)
   }
 
   // Query the quad store with SPARQL
@@ -116,6 +117,9 @@ export class NotebookContext extends EventTarget {
     // Every successful Parse re-materializes this lab's inferred graph before panels
     // re-render (ADR-031) — not a separate user action, a direct consequence of Parse.
     this._materialize(labUri);
+
+    // Local state saving: remember this commit so a reload can replay it.
+    this.persist?.recordCommit(labUri, fragmentUri, quads, prefixes);
 
     this._notifySubscribers(labUri);
   }

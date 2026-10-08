@@ -1,4 +1,5 @@
 import { NotebookContext } from './notebook-context.js';
+import { Persistence, wirePersistenceUi } from './persistence.js';
 
 // jsonld.js is loaded globally via <script src=".../jsonld.min.js"> in index.html — no module import needed.
 
@@ -36,10 +37,33 @@ export async function bootstrap(notebookUri) {
       }
     }
 
+    // 5b. Local state saving: replay this browser's earlier commits into the store
+    //     (labs are built lazily afterwards, so panels render the restored state),
+    //     and bring the attendee back to the lab they were on.
+    let persist = null;
+    try {
+      persist = new Persistence(new URL(notebookDoc['@graph']?.find(n => n['@type'] === 'sembook:Notebook')?.['@id'] || notebookUri, location.href).href);
+      notebook.persist = persist;
+      await persist.restore(notebook);
+      if (!location.hash && persist.data.lastLab) {
+        history.replaceState(null, '', `#${persist.data.lastLab}`);
+      }
+      // Ignore the nav's first reports while the initial scroll-to-hash settles, so a
+      // returning attendee's saved position is not overwritten by Lab 1.
+      const startedAt = performance.now();
+      document.addEventListener('lab:active', (e) => {
+        if (performance.now() - startedAt < 1500) return;
+        persist.setLastLab(e.detail.slug);
+        history.replaceState(null, '', `#${e.detail.slug}`);
+      });
+    } catch (e) { console.warn('Local state saving unavailable', e); }
+
     // 6. Fire notebook:ready
     document.dispatchEvent(new CustomEvent('notebook:ready', {
       detail: { notebook, notebookDoc }
     }));
+
+    if (persist) wirePersistenceUi(persist);
 
   } catch (err) {
     console.error('Bootstrap failed:', err);

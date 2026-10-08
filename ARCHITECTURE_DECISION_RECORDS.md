@@ -447,4 +447,25 @@ The consequence above ("three places that must agree") is reduced by ADR-037: `<
 
 ---
 
+## ADR-039 — Local State Saving: Commit Log + Editor Text in localStorage, Replayed Through upsertFragment
+
+**Context:** The notebook held all state in memory, so a reload, crash, accidental navigation, or closed laptop wiped an attendee's whole workshop (the likely cause of the "later labs didn't work" reports at UberConf: a fresh page has no Labs 1 to 8 behind it). BACKLOG #1.
+
+**Decision:**
+- **Persist inputs, not derived state.** Each successful Parse is saved as N-Quads keyed by fragment IRI (with its lab and prefixes). The inferred graphs are never stored; they are recomputed. Restore replays the commits, ordered by each fragment's last commit, through the normal `upsertFragment` path (so reasoning, ownership, and attribution behave exactly as in live use, ADR-038 included).
+- **Persist editor text that differs from its seed** (body, context, Turtle, SPARQL), so uncommitted typing survives. Text equal to the seed is not stored, so a seed fixed in a later deploy still reaches students who never edited that editor.
+- **Restore before labs are built.** Labs build lazily, so panels render the restored store on first view; labs that already have their own committed graph get their single-lab panels notified once at build.
+- **Where the attendee was** is kept in the URL hash and in storage; a plain visit returns to the last lab. Deep-link scrolling was made robust (retried after layout).
+- **Best-effort storage:** every read and write is wrapped; blocked or full storage degrades to the old in-memory behavior. The drawer has a confirmed "Start over".
+- Key: `semnb:v1:<notebook IRI>` in the origin's localStorage; bump the version to invalidate.
+
+**Alternatives Considered:**
+- **Snapshot the N3 store** — rejected: larger, couples saved state to reasoner output, and a rules change would leave stale inferences.
+- **Persist only editor text and re-click Parse on load** — rejected: fetches would re-run, and Parse order would be lost.
+- **IndexedDB** — rejected: nothing here is large; localStorage is synchronous and simpler.
+
+**Consequences:** same browser and origin only (no cross-device sync); a shared laptop shares state until "Start over"; editing seeds does not disturb saved work; a changed lab IRI orphans its saved commits (skipped on restore).
+
+---
+
 *Records here are added when a new decision clears the bar in the "How This Relates" section above. When a decision changes, append a dated Revision/Correction section (see ADR-010) rather than editing the original text away.*

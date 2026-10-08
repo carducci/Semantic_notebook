@@ -120,7 +120,10 @@ export class SemPanelTurtleWriter extends HTMLElement {
     this._editorView = createEditor(
       this._editorContainer,
       this._editorContent || '# Write Turtle here\n',
-      (content) => { this._editorContent = content; }
+      (content) => {
+        this._editorContent = content;
+        this.notebook?.persist?.saveEditor(this.uri, content, this._seed);
+      }
     );
   }
 
@@ -136,7 +139,9 @@ export class SemPanelTurtleWriter extends HTMLElement {
     // fetch and Parse each remain deliberate clicks (ADR-019).
     const fetchUrl = panelNode?.['sembook:fetchUrl'];
     if (fetchUrl && this._fetchInput) this._fetchInput.value = fetchUrl;
-    const initialContent = panelNode?.['sembook:initialContent'];
+    this._seed = panelNode?.['sembook:initialContent'];
+    const saved = this.notebook?.persist?.getEditor(this.uri);
+    const initialContent = saved !== undefined ? saved : this._seed;
     if (!initialContent) return;
     this._editorContent = initialContent;
     if (this._editorView) {

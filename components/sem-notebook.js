@@ -58,8 +58,15 @@ export class SemNotebook extends HTMLElement {
     // The browser's initial scroll-to-fragment ran before these elements
     // existed; re-run it so a deep-linked lab IRI still dereferences to its
     // lab scrolled into view (C2).
+    // Also retried after layout settles: a single synchronous scroll can be lost
+    // (the labs have just been sized, snap points recomputed), and a lost scroll
+    // would otherwise leave a returning attendee on Lab 1.
     if (location.hash) {
-      document.getElementById(location.hash.slice(1))?.scrollIntoView();
+      const slug = location.hash.slice(1);
+      const go = () => document.getElementById(slug)?.scrollIntoView();
+      go();
+      requestAnimationFrame(() => requestAnimationFrame(go));
+      setTimeout(go, 400);
     }
   }
 }

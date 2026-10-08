@@ -19,12 +19,18 @@ export class SemPanelJsonLdSplit extends HTMLElement {
     this._bodyEditorView = createEditor(
       this._bodyEditorContainer,
       this._bodyContent,
-      (content) => { this._bodyContent = content; }
+      (content) => {
+        this._bodyContent = content;
+        this.notebook?.persist?.saveEditor(this.uri + '|body', content, this._bodySeed);
+      }
     );
     this._contextEditorView = createEditor(
       this._contextEditorContainer,
       this._contextContent,
-      (content) => { this._contextContent = content; }
+      (content) => {
+        this._contextContent = content;
+        this.notebook?.persist?.saveEditor(this.uri + '|context', content, this._contextSeed);
+      }
     );
   }
 
@@ -98,7 +104,9 @@ export class SemPanelJsonLdSplit extends HTMLElement {
     const fetchUrl = panelNode['sembook:fetchUrl'];
     if (fetchUrl && this._fetchInput) this._fetchInput.value = fetchUrl;
 
-    const initialContent = panelNode['sembook:initialContent'];
+    this._bodySeed = panelNode['sembook:initialContent'];
+    const savedBody = this.notebook?.persist?.getEditor(this.uri + '|body');
+    const initialContent = savedBody !== undefined ? savedBody : this._bodySeed;
     if (initialContent) {
       this._bodyContent = initialContent;
       this._bodyEditorView?.dispatch({
@@ -106,7 +114,9 @@ export class SemPanelJsonLdSplit extends HTMLElement {
       });
     }
 
-    const initialContext = panelNode['sembook:initialContext'];
+    this._contextSeed = panelNode['sembook:initialContext'];
+    const savedCtx = this.notebook?.persist?.getEditor(this.uri + '|context');
+    const initialContext = savedCtx !== undefined ? savedCtx : this._contextSeed;
     if (initialContext) {
       this._contextContent = initialContext;
       this._contextEditorView?.dispatch({

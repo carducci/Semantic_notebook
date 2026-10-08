@@ -4,7 +4,8 @@ Your companion for the hands-on labs at
 **<https://notebook.semantic.consulting/notebook1/>**. Everything runs in your
 browser; there is nothing to install. Each lab is one full screen; scroll (or use the
 menu) to move between them. **Parse** is your commit button: edit, parse,
-watch the graph.
+watch the graph. Your work is saved in this browser as you go, so a reload
+or a closed tab won't lose it; "Start over" (in the menu) clears it.
 
 Reading the graph: **solid rings** are things with identity (an IRI). **Dashed
 rings** are anonymous: the graph knows something is there, but not *what*.

@@ -100,7 +100,7 @@ scaffold shows where scoped mappings go). Nothing is mapped for `title`, `isbn`,
 `name`; they all surface as `implied:` predicates. (Oct 7: the old seed carried
 `title` → `ex:title` and `about.title` → `ex:positionHeld`; both are now the room's
 job. Reorder the slides so the deck lands here before the problem is pointed out.)
-**Live arc:** first the room builds "the canonical glossary," and everyone reaches
+**Live arc (atomic, no pauses; Socratic: walk it together, run into the problem, discuss):** first the room builds "the canonical glossary," and everyone reaches
 for `ns#title` without much thought (map `isbn` and `name` the same way). Then walk
 to the next `title`, the queen's: the same IRI would say a royal position is a book
 title. Now the room sees that the URI is what disambiguates. Give each meaning its

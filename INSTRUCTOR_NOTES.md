@@ -54,11 +54,15 @@ grouped last in @graph).
 ## Lab 1 — Identity and Connection (deck 1a–1c)
 
 **Seed:** two plain-JSON islands (GEB book / Hofstadter author), no context.
-**Live arc (four states):** raw parse (blank nodes as dashed rings, two islands) →
-add `@base` + map `id` → `@id` (rings go solid, IRIs appear, still two islands) →
-map `author_id` to `{"@type": "@id"}` (THE edge snaps, one graph) → Fetch
-`hofstadter-extended.jsonld` into Document B (properties explode, same IRI, no
-mapping).
+**Live arc:** raw parse (blank nodes as dashed rings, two islands; "we see meaning,
+the machine sees nothing") → talk identity: URI as identifier, not a link (REST
+seed) → they put fully qualified ids in (`https://example.com/Book/Id/441`) and
+Parse: DRUMROLL, nothing happens (`id` is a magic string) → data vs. information:
+add `@context`, map `id` → `@id` (rings go solid, still two islands) → map
+`author_id` to `{"@type": "@id"}` (THE edge snaps, one graph) → Lab 1d: terms have
+the same identity problem; mint URIs for each term. NO fetch in Lab 1 (decided
+Oct 7; the fetch beat lives in later labs).
+URI scheme: `{scheme}://{authority}/{collection (class set)}/{keyspace}/{key}`.
 **Discrepancy event:** the edge snap — one line of context connects two systems.
 **Gotchas:** the term-mapping pass (deck Lab 1c) maps `title`, `published`,
 etc. to `https://example.com/ns#…` — later labs assume those IRIs exist, do

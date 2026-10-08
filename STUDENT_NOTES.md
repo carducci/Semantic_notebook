@@ -1,4 +1,4 @@
-# Workshop Notes — Data Architecture for AI
+# Workshop Notes — Architecting the Semantic Layer
 
 Your companion for the hands-on labs at
 **<https://notebook.semantic.consulting/notebook1/>**. Everything runs in your
@@ -17,19 +17,33 @@ the graph worked out on its own — you'll see your first one in Lab 5.
 
 Two JSON documents from two different systems. They're about connected things —
 a book and its author — but nothing connects them, because nothing in them has
-identity.
+identity. You can see the meaning. The machine sees nothing.
 
 **Goal:** feel the moment data becomes *linked* data.
 
-1. Parse both documents as-is. Two islands.
-2. Give each record identity: add `@base` and map `id` to `@id` in a
-   `@context`. Watch the dashed rings turn solid.
-3. Map `author_id` so its value is understood as *a reference, not a string*:
+Our URI scheme for resources:
+`{scheme}://{authority}/{collection}/{keyspace}/{key}` — for example
+`https://example.com/Book/Id/441`.
+
+1. Parse both documents as-is. Two islands of dashed rings.
+2. Give each record a fully qualified identifier: replace the `id` values with
+   IRIs in our scheme (`https://example.com/Book/Id/441`,
+   `https://example.com/Author/Id/872`) and Parse. Nothing changes. `id` is
+   just a magic string; the machine doesn't know it means "identity."
+3. Add a `@context` that maps `id` to `@id`. Watch the dashed rings turn solid.
+4. Map `author_id` so its value is understood as *a reference, not a string*:
    `"author_id": { "@type": "@id" }`. Watch the islands become one graph.
-4. Fetch the richer author record. Same IRI — so everything just attaches.
 
 You're done when: one connected graph, no dashed rings, and you can say *why*
 the edge appeared.
+
+### Lab 1d — Mint terms
+
+The same problem applies to the keys. `title` and `published` are magic
+strings too. Give each term an identifier of its own
+(`https://example.com/ns#title`, `https://example.com/ns#published`,
+`https://example.com/ns#author`, and so on) and map them in the `@context`.
+Later labs assume these IRIs exist.
 
 ## Lab 2 — Data and Context
 

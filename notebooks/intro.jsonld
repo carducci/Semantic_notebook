@@ -23,7 +23,6 @@
         { "@id": "https://notebook.semantic.consulting/notebook1/#domain-and-range" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#merging-vocabularies" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#integration-for-free" },
-        { "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#transitivity" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment" },
@@ -365,49 +364,6 @@
             },
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#integration-for-free-vocabulary",
-              "@type": "sembook:VocabularyPanel",
-              "sembook:label": "Vocabulary",
-              "sembook:scope": { "@id": "sembook:CumulativeScope" }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders",
-      "@type": "sembook:Lab",
-      "sembook:label": "Standing on Shoulders",
-      "sembook:cssClass": "grid grid-rows-[40vh_60vh] h-screen w-full",
-      "sembook:init": {},
-      "sembook:panels": [
-        {
-          "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders-writer",
-          "@type": "sembook:TurtleWriterPanel",
-          "sembook:label": "FOAF Record (Fetch it)",
-          "sembook:cssClass": "overflow-hidden flex flex-col",
-          "sembook:fetchUrl": "../datasets/michael-foaf.ttl"
-        },
-        {
-          "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders-tabs",
-          "@type": "sembook:TabsPanel",
-          "sembook:cssClass": "overflow-hidden flex flex-col",
-          "sembook:panels": [
-            {
-              "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders-entities",
-              "@type": "sembook:EntityPanel",
-              "sembook:label": "Entities",
-              "sembook:scope": { "@id": "sembook:CumulativeScope" },
-              "sembook:sparql": "SELECT DISTINCT ?class ?parentClass ?instance ?instanceLabel ?classLabel WHERE { GRAPH ?g { VALUES ?g { <https://notebook.semantic.consulting/notebook1/#standing-on-shoulders> } { { ?anyInstance a ?class } UNION { ?class a <http://www.w3.org/2000/01/rdf-schema#Class> } UNION { ?class a <http://www.w3.org/2002/07/owl#Class> } UNION { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?anyParent } UNION { ?anySub <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?class } } FILTER(!isBlank(?class)) FILTER(!STRSTARTS(STR(?class), \"https://notebook.semantic.consulting/vocab#\")) OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#subClassOf> ?parentClass . FILTER(!STRSTARTS(STR(?parentClass), \"https://notebook.semantic.consulting/vocab#\")) } OPTIONAL { ?instance a ?class . FILTER(!isBlank(?instance)) OPTIONAL { ?instance <http://www.w3.org/2000/01/rdf-schema#label> ?instanceLabel } } OPTIONAL { ?class <http://www.w3.org/2000/01/rdf-schema#label> ?classLabel } } }"
-            },
-            {
-              "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders-local-graph",
-              "@type": "sembook:GraphPanel",
-              "sembook:label": "Local Graph",
-              "sembook:scope": { "@id": "sembook:LocalScope" },
-              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#standing-on-shoulders> } }"
-            },
-            {
-              "@id": "https://notebook.semantic.consulting/notebook1/#standing-on-shoulders-vocabulary",
               "@type": "sembook:VocabularyPanel",
               "sembook:label": "Vocabulary",
               "sembook:scope": { "@id": "sembook:CumulativeScope" }

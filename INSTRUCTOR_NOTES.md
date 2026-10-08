@@ -184,7 +184,7 @@ DBpedia IRI is a plant for the merging lab, don't dwell on it.
 ### Lab 2 runbook (copy/paste; verified headless Oct 7)
 The seed body is already in the Body pane; the seed @context holds only `about` and
 `author` with empty nested contexts. Replace the `@context` pane with this, then Parse.
-**Final @context (Lab 13's merge depends on the isbn line; Lab 4 uses positionHeld/jobTitle):**
+**Final @context (Lab 12's merge depends on the isbn line; Lab 4 uses positionHeld/jobTitle):**
 ```json
 {
   "@context": {
@@ -498,7 +498,7 @@ bloom across the whole morning).
 **Note:** ADR-038 (cumulative reasoning) is what makes all of this real —
 axioms parsed here act on the whole morning's data, and the isbn bridge built
 here detonates again when the foreign dataset arrives in Lab 9.
-**End state (verified; Labs 9/13/14 depend on the isbn and Book lines):**
+**End state (verified; Labs 9/12/13 depend on the isbn and Book lines):**
 ```turtle
 ex:title  rdfs:subPropertyOf schema:name .    # one-way — the Duke
 ex:name   rdfs:subPropertyOf schema:name .
@@ -600,38 +600,13 @@ the previous one raises:
    (schema.org, Dublin Core, industry — what there is). Subclass, don't
    reinvent. **Callback ammo for the reveal: roughly half of the indexed
    web already carries JSON-LD** — the dialect the room "met at 10am" is
-   the most widely deployed data format they've never heard of. (foaf note
-   superseded: it's introduced at Standing on Shoulders.)
+   the most widely deployed data format they've never heard of.
 5. **"We don't need a global ontology. We never did."** — thesis restated,
    calling back the morning's 132–136; the EKG/EDW line lands here.
 6. **The old "Merging Graphs" placeholder is DELETED** — its content is Lab 9;
    the callout slide, retitled "Integration for Free," lives at the Prestige.
 
-## Lab 10 — Standing on Shoulders (existing-vocabularies beat)
-
-**Where it sits:** inside the post-Lab-7 deck stretch, right after the
-schema.org reveal + utility-vs-domain-vocabularies widening.
-**Seed:** Turtle writer, empty, Fetch input pre-filled with
-`../datasets/michael-foaf.ttl` — narrated as dereferencing
-`https://w3id.org/people/michael` (Michael's real IRI; the fake-out is
-licensed, L5).
-**Live arc:** Fetch → read (it's Turtle — the "what FOAF already learned"
-block is a real comment this time) → Parse. Michael's node — in the graph
-since Lab 3 — gains foaf properties by IRI join, `foaf:name` lands on
-`schema:name` through FOAF's own bridge, and the beat:
-**Hofstadter gets typed `foaf:Person` and `schema:Person`, derived**, purely
-for being on the receiving end of `foaf:knows`. FOAF's domain/range axioms
-classified him. (Callback to Lab 7's domain/range beat, if used.)
-**The punchline (verbatim):** "When we build on an existing ontology, we
-don't just get the terms — **we get everything it learned**."
-**Quip option** on foaf:knows Hofstadter: "…I wish. Aspirational data."
-Swap the object of foaf:knows freely — anyone in the day's cast works and
-the inference follows them.
-**Tabs:** Entities (default — watch the containers) + Local Graph + Vocabulary.
-**Note:** this beat supersedes "don't name foaf before the SPARQL sleeper."
-The DESCRIBE sleeper transmutes accordingly (below).
-
-## Lab 11 — The Nature of Relationships (OWL: symmetric / inverse / subproperty)
+## Lab 10 — The Nature of Relationships (OWL: symmetric / inverse / subproperty)
 
 **Surface:** dueling Turtle writers — **Data** (left) | **Semantics** (right)
 — over a single Local Graph tab. Separation of concerns made physical: the
@@ -659,7 +634,7 @@ slides-only mention.
 **Delivery:** SQL strawman + can't-be-hallucinated + punctuation rule, every
 beat.
 
-## Lab 12 — Transitivity (the UberConf world)
+## Lab 11 — Transitivity (the UberConf world)
 
 **Surface:** same dueling-writers + Local Graph shape.
 **Seed (Data):** UberConf `a schema:EducationalEvent`, `schema:performer` →
@@ -693,7 +668,7 @@ question arises anyway (someone will invent FP in their head), it's a gift
 with a scheduled answer: "you've just discovered why provenance matters —
 hold that thought for the last lab."
 
-**Lab 11 coda — the Philip payoff (QUICK BONUS FACT, instructor-only beat):**
+**Lab 10 coda — the Philip payoff (QUICK BONUS FACT, instructor-only beat):**
 after Kate's cascade: "…and remember Philip?" Add to the Semantics panel —
 `@prefix dbo: <https://dbpedia.org/ontology/> .` then
 `dbo:spouse a owl:SymmetricProperty .` and, for the cross-ontology kick,
@@ -706,7 +681,7 @@ dataset in the graph now knows more, in every dialect, simultaneously.
 Script: "The graph knows more than you told it. The AI consuming this knows
 more than you told it. These are new facts in the dataset — and they cannot
 be hallucinated."
-## Lab 13 — Semantic Alignment (IFP — the identity climax) — BUILT
+## Lab 12 — Semantic Alignment (IFP — the identity climax) — BUILT
 
 **Surface:** left = JSON-LD panel, Fetch pre-filled with
 `../datasets/elizabeth-catalog-record.jsonld`; right = Turtle writer
@@ -741,7 +716,7 @@ SPARQL: look at Full Graph. That thing on screen is a knowledge graph. It
 was never built. It *emerged*.
 
 **Slide asset delivered:** `C:\Users\micha\OneDrive\Documents\talks\lab9-local-graph.svg`
-— Lab 11's local-graph end state in the tool's *pre-reskin* visual grammar (teal
+— Lab 10's local-graph end state in the tool's *pre-reskin* visual grammar (teal
 IRI nodes, solid gray asserted edges, dashed violet inferred), laid out
 clean: michael/kate with 1 solid + 3 inferred edges, semantics cluster to the
 right. (Live Cytoscape export was unusable — layout doesn't settle in the
@@ -784,7 +759,7 @@ client, connected via the API and KG — instantly understood the landscape.
 No prior knowledge. No custom prompt. No MCP. No custom tools. No generated
 SDK.
 
-## Lab 16 — Who Said That? (provenance — the capstone) — BUILT & VERIFIED
+## Lab 15 — Who Said That? (provenance — the capstone) — BUILT & VERIFIED
 
 **Surface:** fetch panel (left, pre-filled:
 `../datasets/elizabeth-gossip-record.jsonld` — "CelebWatch", a gossip site
@@ -816,7 +791,7 @@ told — and it knows exactly who told it." Which is the whole lesson,
 restated by an audience member for free.
 **Deliberately NO early fester:** the conflict arrives here, in this lab,
 under control (rule 7b). The soft latent version — the merged book's
-double-shaped author from Lab 13 — is available as an optional pointable
+double-shaped author from Lab 12 — is available as an optional pointable
 if the moment wants a second example.
 
 ## The Turn Nobody Expects (provenance / named graphs) — SCRIPT
@@ -848,7 +823,7 @@ invisibly since 9am" — the tool confesses its own machinery as the final
 lesson in trust. If anyone raised the stale-data question earlier, name
 them here — the scheduled answer arrives.
 
-## Lab 14 — Querying the Graph — BUILT & VERIFIED
+## Lab 13 — Querying the Graph — BUILT & VERIFIED
 
 Seven sample queries in the dropdown, numbered in delivery order:
 1. **It's all triples** — `SELECT ?s ?p ?o` (auto-scoped to the whole day,
@@ -873,7 +848,7 @@ Seven sample queries in the dropdown, numbered in delivery order:
    graph. (Mechanism: the leading comment mentions GRAPH, which switches
    off the automatic lab-scoping — documented in the comment itself.)
 
-## Lab 15 — Contexts on the Fly (CONSTRUCT) — BUILT & VERIFIED
+## Lab 14 — Contexts on the Fly (CONSTRUCT) — BUILT & VERIFIED
 
 **Bridge in:** "We don't need a global ontology. We just need contextual
 definitions… and we can build those on the fly."
@@ -917,7 +892,7 @@ reasoning already happened*. Say the number after the room reads it.
 - **"Query in whatever language makes sense to you" demo:** run the persons
   query in schema.org terms, then the identical question in `ex:` terms —
   same answers, "but you already understand this…" Then the closer,
-  REFRAMED now that foaf was introduced in Standing on Shoulders:
+  (foaf has no live source now that Standing on Shoulders is cut; TBD which dialects the DESCRIBE shows)
   `DESCRIBE <https://w3id.org/people/michael>` returns **one node speaking
   four dialects** — `ex:`, `schema:`, `dbo:`, `foaf:` — "one thing, four
   vocabularies, one graph. Pick whichever language you think in; the answers

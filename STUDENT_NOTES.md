@@ -239,26 +239,7 @@ You're done when: you can trace one dotted fact end-to-end: which foreign
 triple, through which alignment, landed where; and say who wrote each link
 in that chain (hint: not you).
 
-## Lab 10: Standing on Shoulders
-
-One more fetch: Michael's actual public identity
-(`https://w3id.org/people/michael`), written in FOAF, a vocabulary for
-describing people that has existed since 2000.
-
-**Goal:** an existing ontology carries everything it already learned,
-along with its terms.
-
-Fetch and read the Turtle before parsing. Notice that the vocabulary ships its own knowledge,
-not only its words: what a
-`foaf:Person` is relative to `schema:Person`, and what kind of things
-`foaf:knows` can possibly connect. Parse, and check the Entities tab for
-someone who just got classified without anyone saying a word about him.
-
-You're done when: you can explain how a person became a `foaf:Person`
-without any triple saying so, and which *vocabulary author*, years ago,
-made that inference possible.
-
-## Lab 11: The Nature of Relationships
+## Lab 10: The Nature of Relationships
 
 Two editors now: **Data** on the left, **Semantics** on the right. The data
 is one fact about Michael and Kate. One.
@@ -276,7 +257,7 @@ You're done when: one asserted fact has become four known facts, and you can
 say which dotted edge came from which line of semantics. None of them is a
 guess; none can be hallucinated.
 
-## Lab 12: Transitivity
+## Lab 11: Transitivity
 
 A real scene: this conference, this hotel, this city, and you, somewhere
 inside all of it.
@@ -291,7 +272,7 @@ You're done when: you can explain why five new edges appeared from one
 declaration, and why the ads saying the conference is in "Denver" aren't
 lying, even though Denver proper is nowhere in this graph.
 
-## Lab 13: Semantic Alignment
+## Lab 12: Semantic Alignment
 
 One last stranger: a library catalog's record of a book you've known since
 this morning. Different system, different vocabulary, different identifier,
@@ -308,7 +289,7 @@ You're done when: two books have become one, its properties have doubled,
 and you can name every fact in the chain that made it happen, including
 who asserted each one, and when.
 
-## Lab 14: Querying the Graph
+## Lab 13: Querying the Graph
 
 Everything the room built today is one graph. SPARQL is how you talk to it.
 
@@ -324,7 +305,7 @@ was deleted. Trust became part of the question.
 You're done when: you've run query 7, read what came back, and realized
 where you've been all day.
 
-## Lab 15: Contexts on the Fly
+## Lab 14: Contexts on the Fly
 
 **Goal:** contexts aren't fixed; you can mint one whenever a question
 deserves it.
@@ -338,7 +319,7 @@ You're done when: you can explain the difference between a class someone
 asserted, a class the reasoner derived, and a class you just made up, and
 why the graph is comfortable with all three.
 
-## Lab 16: Who Said That?
+## Lab 15: Who Said That?
 
 One final source: a celebrity gossip site with a page about the queen.
 Fetch it, read it; it looks fine. Parse it.
@@ -364,5 +345,4 @@ missing.
 - Turtle: <https://www.w3.org/TR/turtle/>
 - RDFS: <https://www.w3.org/TR/rdf-schema/>
 - schema.org: <https://schema.org/> (you met it before you knew its name)
-- FOAF: <http://xmlns.com/foaf/spec/> (describing people since 2000)
 - Michael: <https://w3id.org/people/michael> · <michael@semantic.consulting>

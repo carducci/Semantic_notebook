@@ -244,35 +244,58 @@ vocabulary." Its true identity is a Part-II reveal. The book record and
 Michael's IRI stay in the day's graph and pay off at the finale.
 Live `@base` change is a good micro-beat (every IRI re-resolves).
 
-## Lab 4 — Defining Terms (deck Lab 4, slide 239)
+## Lab 4 — Defining Terms (deck Lab 4, slide 239; RDFS: type and range, PRIMITIVES ONLY)
 
-**Seed (Turtle writer):** full RDFS definition of `ex:title` — `a
-rdf:Property; rdfs:label; rdfs:comment; rdfs:range xsd:string` (the slides'
-definition in legal Turtle — note the deck's `rdfs:Property` slides are being
-corrected to `rdf:Property`).
-**Live arc:** open on the Vocabulary tab: every term the morning used sits
-there **dashed — identity without description**. Parse the seed; `title` turns
-solid. The exercise: work down the dashed list writing rough RDFS definitions.
-Optionally pull back the curtain on `implied:` here (`@vocab` — "the tool has
-been catching your unmapped keys all morning").
-**Discrepancy event:** the term itself becomes a node with properties —
-definitions are data, same graph, same syntax.
+**Design (Oct 7, Michael):** this is the "build our vocabulary" lab. The room is still
+thinking in schemas (the GraphQL schema is in the student notes and on the slides), so
+this is familiar turf: type and range, primitives only. We do NOT point out that range
+is instructive yet; the mental model gets walked away from slowly. The first big
+inferencing reveal is DOMAIN (new lab, `isbn`). After classes exist, we come back and
+give `author` / `affiliation` ranges that are classes, and see it in the entity and
+vocabulary explorers.
+**Seed (Turtle writer):** prefixes `ex rdf rdfs xsd schema` (`schema:` =
+`http://schema.org/`), `ex:title a rdf:Property ; rdfs:range xsd:string`, and a commented
+worklist of the eight other terms the day has used. No `rdfs:label` / `rdfs:comment`
+(the deck teaches those later; this also clears the old ordering catch R12).
+**Live arc:** open on the Vocabulary tab: every term sits **dashed, identity without
+description**. Parse the seed; `title` turns solid. The room works down the list, using
+the GraphQL schema and the primitives table in the notes. Schema.org is "a well-known
+vocabulary that defines these concepts" and nothing more.
+**Odd man out, on purpose:** `ex:title` stays `xsd:string` while the rest use
+`schema:Text` / `schema:Integer`. Payoff later (SPARQL demos): schema.org defines its own
+concept of a string, and the relationship between the two.
+**Discrepancy event:** the term itself becomes a node with properties: definitions are
+data, same graph, same syntax. The schema's `id: Int!` has no property at all (it became
+the IRI in Lab 1).
 **Tabs:** Vocabulary (default) + Local Graph.
-**Gotchas:** zero inference fires here by design (range axioms have no data
-in this lab's graph). Don't define `subClassOf` yet — that's Lab 5's powder.
-**End state — the exercise's worked-down list (representative; any subset
-the room reaches is fine, seed's `ex:title` block plus):**
+**Gotchas:** NO `rdfs:domain`; NO range on `author`, `affiliation`, `about` (the queen's
+un-typed plant, M11, and the Lab 5/7 reveals depend on it). Verified headless: ranges on
+primitives fire no visible inference even with Labs 1-3 data in the graph. Vocabulary
+quirk: `author`, `isbn`, and `name` rows merge with the publisher's `schema:` terms
+(label-collision groups: "one name, 2 distinct terms") and stay dashed after the room
+describes the `ex:` terms; the detail pane shows both IRIs. Expect the question; it
+is a feature, not a bug. The Classes tab shows a single large dashed `Book` card (from
+Lab 3's catalog record).
+### Lab 4 runbook (copy/paste; verified headless Oct 7, after Labs 1-3 are parsed)
+Replace the Turtle editor contents with this, then Parse. Expect Properties · 10 with
+`title`, `published`, `jobTitle`, `positionHeld`, `about`, `affiliation` solid; no dotted
+inferred edges.
 ```turtle
-ex:name a rdf:Property ; rdfs:label "Name" ;
-    rdfs:comment "The name of a person or organization" ; rdfs:range xsd:string .
-ex:author a rdf:Property ; rdfs:label "Author" ;
-    rdfs:comment "Connects a work to the person who wrote it" .
-ex:published a rdf:Property ; rdfs:label "Published" ;
-    rdfs:comment "Year of first publication" ; rdfs:range xsd:integer .
-ex:isbn a rdf:Property ; rdfs:label "ISBN" ;
-    rdfs:comment "International Standard Book Number" ; rdfs:range xsd:string .
-ex:positionHeld a rdf:Property ; rdfs:label "Position held" .
-ex:jobTitle a rdf:Property ; rdfs:label "Job title" .
+@prefix ex: <https://example.com/ns#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema: <http://schema.org/> .
+
+ex:title a rdf:Property ; rdfs:range xsd:string .
+ex:published a rdf:Property ; rdfs:range schema:Integer .
+ex:name a rdf:Property ; rdfs:range schema:Text .
+ex:isbn a rdf:Property ; rdfs:range schema:Text .
+ex:positionHeld a rdf:Property ; rdfs:range schema:Text .
+ex:jobTitle a rdf:Property ; rdfs:range schema:Text .
+ex:author a rdf:Property .
+ex:affiliation a rdf:Property .
+ex:about a rdf:Property .
 ```
 
 ## Lab 5 — Classes and Subclasses (deck Labs 5+6, slides 246/250)

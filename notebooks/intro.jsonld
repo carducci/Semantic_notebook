@@ -139,7 +139,7 @@
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n\n# ── Our ontology ──────────────────────────────────────\n\nex:title a rdf:Property ;\n    rdfs:label \"Title\" ;\n    rdfs:comment \"The title of a published work\" ;\n    rdfs:range xsd:string .\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n@prefix schema: <http://schema.org/> .\n\n# ── Our ontology ──────────────────────────────────────\n\nex:title a rdf:Property ;\n    rdfs:range xsd:string .\n\n# Still to define (every term the day has used so far):\n#   ex:published  ex:author  ex:name  ex:affiliation\n#   ex:isbn  ex:about  ex:positionHeld  ex:jobTitle\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-tabs",

@@ -107,12 +107,47 @@ all of them are dashed. They have identity, but no meaning anyone wrote down.
 **Goal:** definitions are data. A term is a resource you can describe like any
 other.
 
-The editor holds a complete definition of `title`: what kind of thing it is
-(`rdf:Property`), a human label, a description, what values it takes
-(`rdfs:range`). Parse it and watch `title` turn solid in the vocabulary. Then
-work down the dashed list and describe your own terms the same way.
+You have designed a schema before. Here is ours, the way you would write it in
+GraphQL:
 
-You're done when: the terms *you* created are solid, and you can explain what
+```graphql
+type Author {
+  id: Int!
+  name: String
+  affiliation_id: Org
+}
+
+type Book {
+  id: Int!
+  title: String
+  author_id: Author
+  published: Int
+}
+```
+
+Now say the same things as statements. The editor holds a complete definition
+of `title`: what kind of thing it is (`rdf:Property`) and what values it takes
+(`rdfs:range`). Parse it and watch `title` turn solid in the vocabulary. Then
+work down the list and describe your own terms the same way.
+
+Some of the terms (`isbn`, `about`, `positionHeld`, `jobTitle`) came from Lab 2
+and aren't in the schema above; decide what their values look like.
+`author`, `affiliation`, and `about` point at other things rather than plain
+values. Give them a type and leave the range for now.
+
+**Primitives, for reference.** `schema:` is `http://schema.org/`, a well-known
+vocabulary that defines these concepts. `xsd:` is XML Schema's datatypes.
+
+| Your schema says | `schema:` | `xsd:` |
+|---|---|---|
+| `String` | `schema:Text` | `xsd:string` |
+| `Int` | `schema:Integer` | `xsd:integer` |
+| `Float` | `schema:Float` | `xsd:double` |
+| `Boolean` | `schema:Boolean` | `xsd:boolean` |
+| `Date` | `schema:Date` | `xsd:date` |
+| a timestamp | `schema:DateTime` | `xsd:dateTime` |
+
+You're done when every term you created is described, and you can explain what
 `rdfs:range` told the graph.
 
 ## Lab 5: Classes and Subclasses

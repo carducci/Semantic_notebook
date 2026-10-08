@@ -455,6 +455,7 @@ export class SemLab extends HTMLElement {
 
         const el = document.createElement('sem-panel-entity');
         el.setAttribute('sparql', sparql);
+        if (child['sembook:defaultScope']) el.setAttribute('default-scope', child['sembook:defaultScope']);
         el.setAttribute('label', child['sembook:label'] || '');
         el.setAttribute('uri', child['@id'] || '');
         pane.appendChild(el);

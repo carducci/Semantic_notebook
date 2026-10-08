@@ -158,10 +158,11 @@ read.
 **Goal:** descriptions are data too. A label is what we call a thing; a comment
 says what it means.
 
-The editor holds a placeholder for every term in your vocabulary: one term, an
-empty label, an empty comment, and a period. Fill them in. (The `@en-US` after
-each string says which language it's written in.) Parse, then select a term in
-the Vocabulary tab and see what the graph now knows about it.
+The editor holds a placeholder for every term in your vocabulary: one term and
+an empty label. Fill in the label, then add a comment of your own; a semicolon
+keeps the same term going. The `@en-US` after each string says which language
+it's written in. Parse, then select a term in the Vocabulary tab and see what
+the graph now knows about it.
 
 You're done when every term has a label and a comment you'd show a colleague.
 
@@ -188,8 +189,8 @@ A property can say something about the things on either side of it.
 **Goal:** watch the graph know more than you told it.
 
 What kind of thing has an ISBN? Say so (`rdfs:domain`). Open the Entities tab
-and switch it to **All**: *Mine* shows this lab only; *All* shows everything
-asserted so far. Something appeared that you did not type. Dotted gold means
+(it opens on **All**, everything asserted so far; *Mine* shows this lab
+only). Something appeared that you did not type. Dotted gold means
 the graph derived it; find it, and find the statement that justifies it.
 
 Then say what kind of thing is the value of `ex:author`, and of

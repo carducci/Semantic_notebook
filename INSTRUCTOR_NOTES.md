@@ -302,16 +302,16 @@ ex:about a rdf:Property .
 
 **Design (Michael):** a new Turtle writer where the room adds `rdfs:label` and
 `rdfs:comment` to the terms. The seed scaffolds a placeholder for EVERY term in the
-vocabulary: one term, an empty label, an empty comment, and a period (each block ends
-its own statement). Empty strings carry `@en-US` "because why not."
+vocabulary: one term and an empty `rdfs:label`, ending in a period. The room adds the
+semicolon and the `rdfs:comment` themselves (Oct 7 decision). The empty string carries
+`@en-US` "because why not."
 **Seed (nine blocks, like this):**
 ```turtle
 ex:title
-    rdfs:label ""@en-US ;
-    rdfs:comment ""@en-US .
+    rdfs:label ""@en-US .
 ```
 (`title published author name affiliation isbn about positionHeld jobTitle`, in that order.)
-**Live arc:** fill each placeholder; Parse; select a term in the Vocabulary tab and the
+**Live arc:** fill each label, change the period to a semicolon and add a comment; Parse; select a term in the Vocabulary tab and the
 detail pane shows label and comment next to the type and range from Lab 4. Same graph, more triples.
 **Tabs:** Vocabulary (default) + Local Graph.
 **Gotchas:** descriptive triples only (label, comment); no domain, no classes yet. The
@@ -406,9 +406,9 @@ slide concept only.
 **Seed (Turtle writer):** `ex`, `rdfs` prefixes and two comment lines:
 `# What kind of thing has an ISBN?` and `# Then: what kind of thing is the value of
 ex:author? Of ex:affiliation?`
-**Live arc:** (1) `ex:isbn rdfs:domain ex:Book`; Entities tab, click **All** (Mine is this
-lab only, so it shows "No classes defined yet" because the classes live in Lab 6): the
-book 8268 is now a Book, dotted gold. (2) Mention range; add `ex:author rdfs:range
+**Live arc:** (1) `ex:isbn rdfs:domain ex:Book`; Entities tab (opens on **All** by Michael's call; the
+*Mine* toggle is this lab only and would show "No classes defined yet", because the classes
+live in Lab 6): the book 8268 is now a Book, dotted gold. (2) Mention range; add `ex:author rdfs:range
 ex:Author` and `ex:affiliation rdfs:range ex:Organization`: Hofstadter (872) and Sally
 (35626) appear as Authors and, compounding, as Persons; the book is also a CreativeWork;
 the organization appears. Nobody typed any of it.

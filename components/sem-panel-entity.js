@@ -194,6 +194,8 @@ export class SemPanelEntity extends HTMLElement {
     const toolbar = document.createElement('div');
     toolbar.className = 'sem-toolbar';
     toolbar.style.cssText = 'flex:none;display:flex;align-items:center;gap:0.25rem;padding:0.25rem 0.5rem;';
+    // A lab can open this panel widened (sembook:defaultScope "all"); otherwise lab-local.
+    if (this.getAttribute('default-scope') === 'all') this._scope = 'all';
     this._scopeButtons.mine = this._scopeButton('Mine', 'mine', "This lab's data only");
     this._scopeButtons.all = this._scopeButton('All', 'all', 'Everything asserted so far, across all labs up to this one');
     toolbar.appendChild(this._scopeButtons.mine);

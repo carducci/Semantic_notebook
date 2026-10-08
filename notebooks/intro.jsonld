@@ -177,7 +177,7 @@
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology ──────────────────────────────────────\n\nex:title\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"\"@en-US .\n\nex:published\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"\"@en-US .\n\nex:author\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"\"@en-US .\n\nex:name\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"\"@en-US .\n\nex:affiliation\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"\"@en-US .\n\nex:isbn\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"\"@en-US .\n\nex:about\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"\"@en-US .\n\nex:positionHeld\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"\"@en-US .\n\nex:jobTitle\n    rdfs:label \"\"@en-US ;\n    rdfs:comment \"\"@en-US .\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology ──────────────────────────────────────\n\nex:title\n    rdfs:label \"\"@en-US .\n\nex:published\n    rdfs:label \"\"@en-US .\n\nex:author\n    rdfs:label \"\"@en-US .\n\nex:name\n    rdfs:label \"\"@en-US .\n\nex:affiliation\n    rdfs:label \"\"@en-US .\n\nex:isbn\n    rdfs:label \"\"@en-US .\n\nex:about\n    rdfs:label \"\"@en-US .\n\nex:positionHeld\n    rdfs:label \"\"@en-US .\n\nex:jobTitle\n    rdfs:label \"\"@en-US .\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#labels-and-comments-tabs",
@@ -275,7 +275,8 @@
             {
               "@id": "https://notebook.semantic.consulting/notebook1/#domain-and-range-entities",
               "@type": "sembook:EntityPanel",
-              "sembook:label": "Entities",
+              "sembook:defaultScope": "all",
+            "sembook:label": "Entities",
               "sembook:scope": {
                 "@id": "sembook:CumulativeScope"
               },

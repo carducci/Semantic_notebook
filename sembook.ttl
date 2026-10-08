@@ -251,6 +251,14 @@ sembook:scope
     rdfs:domain sembook:Panel ;
     rdfs:range sembook:Scope .
 
+sembook:defaultScope
+    a owl:DatatypeProperty ;
+    rdfs:label "default scope"@en ;
+    rdfs:comment
+        "The scope toggle position an EntityPanel opens on: \"all\" opens widened across every lab up to this one; absent opens lab-local (\"mine\"). The viewer can still flip it. Declared in the notebook definition so the opening view is data."@en ;
+    rdfs:domain sembook:EntityPanel ;
+    rdfs:range xsd:string .
+
 sembook:sampleQueries
     a owl:ObjectProperty ;
     rdfs:label "sample queries"@en ;

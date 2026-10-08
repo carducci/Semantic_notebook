@@ -15,33 +15,53 @@ the graph worked out on its own — you'll see your first one in Lab 5.
 
 ## Lab 1 — Identity and Connection
 
-Two JSON documents from two different systems. They're about connected things —
-a book and its author — but nothing connects them, because nothing in them has
-identity. You can see the meaning. The machine sees nothing.
+Two JSON documents from two different systems describe connected things: a
+book and its author. Nothing connects them, because nothing in them has
+identity. You can see the meaning; the machine sees nothing.
 
 **Goal:** feel the moment data becomes *linked* data.
 
-Our URI scheme for resources:
-`{scheme}://{authority}/{collection}/{keyspace}/{key}` — for example
+Identifiers in this workshop follow one scheme:
+`{scheme}://{authority}/{collection}/{keyspace}/{key}`, for example
 `https://example.com/Book/Id/441`.
 
-1. Parse both documents as-is. Two islands of dashed rings.
-2. Give each record a fully qualified identifier: replace the `id` values with
-   IRIs in our scheme (`https://example.com/Book/Id/441`,
-   `https://example.com/Author/Id/872`) and Parse. Nothing changes. `id` is
-   just a magic string; the machine doesn't know it means "identity."
-3. Add a `@context` that maps `id` to `@id`. Watch the dashed rings turn solid.
-4. Map `author_id` so its value is understood as *a reference, not a string*:
-   `"author_id": { "@type": "@id" }`. Watch the islands become one graph.
+### Lab 1a: Two islands
 
-You're done when: one connected graph, no dashed rings, and you can say *why*
-the edge appeared.
+Parse both documents as they are.
 
-### Lab 1d — Mint terms
+You should see two islands of dashed rings. Dashed means the graph knows
+something is there, but not what.
 
-The same problem applies to the keys. `title` and `published` are magic
-strings too. Give each term an identifier of its own
-(`https://example.com/ns#title`, `https://example.com/ns#published`,
+*Pause here. We talk about identity before 1b.*
+
+### Lab 1b: Fully qualified identifiers
+
+Replace the identifier values with IRIs in our scheme: the book becomes
+`https://example.com/Book/Id/441`, the author `https://example.com/Author/Id/872`,
+the organization `https://example.com/Org/Id/34`. Change every place those
+values appear, including the references. Parse.
+
+Nothing changes. `id` is a magic string; the machine has no idea it means
+"identity."
+
+*Pause here. We talk about data versus information (context) before 1c.*
+
+### Lab 1c: Context
+
+Add a `@context` that maps `id` to `@id`. The dashed rings turn solid.
+
+Then map `author_id` so its value is a reference, not a string:
+`"author_id": { "@type": "@id" }`. The islands become one graph.
+
+You're done when you have one connected graph, no dashed rings, and you can
+say why the edge appeared.
+
+*Pause here. The keys have the same problem the documents just had.*
+
+### Lab 1d: Mint terms
+
+`title` and `published` are magic strings too. Give each term an identifier of
+its own (`https://example.com/ns#title`, `https://example.com/ns#published`,
 `https://example.com/ns#author`, and so on) and map them in the `@context`.
 Later labs assume these IRIs exist.
 

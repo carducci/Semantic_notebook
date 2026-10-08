@@ -54,6 +54,8 @@ grouped last in @graph).
 ## Lab 1 — Identity and Connection (deck 1a–1c)
 
 **Seed:** two plain-JSON islands (GEB book / Hofstadter author), no context.
+**Pauses (student notes split Lab 1 into 1a/1b/1c/1d, minutes apart):** after 1a
+(identity talk), after 1b (data vs. information), after 1c (terms have the same problem).
 **Live arc:** raw parse (blank nodes as dashed rings, two islands; "we see meaning,
 the machine sees nothing") → talk identity: URI as identifier, not a link (REST
 seed) → they put fully qualified ids in (`https://example.com/Book/Id/441`) and
@@ -67,29 +69,28 @@ URI scheme: `{scheme}://{authority}/{collection (class set)}/{keyspace}/{key}`.
 **Gotchas:** the term-mapping pass (deck Lab 1c) maps `title`, `published`,
 etc. to `https://example.com/ns#…` — later labs assume those IRIs exist, do
 not skip it. Dashed ring → solid ring is the identity lesson; narrate the change.
-**LANDMINE — edit the id VALUES, not just the context:** ids must become
-path form (`"/Book/Id/441"`, `"/Author/Id/872"`, `"/Org/Id/34"`) during the
-live work, or `@base` resolves GEB to `https://example.com/441` and every
-later lab's reference (Lab 5 seed, cheatsheets) points at a different node.
-**End state — Document A (verified):**
+**Ids are fully qualified, no `@base`** (decided Oct 7). Students replace the id
+VALUES (`https://example.com/Book/Id/441`, `/Author/Id/872`, `/Org/Id/34`), including
+the references, in Lab 1b. Later labs' references (Lab 5 seed, cheatsheets) point at
+these IRIs.
+**End state — Document A (target, to be re-verified in the build pass):**
 ```json
 {
   "@context": {
-    "@base": "https://example.com/",
     "id": "@id",
     "title": "https://example.com/ns#title",
     "published": "https://example.com/ns#published",
     "author_id": { "@id": "https://example.com/ns#author", "@type": "@id" }
   },
-  "id": "/Book/Id/441",
+  "id": "https://example.com/Book/Id/441",
   "title": "Gödel, Escher, Bach",
-  "author_id": "/Author/Id/872",
+  "author_id": "https://example.com/Author/Id/872",
   "published": 1979
 }
 ```
 **End state — Document B:** same context pattern (`name` →
 `https://example.com/ns#name`, `affiliation_id` → `ex:affiliation` with
-`"@type": "@id"`), `"id": "/Author/Id/872"`, `"affiliation_id": "/Org/Id/34"`.
+`"@type": "@id"`), `"id": "https://example.com/Author/Id/872"`, `"affiliation_id": "https://example.com/Org/Id/34"`.
 
 ## Lab 2 — Data and Context (deck Lab 2)
 

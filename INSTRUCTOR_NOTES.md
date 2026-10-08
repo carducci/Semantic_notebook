@@ -6,7 +6,7 @@ the deck ("An Engineer's Guide to the Semantic Layer"); deck cue points refer to
 slide numbers as of 2026-07-12 and shift as the deck is renumbered.
 
 **Standing rules (apply to every lab):** phenomenon before name; one
-discrepancy event per lab; seeds fire zero visible inference before Lab 5;
+discrepancy event per lab; seeds fire zero visible inference before Lab 7;
 schema.org stays "some other system's dialect" until the web-scale reveal;
 nothing invites "what if triples disagree" before the named-graphs beat.
 
@@ -71,7 +71,7 @@ etc. to `https://example.com/ns#…` — later labs assume those IRIs exist, do
 not skip it. Dashed ring → solid ring is the identity lesson; narrate the change.
 **Ids are fully qualified, no `@base`** (decided Oct 7). Students replace the id
 VALUES (`https://example.com/Book/Id/441`, `/Author/Id/872`, `/Org/Id/34`), including
-the references, in Lab 1b. Later labs' references (Lab 5 seed, cheatsheets) point at
+the references, in Lab 1b. Later labs' references (Lab 6 seed, cheatsheets) point at
 these IRIs.
 ### Lab 1 runbook (copy/paste; doubles as the test script; verified headless Oct 7)
 Replace the whole editor contents each time, then Parse (both documents).
@@ -184,7 +184,7 @@ DBpedia IRI is a plant for the merging lab, don't dwell on it.
 ### Lab 2 runbook (copy/paste; verified headless Oct 7)
 The seed body is already in the Body pane; the seed @context holds only `about` and
 `author` with empty nested contexts. Replace the `@context` pane with this, then Parse.
-**Final @context (Lab 11's merge depends on the isbn line; Lab 4 uses positionHeld/jobTitle):**
+**Final @context (Lab 13's merge depends on the isbn line; Lab 4 uses positionHeld/jobTitle):**
 ```json
 {
   "@context": {
@@ -269,7 +269,7 @@ data, same graph, same syntax. The schema's `id: Int!` has no property at all (i
 the IRI in Lab 1).
 **Tabs:** Vocabulary (default) + Local Graph.
 **Gotchas:** NO `rdfs:domain`; NO range on `author`, `affiliation`, `about` (the queen's
-un-typed plant, M11, and the Lab 5/7 reveals depend on it). Verified headless: ranges on
+un-typed plant, M11, and the Lab 7/9 reveals depend on it). Verified headless: ranges on
 primitives fire no visible inference even with Labs 1-3 data in the graph. Vocabulary
 quirk: `author`, `isbn`, and `name` rows merge with the publisher's `schema:` terms
 (label-collision groups: "one name, 2 distinct terms") and stay dashed after the room
@@ -298,55 +298,145 @@ ex:affiliation a rdf:Property .
 ex:about a rdf:Property .
 ```
 
-## Lab 5 — Classes and Subclasses (deck Labs 5+6, slides 246/250)
+## Lab 5 — Labels and Comments (NEW Oct 7; slide Lab 5 "turtle writer")
 
-**Seed (Turtle writer):** `ex:Book a rdfs:Class` with label/comment (slide
-244's definition), plus one claim: GEB `a ex:Book`. Below it, a commented
-roster of the classes the day has implied but never declared (`ex:Author`,
-`schema:Person`, `ex:Organization`) — unlike properties, undeclared classes
-have no dashed reference list in any panel, so the seed carries the worklist.
-Inference-silent on Parse — no `subClassOf` in the seed.
-**Live arc:** declare `ex:Author a rdfs:Class`, then the hierarchy —
-`ex:Author rdfs:subClassOf schema:Person` (note: **crossing dialects** — your
-class, their class, one hierarchy; quietly the first cross-vocabulary modeling
-act of the day). Type the existing cast: Sally, Hofstadter, Michael `a
-ex:Author`. **Do NOT type the queen** — this is deliberate. Point at the
-Entities tab: "Notice who's missing? The graph has known about Elizabeth
-since this morning and still has no idea what she *is*. Remember that." Her
-classification arrives in Lab 7, from DBpedia's knowledge, not the room's —
-"suddenly the queen is a person, and nobody here said so." (If an eager
-attendee types her anyway, nothing breaks — Lab 7's derivation is simply
-absorbed and the beat softens.)
-**Discrepancy event:** the first dotted gold edge of the day — Sally's dot appears
-*inside the Person container* though nobody typed her there; the reasoner
-derived it from the hierarchy (rdfs9). Then it compounds: every Author is a
-Person, free, forever.
-**Tabs:** Entities (default) + Vocabulary + Local Graph.
-**Gotchas:** the typings and the hierarchy must be asserted in THIS lab
-(reasoning is per-lab-graph). Type the queen with no other properties in this
-lab — with the entity panel's scope on "Mine" she shows bare; flipping to
-"All" pulls her Lab-2 properties in, which is its own small accumulation beat.
-The seed's comment block doubles as the cheatsheet: the cast's full IRIs are
-right there — nobody should be scrolling back through labs to copy an IRI.
-Optional stretch: `rdfs:domain ex:isbn ex:Book`, then assert a brand-new
-resource with only an `ex:isbn` — it gets typed `ex:Book` out of thin air.
-**End state (verified; queen deliberately absent):**
+**Design (Michael):** a new Turtle writer where the room adds `rdfs:label` and
+`rdfs:comment` to the terms. The seed scaffolds a placeholder for EVERY term in the
+vocabulary: one term, an empty label, an empty comment, and a period (each block ends
+its own statement). Empty strings carry `@en-US` "because why not."
+**Seed (nine blocks, like this):**
 ```turtle
+ex:title
+    rdfs:label ""@en-US ;
+    rdfs:comment ""@en-US .
+```
+(`title published author name affiliation isbn about positionHeld jobTitle`, in that order.)
+**Live arc:** fill each placeholder; Parse; select a term in the Vocabulary tab and the
+detail pane shows label and comment next to the type and range from Lab 4. Same graph, more triples.
+**Tabs:** Vocabulary (default) + Local Graph.
+**Gotchas:** descriptive triples only (label, comment); no domain, no classes yet. The
+wording below is a suggested fill (mine; Michael to edit).
+### Lab 5 runbook (copy/paste; verified headless Oct 7, after Labs 1-4 are parsed)
+Replace the Turtle editor contents with this, then Parse.
+```turtle
+@prefix ex: <https://example.com/ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:title
+    rdfs:label "Title"@en-US ;
+    rdfs:comment "The title of a published work"@en-US .
+
+ex:published
+    rdfs:label "Published"@en-US ;
+    rdfs:comment "The year a work was first published"@en-US .
+
+ex:author
+    rdfs:label "Author"@en-US ;
+    rdfs:comment "Connects a work to the person who wrote it"@en-US .
+
+ex:name
+    rdfs:label "Name"@en-US ;
+    rdfs:comment "The name of a person or organization"@en-US .
+
+ex:affiliation
+    rdfs:label "Affiliation"@en-US ;
+    rdfs:comment "Connects a person to the organization they belong to"@en-US .
+
+ex:isbn
+    rdfs:label "ISBN"@en-US ;
+    rdfs:comment "International Standard Book Number"@en-US .
+
+ex:about
+    rdfs:label "About"@en-US ;
+    rdfs:comment "Connects a work to its subject"@en-US .
+
+ex:positionHeld
+    rdfs:label "Position held"@en-US ;
+    rdfs:comment "A role someone holds, such as a monarch's title"@en-US .
+
+ex:jobTitle
+    rdfs:label "Job title"@en-US ;
+    rdfs:comment "The title of someone's job"@en-US .
+```
+
+## Lab 6 — Classes and Subclasses (deck Labs 5+6, slides 246/250; REVISED Oct 7)
+
+**Design (Michael):** just define the kinds of things we've seen (the list in the seed
+helps) and play with class hierarchies (CreativeWork as a superclass of Book).
+Vocabulary-explorer work, NOT the whole graph yet: no instances are typed in this lab and
+there is no Entities tab. Local Graph stays as the second tab.
+**Seed (Turtle writer):** prefixes `ex schema rdfs`; `ex:Book a rdfs:Class` with label and
+comment as the model; then a commented list of the kinds of things the day has met:
+`ex:Author`, `schema:Person`, `ex:Organization`, `schema:CreativeWork`.
+**Live arc:** declare the classes, then relate them: `ex:Author rdfs:subClassOf
+schema:Person` (crossing dialects: your class, their class, one hierarchy), and
+`ex:Book rdfs:subClassOf schema:CreativeWork`. Open Vocabulary, Classes: the nesting
+(Person ⊃ Author, CreativeWork ⊃ Book) is the payoff.
+**Discrepancy event:** kinds nest inside kinds; the vocabulary is data like everything else.
+**Gotchas:** zero inference here by design (nothing typed yet). The old beats move to
+Lab 7: the first dotted gold edges, and the un-typed queen (M11). `ex:Book` stays dashed
+in the Classes view because it merges with the catalog's `schema:Book` (label-collision
+group), exactly like `author`/`isbn`/`name` in Lab 4. Name choice: `ex:Organization`
+(your GraphQL schema says `Org` and the IRIs use `/Org/`); later labs already use `ex:Organization`.
+### Lab 6 runbook (copy/paste; verified headless Oct 7)
+Replace the Turtle editor contents with this, then Parse. Expect Classes · 5.
+```turtle
+@prefix ex: <https://example.com/ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
 ex:Book a rdfs:Class ;
-    rdfs:label "Book" ; rdfs:comment "A published written work" .
+    rdfs:label "Book" ;
+    rdfs:comment "A published written work" ;
+    rdfs:subClassOf schema:CreativeWork .
 ex:Author a rdfs:Class ;
     rdfs:subClassOf schema:Person .
 ex:Organization a rdfs:Class .
-
-<https://example.com/Book/Id/441> a ex:Book .
-<https://example.com/Book/Id/8268> a ex:Book .
-<https://example.com/Author/Id/872> a ex:Author .
-<https://example.com/Author/Id/35626> a ex:Author .
-<https://w3id.org/people/michael> a ex:Author .
-<https://example.com/Org/Id/34> a ex:Organization .
 ```
 
-## Lab 6 — Merging Vocabularies (deck Labs 7+8)
+## Lab 7 — Domain and Range (NEW Oct 7; slide Lab 7: first big inferencing reveal)
+
+**Design (Michael):** introduce DOMAIN with `isbn` (the working dataset example): add the
+domain triple and the book "Elizabeth the Queen" (Lab 2's record, the one carrying
+`ex:isbn`) is now an `ex:Book`. Then mention RANGE and define ranges now that classes
+exist; watch what happens in the Entities explorer. Vocabulary + Entities tabs. Very
+little scaffold (comments only): they write triples without crutches. This is where
+inferred triples (types, and compounding up the hierarchy) first appear. `stageName` is a
+slide concept only.
+**Seed (Turtle writer):** `ex`, `rdfs` prefixes and two comment lines:
+`# What kind of thing has an ISBN?` and `# Then: what kind of thing is the value of
+ex:author? Of ex:affiliation?`
+**Live arc:** (1) `ex:isbn rdfs:domain ex:Book`; Entities tab, click **All** (Mine is this
+lab only, so it shows "No classes defined yet" because the classes live in Lab 6): the
+book 8268 is now a Book, dotted gold. (2) Mention range; add `ex:author rdfs:range
+ex:Author` and `ex:affiliation rdfs:range ex:Organization`: Hofstadter (872) and Sally
+(35626) appear as Authors and, compounding, as Persons; the book is also a CreativeWork;
+the organization appears. Nobody typed any of it.
+**Verified headless Oct 7 (Labs 1-6 parsed first), Entities / All:** Person ⊃ Author
+(872, 35626, each also at Person level), CreativeWork ⊃ Book (8268, also at CreativeWork
+level), Organization (34), plus the catalog's own `schema:Book` (asserted, separate class
+until the merge lab). The queen is NOT typed (M11 intact; her classification arrives in
+Lab 9). Michael Carducci is not typed either (his author link is `schema:author`).
+**Gotchas:** NO domain or range on `ex:about` (it would type the queen early).
+### Lab 7 runbook (copy/paste; verified headless Oct 7)
+Step 1, then Parse:
+```turtle
+@prefix ex: <https://example.com/ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:isbn rdfs:domain ex:Book .
+```
+Step 2 (replace the editor contents with this), then Parse:
+```turtle
+@prefix ex: <https://example.com/ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:isbn rdfs:domain ex:Book .
+ex:author rdfs:range ex:Author .
+ex:affiliation rdfs:range ex:Organization .
+```
+
+## Lab 8 — Merging Vocabularies (deck Labs 7+8)
 
 Aligning our vocabulary to schema.org's terms and classes, in **pure RDFS** —
 no `owl:` yet. The arc inside the lab: one-way containment first (the honest,
@@ -407,8 +497,8 @@ bloom across the whole morning).
 
 **Note:** ADR-038 (cumulative reasoning) is what makes all of this real —
 axioms parsed here act on the whole morning's data, and the isbn bridge built
-here detonates again when the foreign dataset arrives in Lab 7.
-**End state (verified; Labs 7/11/12 depend on the isbn and Book lines):**
+here detonates again when the foreign dataset arrives in Lab 9.
+**End state (verified; Labs 9/13/14 depend on the isbn and Book lines):**
 ```turtle
 ex:title  rdfs:subPropertyOf schema:name .    # one-way — the Duke
 ex:name   rdfs:subPropertyOf schema:name .
@@ -421,7 +511,7 @@ ex:isbn   rdfs:subPropertyOf schema:isbn .
 schema:isbn rdfs:subPropertyOf ex:isbn .      # equivalence, built by hand
 ```
 
-### The bridge out of Lab 6 (Pledge / Turn / Prestige)
+### The bridge out of Lab 8 (Pledge / Turn / Prestige)
 
 - **Pledge:** declarative alignment, shown. Classes converged, properties
   deduped, dotted dialect triples across the morning's data.
@@ -434,7 +524,7 @@ schema:isbn rdfs:subPropertyOf ex:isbn .      # equivalence, built by hand
   bridge is ON SCREEN as data: `ex:isbn —subPropertyOf→ schema:isbn`, an edge
   among the books and people. "Your mapping has an IRI. It's queryable. Your
   ETL config never was."
-- **Prestige = Lab 7's fetch** ("…let me show you something…"), BEFORE the
+- **Prestige = Lab 9's fetch** ("…let me show you something…"), BEFORE the
   LOD story: the queen's record joins with zero local mapping. Then "how does
   this scale?" → DBpedia → LOD cloud as *recognition* — the world has been
   doing what the room just did, since 2007, at billions of facts.
@@ -442,7 +532,7 @@ schema:isbn rdfs:subPropertyOf ex:isbn .      # equivalence, built by hand
   in understanding" (plant) → this Turn "we made the data itself smarter"
   (thesis) → slide 498 "it's a capability of the data itself" (payoff).
 
-## Lab 7 — Integration for Free (deck Lab 9)
+## Lab 9 — Integration for Free (deck Lab 9)
 
 **Seed:** empty JSON-LD panel labeled "DBpedia Record (Fetch it)"; the Fetch
 IRI input arrives pre-filled (`sembook:fetchUrl`) with
@@ -460,7 +550,7 @@ converges. Zero local mapping was written.
 **Discrepancy event:** data from a system nobody mapped arrives *already
 understood* — the room's Lab-6 work and DBpedia's published alignments meet
 at the schema.org hub without coordination. **The queen beat:** she was
-deliberately left unclassified in Lab 5 (the "notice who's missing" plant) —
+deliberately left unclassified in Lab 6 (the "notice who's missing" plant) —
 now she materializes into the Person container, dotted, classified by
 someone else's knowledge: "suddenly the queen is a person — and nobody in
 this room said so."
@@ -514,10 +604,10 @@ the previous one raises:
    superseded: it's introduced at Standing on Shoulders.)
 5. **"We don't need a global ontology. We never did."** — thesis restated,
    calling back the morning's 132–136; the EKG/EDW line lands here.
-6. **Lab 9 "Merging Graphs" placeholder is DELETED** — its content is Lab 7;
+6. **The old "Merging Graphs" placeholder is DELETED** — its content is Lab 9;
    the callout slide, retitled "Integration for Free," lives at the Prestige.
 
-## Lab 8 — Standing on Shoulders (existing-vocabularies beat)
+## Lab 10 — Standing on Shoulders (existing-vocabularies beat)
 
 **Where it sits:** inside the post-Lab-7 deck stretch, right after the
 schema.org reveal + utility-vs-domain-vocabularies widening.
@@ -531,7 +621,7 @@ since Lab 3 — gains foaf properties by IRI join, `foaf:name` lands on
 `schema:name` through FOAF's own bridge, and the beat:
 **Hofstadter gets typed `foaf:Person` and `schema:Person`, derived**, purely
 for being on the receiving end of `foaf:knows`. FOAF's domain/range axioms
-classified him. (Callback to Lab 5's domain/range stretch beat, if used.)
+classified him. (Callback to Lab 7's domain/range beat, if used.)
 **The punchline (verbatim):** "When we build on an existing ontology, we
 don't just get the terms — **we get everything it learned**."
 **Quip option** on foaf:knows Hofstadter: "…I wish. Aspirational data."
@@ -541,7 +631,7 @@ the inference follows them.
 **Note:** this beat supersedes "don't name foaf before the SPARQL sleeper."
 The DESCRIBE sleeper transmutes accordingly (below).
 
-## Lab 9 — The Nature of Relationships (OWL: symmetric / inverse / subproperty)
+## Lab 11 — The Nature of Relationships (OWL: symmetric / inverse / subproperty)
 
 **Surface:** dueling Turtle writers — **Data** (left) | **Semantics** (right)
 — over a single Local Graph tab. Separation of concerns made physical: the
@@ -569,7 +659,7 @@ slides-only mention.
 **Delivery:** SQL strawman + can't-be-hallucinated + punctuation rule, every
 beat.
 
-## Lab 10 — Transitivity (the UberConf world)
+## Lab 12 — Transitivity (the UberConf world)
 
 **Surface:** same dueling-writers + Local Graph shape.
 **Seed (Data):** UberConf `a schema:EducationalEvent`, `schema:performer` →
@@ -603,7 +693,7 @@ question arises anyway (someone will invent FP in their head), it's a gift
 with a scheduled answer: "you've just discovered why provenance matters —
 hold that thought for the last lab."
 
-**Lab 9 coda — the Philip payoff (QUICK BONUS FACT, instructor-only beat):**
+**Lab 11 coda — the Philip payoff (QUICK BONUS FACT, instructor-only beat):**
 after Kate's cascade: "…and remember Philip?" Add to the Semantics panel —
 `@prefix dbo: <https://dbpedia.org/ontology/> .` then
 `dbo:spouse a owl:SymmetricProperty .` and, for the cross-ontology kick,
@@ -616,7 +706,7 @@ dataset in the graph now knows more, in every dialect, simultaneously.
 Script: "The graph knows more than you told it. The AI consuming this knows
 more than you told it. These are new facts in the dataset — and they cannot
 be hallucinated."
-## Lab 11 — Semantic Alignment (IFP — the identity climax) — BUILT
+## Lab 13 — Semantic Alignment (IFP — the identity climax) — BUILT
 
 **Surface:** left = JSON-LD panel, Fetch pre-filled with
 `../datasets/elizabeth-catalog-record.jsonld`; right = Turtle writer
@@ -633,7 +723,7 @@ record.
 schema:isbn a owl:InverseFunctionalProperty .
 ```
 **Chain (verified end-to-end):** Lab 2's isbn mapping (`isbn` → `ex:isbn`,
-done live at 9:45) + Lab 6's alignment (`ex:isbn` ↔ `schema:isbn`, done
+done live at 9:45) + Lab 8's alignment (`ex:isbn` ↔ `schema:isbn`, done
 live mid-morning) + the fetched record's own `lib:isbn ⊑ schema:isbn` +
 this one line → both records derive `schema:isbn "0812979796"` → IFP fires
 → `owl:sameAs`, both directions. **16 derived triples.** In the Entity
@@ -642,7 +732,7 @@ double** — it gains `mainTitle`/`author`/`format` from the library AND the
 room's `title`, Sally's IRI, and the `about` → Elizabeth link, which
 connects the merged book into the queen's whole cluster.
 **LIVE-WORK DEPENDENCIES (do not skip):** the merge requires Lab 2's isbn
-mapping and Lab 6's isbn alignment to have actually happened. If either was
+mapping and Lab 8's isbn alignment to have actually happened. If either was
 skipped, add them quietly before this lab.
 **Delivery:** "Two systems. No shared key. Nobody wrote a crosswalk. We
 told the graph one true thing about what an ISBN *is* — and identity
@@ -651,7 +741,7 @@ SPARQL: look at Full Graph. That thing on screen is a knowledge graph. It
 was never built. It *emerged*.
 
 **Slide asset delivered:** `C:\Users\micha\OneDrive\Documents\talks\lab9-local-graph.svg`
-— Lab 9's local-graph end state in the tool's *pre-reskin* visual grammar (teal
+— Lab 11's local-graph end state in the tool's *pre-reskin* visual grammar (teal
 IRI nodes, solid gray asserted edges, dashed violet inferred), laid out
 clean: michael/kate with 1 solid + 3 inferred edges, semantics cluster to the
 right. (Live Cytoscape export was unusable — layout doesn't settle in the
@@ -694,7 +784,7 @@ client, connected via the API and KG — instantly understood the landscape.
 No prior knowledge. No custom prompt. No MCP. No custom tools. No generated
 SDK.
 
-## Lab 14 — Who Said That? (provenance — the capstone) — BUILT & VERIFIED
+## Lab 16 — Who Said That? (provenance — the capstone) — BUILT & VERIFIED
 
 **Surface:** fetch panel (left, pre-filled:
 `../datasets/elizabeth-gossip-record.jsonld` — "CelebWatch", a gossip site
@@ -726,7 +816,7 @@ told — and it knows exactly who told it." Which is the whole lesson,
 restated by an audience member for free.
 **Deliberately NO early fester:** the conflict arrives here, in this lab,
 under control (rule 7b). The soft latent version — the merged book's
-double-shaped author from Lab 11 — is available as an optional pointable
+double-shaped author from Lab 13 — is available as an optional pointable
 if the moment wants a second example.
 
 ## The Turn Nobody Expects (provenance / named graphs) — SCRIPT
@@ -758,7 +848,7 @@ invisibly since 9am" — the tool confesses its own machinery as the final
 lesson in trust. If anyone raised the stale-data question earlier, name
 them here — the scheduled answer arrives.
 
-## Lab 12 — Querying the Graph — BUILT & VERIFIED
+## Lab 14 — Querying the Graph — BUILT & VERIFIED
 
 Seven sample queries in the dropdown, numbered in delivery order:
 1. **It's all triples** — `SELECT ?s ?p ?o` (auto-scoped to the whole day,
@@ -783,7 +873,7 @@ Seven sample queries in the dropdown, numbered in delivery order:
    graph. (Mechanism: the leading comment mentions GRAPH, which switches
    off the automatic lab-scoping — documented in the comment itself.)
 
-## Lab 13 — Contexts on the Fly (CONSTRUCT) — BUILT & VERIFIED
+## Lab 15 — Contexts on the Fly (CONSTRUCT) — BUILT & VERIFIED
 
 **Bridge in:** "We don't need a global ontology. We just need contextual
 definitions… and we can build those on the fly."

@@ -9,7 +9,7 @@ watch the graph.
 Reading the graph: **solid rings** are things with identity (an IRI). **Dashed
 rings** are anonymous: the graph knows something is there, but not *what*.
 **Filled boxes** are plain values. **Dotted gold** edges and *italic* rows are facts
-the graph worked out on its own. You'll see your first one in Lab 5.
+the graph worked out on its own. You'll see your first one in Lab 7.
 
 ---
 
@@ -150,30 +150,55 @@ vocabulary that defines these concepts. `xsd:` is XML Schema's datatypes.
 You're done when every term you created is described, and you can explain what
 `rdfs:range` told the graph.
 
-## Lab 5: Classes and Subclasses
+## Lab 5: Labels and Comments
+
+Your terms have a type and, for some, a range. Now give them names a person can
+read.
+
+**Goal:** descriptions are data too. A label is what we call a thing; a comment
+says what it means.
+
+The editor holds a placeholder for every term in your vocabulary: one term, an
+empty label, an empty comment, and a period. Fill them in. (The `@en-US` after
+each string says which language it's written in.) Parse, then select a term in
+the Vocabulary tab and see what the graph now knows about it.
+
+You're done when every term has a label and a comment you'd show a colleague.
+
+## Lab 6: Classes and Subclasses
 
 So far the graph knows *things* and *properties*. Now it learns *kinds of
 things*, and how kinds relate.
 
+**Goal:** define the kinds of things we've seen, and how they nest.
+
+The seed declares one class (`ex:Book`). The comments list the other kinds of
+things the day has met. Declare them (`a rdfs:Class`), then relate them: an
+Author is a kind of Person (`ex:Author rdfs:subClassOf schema:Person`), and a
+Book is a kind of creative work (`ex:Book rdfs:subClassOf schema:CreativeWork`).
+Open the Classes list in the Vocabulary tab as you parse.
+
+You're done when you can read the nesting in the Vocabulary tab and say what
+`rdfs:subClassOf` claims.
+
+## Lab 7: Domain and Range
+
+A property can say something about the things on either side of it.
+
 **Goal:** watch the graph know more than you told it.
 
-The seed declares a class (`ex:Book`) and claims one: Gödel, Escher, Bach `a
-ex:Book`. Now build upward: declare `ex:Author`, and state the relationship:
-`ex:Author rdfs:subClassOf schema:Person`. Then type the people you've met
-today: Sally, Hofstadter, Michael are Authors. Their IRIs are waiting in the
-editor's comments, so there is no need to hunt back through earlier labs. Watch the
-Entities tab as you parse. (As for Elizabeth, what *is* she, exactly? Sit
-with that one. The graph doesn't know either, yet.)
+What kind of thing has an ISBN? Say so (`rdfs:domain`). Open the Entities tab
+and switch it to **All**: *Mine* shows this lab only; *All* shows everything
+asserted so far. Something appeared that you did not type. Dotted gold means
+the graph derived it; find it, and find the statement that justifies it.
 
-Something will appear that you did not type. Find it. It's dotted gold for a
-reason: the graph *derived* it, and it can tell you exactly from which two
-statements. That's the difference between a database and a knowledge graph,
-and between retrieval and reasoning.
+Then say what kind of thing is the value of `ex:author`, and of
+`ex:affiliation` (`rdfs:range`). Look again.
 
-You're done when: you can point at the fact nobody typed and name the two
-statements that justify it.
+You're done when you can point at a fact nobody typed and name the statements
+that justify it.
 
-## Lab 6: Merging Vocabularies
+## Lab 8: Merging Vocabularies
 
 Two vocabularies have been living in your graph all day: yours, and the one
 the publisher's system spoke in Lab 3. Mostly different words for the same
@@ -194,7 +219,7 @@ You're done when: data you asserted this morning carries dotted triples in
 the other vocabulary, and you can explain why `title` got one direction but
 `isbn` got two.
 
-## Lab 7: Integration for Free
+## Lab 9: Integration for Free
 
 A record about Elizabeth II, from DBpedia, a system nobody in this room has
 ever integrated with. The vocabulary is one you've never seen (`dbo:` everything).
@@ -206,14 +231,14 @@ parse*. Notice two things: the queen's IRI is one your graph already knows;
 and near the bottom, DBpedia's vocabulary ships its own alignments to
 schema.org, as plain data. Now Parse, and watch the Full Graph: the foreign
 record attaches to *your* queen, and dotted facts climb through DBpedia's
-alignments into the same shared vocabulary your Lab 6 work aligned to. Two
+alignments into the same shared vocabulary your Lab 8 work aligned to. Two
 parties, no coordination, one graph.
 
 You're done when: you can trace one dotted fact end-to-end: which foreign
 triple, through which alignment, landed where; and say who wrote each link
 in that chain (hint: not you).
 
-## Lab 8: Standing on Shoulders
+## Lab 10: Standing on Shoulders
 
 One more fetch: Michael's actual public identity
 (`https://w3id.org/people/michael`), written in FOAF, a vocabulary for
@@ -232,7 +257,7 @@ You're done when: you can explain how a person became a `foaf:Person`
 without any triple saying so, and which *vocabulary author*, years ago,
 made that inference possible.
 
-## Lab 9: The Nature of Relationships
+## Lab 11: The Nature of Relationships
 
 Two editors now: **Data** on the left, **Semantics** on the right. The data
 is one fact about Michael and Kate. One.
@@ -250,7 +275,7 @@ You're done when: one asserted fact has become four known facts, and you can
 say which dotted edge came from which line of semantics. None of them is a
 guess; none can be hallucinated.
 
-## Lab 10: Transitivity
+## Lab 12: Transitivity
 
 A real scene: this conference, this hotel, this city, and you, somewhere
 inside all of it.
@@ -265,7 +290,7 @@ You're done when: you can explain why five new edges appeared from one
 declaration, and why the ads saying the conference is in "Denver" aren't
 lying, even though Denver proper is nowhere in this graph.
 
-## Lab 11: Semantic Alignment
+## Lab 13: Semantic Alignment
 
 One last stranger: a library catalog's record of a book you've known since
 this morning. Different system, different vocabulary, different identifier,
@@ -282,7 +307,7 @@ You're done when: two books have become one, its properties have doubled,
 and you can name every fact in the chain that made it happen, including
 who asserted each one, and when.
 
-## Lab 12: Querying the Graph
+## Lab 14: Querying the Graph
 
 Everything the room built today is one graph. SPARQL is how you talk to it.
 
@@ -298,7 +323,7 @@ was deleted. Trust became part of the question.
 You're done when: you've run query 7, read what came back, and realized
 where you've been all day.
 
-## Lab 13: Contexts on the Fly
+## Lab 15: Contexts on the Fly
 
 **Goal:** contexts aren't fixed; you can mint one whenever a question
 deserves it.
@@ -312,7 +337,7 @@ You're done when: you can explain the difference between a class someone
 asserted, a class the reasoner derived, and a class you just made up, and
 why the graph is comfortable with all three.
 
-## Lab 14: Who Said That?
+## Lab 16: Who Said That?
 
 One final source: a celebrity gossip site with a page about the queen.
 Fetch it, read it; it looks fine. Parse it.

@@ -608,7 +608,13 @@ the previous one raises:
 
 ## Lab 10 — The Nature of Relationships (OWL reasoning 1: symmetric / inverse / equivalent; deck slide 439, REBUILT Oct 7)
 
-**Deck order:** the terms are introduced BEFORE the lab (slides 440-442:
+**Deck order:** `owl:equivalentProperty` is introduced by a spoken bridge, not a
+demo (Michael, Oct 7): "OWL is built on top of RDFS" (slide 437), callback to
+`rdfs:subPropertyOf` from Lab 8 ("sometimes all x are y and all y are x, but
+why would we need two statements?"), then `owl:equivalentProperty`, punctuated
+by "Same grammar, more expressive" (slide 438). No demo; the Lab 10 seed
+(`dbo:spouse`) is the demonstration. It also scaffolds what follows. The
+terms are introduced BEFORE the lab (slides 440-442:
 `owl:SymmetricProperty`, `owl:InverseOf`, `owl:propertyChainAxiom`), after
 the Kate / Draco intuition setup (slides 425-436: "Is Kate married to me?"
 yes, symmetric; "Am I Draco's best friend?" no, not symmetric). The room
@@ -744,7 +750,7 @@ query language. Preset sample queries in the dropdown, run in order:
 1. `SELECT ?s ?p ?o` — remember, it's all triples.
 2. Books, in OUR vocabulary (`ex:`).
 3. `DESCRIBE <https://w3id.org/people/michael>` — introduce the keyword;
-   four dialects come back off one node.
+   three vocabularies come back off one node.
 4. The books query again — in schema.org terms, then dbo:/foaf-flavored —
    same answers, different language.
 **Takeaway slide/speech:** "Your AI doesn't care what your info silo calls
@@ -918,9 +924,10 @@ reasoning already happened*. Say the number after the room reads it.
 - **"Query in whatever language makes sense to you" demo:** run the persons
   query in schema.org terms, then the identical question in `ex:` terms —
   same answers, "but you already understand this…" Then the closer,
-  (foaf has no live source now that Standing on Shoulders is cut; TBD which dialects the DESCRIBE shows)
   `DESCRIBE <https://w3id.org/people/michael>` returns **one node speaking
-  four dialects** — `ex:`, `schema:`, `dbo:`, `foaf:` — "one thing, four
+  three vocabularies** (verified Oct 7): `schema:` (name, `schema:Person`),
+  `ex:` (marriedTo, bestFriendOf, authorOf, locatedIn x4, `ex:Author`), and
+  `dbo:` (`dbo:spouse`, derived in Lab 10) — "one thing, three
   vocabularies, one graph. Pick whichever language you think in; the answers
   are the same." Exact sequencing TBD.
 - **Tie this demo back to multi-agent systems** when the deck reaches that

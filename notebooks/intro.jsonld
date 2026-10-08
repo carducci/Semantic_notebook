@@ -42,6 +42,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#identity-doc-a",
           "@type": "sembook:JsonLdPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-01-document-a.jsonld",
           "sembook:label": "Document A",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
           "sembook:initialContent": "{\n  \"id\": \"441\",\n  \"title\": \"G\\u00f6del, Escher, Bach\",\n  \"author_id\": \"872\",\n  \"published\": 1979\n}"
@@ -49,6 +50,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#identity-doc-b",
           "@type": "sembook:JsonLdPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-01-document-b.jsonld",
           "sembook:label": "Document B",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
           "sembook:initialContent": "{\n  \"id\": \"872\",\n  \"name\": \"Douglas Hofstadter\",\n  \"affiliation_id\": \"34\"\n}"
@@ -79,6 +81,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#data-in-context-editor",
           "@type": "sembook:JsonLdContextPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-02-context-and-body.jsonld",
           "sembook:label": "Book Record",
           "sembook:cssClass": "overflow-hidden flex flex-col",
           "sembook:initialContent": "{\n  \"@id\": \"https://example.com/Book/Id/8268\",\n  \"title\": \"Elizabeth the Queen: The Life of a Modern Monarch\",\n  \"isbn\": \"0812979796\",\n  \"about\": {\n    \"@id\": \"https://dbpedia.org/resource/Elizabeth_II\",\n    \"name\": \"Elizabeth Windsor\",\n    \"title\": \"Queen of the United Kingdom\"\n  },\n  \"author\": {\n    \"@id\": \"https://example.com/Author/Id/35626\",\n    \"name\": \"Sally Bedell Smith\",\n    \"title\": \"Biographer\"\n  }\n}",
@@ -139,6 +142,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#asserting-triples-writer",
           "@type": "sembook:TurtleWriterPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-04-defining-terms.ttl",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
           "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n@prefix schema: <http://schema.org/> .\n\n# ── Our ontology ──────────────────────────────────────\n\nex:title a rdf:Property ;\n    rdfs:range xsd:string .\n\n# Still to define (every term the day has used so far):\n#   ex:published  ex:author  ex:name  ex:affiliation\n#   ex:isbn  ex:about  ex:positionHeld  ex:jobTitle\n"
@@ -175,6 +179,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#labels-and-comments-writer",
           "@type": "sembook:TurtleWriterPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-05-labels-and-comments.ttl",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
           "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology ──────────────────────────────────────\n#\n# Each term has a label. Say what it MEANS: change the period to a semicolon\n# and add an rdfs:comment of your own.\n\nex:title\n    rdfs:label \"Title\"@en-US .\n\nex:published\n    rdfs:label \"Published\"@en-US .\n\nex:author\n    rdfs:label \"Author\"@en-US .\n\nex:name\n    rdfs:label \"Name\"@en-US .\n\nex:affiliation\n    rdfs:label \"Affiliation\"@en-US .\n\nex:isbn\n    rdfs:label \"ISBN\"@en-US .\n\nex:about\n    rdfs:label \"About\"@en-US .\n\nex:positionHeld\n    rdfs:label \"Position held\"@en-US .\n\nex:jobTitle\n    rdfs:label \"Job title\"@en-US .\n"
@@ -215,6 +220,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#defining-classes-writer",
           "@type": "sembook:TurtleWriterPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-06-classes-and-subclasses.ttl",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
           "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix schema: <http://schema.org/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology ──────────────────────────────────────\n\nex:Book a rdfs:Class ;\n    rdfs:label \"Book\" ;\n    rdfs:comment \"A published written work\" .\n\n# Our world has met more kinds of things than the graph knows about.\n# Declare them, and say how they relate:\n#\n#   ex:Author            who counts? What else is an Author?\n#   schema:Person        every Author is one\n#   ex:Organization      Hofstadter has an affiliation, to what kind of thing?\n#   schema:CreativeWork  a Book is one; what else is?\n"
@@ -255,6 +261,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#domain-and-range-writer",
           "@type": "sembook:TurtleWriterPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-07-domain-and-range.ttl",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
           "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# What kind of thing has an ISBN?\n# Then: what kind of thing is the value of ex:author? Of ex:affiliation?\n"
@@ -296,6 +303,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#merging-vocabularies-writer",
           "@type": "sembook:TurtleWriterPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-08-merging-vocabularies.ttl",
           "sembook:label": "Turtle",
           "sembook:cssClass": "overflow-hidden flex flex-col",
           "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix schema: <http://schema.org/> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology (alignments) ──────────────────────────\n\n# Every title is a name. Not every name is a title.\n# One-way containment — the graph already has a word for that:\n\nex:title rdfs:subPropertyOf schema:name .\n\n# What else did we learn today? Align the rest:\n#\n#   ex:author  and  schema:author   — every one of ours is one of theirs… and?\n#   ex:Book    and  schema:Book     — classes too: rdfs:subClassOf, both ways?\n#   ex:isbn    and  schema:isbn     — careful: is this one-way… or both?\n"
@@ -391,6 +399,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships-semantics",
           "@type": "sembook:TurtleWriterPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-10-semantics.ttl",
           "sembook:label": "Semantics",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
           "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n@prefix dbo: <https://dbpedia.org/ontology/> .\n\n# ── Our ontology ── what do these relationships MEAN?\n#\n# ex:marriedTo: if Michael is married to Kate, is Kate married to Michael?\n#   And ex:bestFriendOf: is Michael Draco's best friend? Should it be?\n#\n# ex:authorOf and ex:author: the same relationship, read from opposite ends.\n#   Some of our data says \"this book has an author.\" Some says \"this person wrote a book.\"\n#\n# dbo:spouse: DBpedia's word for the same thing as ex:marriedTo.\n#   Philip and Elizabeth have been in the graph since Lab 9.\n#\n# ── Your turn ── pick a relationship from your own world (mentorOf and mentee?\n#   siblingOf? reportsTo?). Write two facts about it in Data, then say how it\n#   works here. Predict what the graph will derive before you parse.\n"
@@ -428,6 +437,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#transitivity-semantics",
           "@type": "sembook:TurtleWriterPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-11-semantics.ttl",
           "sembook:label": "Semantics",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
           "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n\n# ── Our ontology ──\n#\n# If I am in the hotel, and the hotel is in the city,\n# and the city is in the state… where am I?\n#\n# The graph does not know yet. Teach it what \"located in\" means.\n#\n# Optional, if you finish early: write your own chain in Data (reportsTo up an\n# org chart? partOf?) and say what kind of property it is.\n"
@@ -466,6 +476,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment-semantics",
           "@type": "sembook:TurtleWriterPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-12-semantics.ttl",
           "sembook:label": "Semantics",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
           "sembook:initialContent": "@prefix schema: <http://schema.org/> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n\n# ── Our ontology ──\n#\n# Two records. Two systems. No shared identifier.\n#\n# But an ISBN identifies exactly one book —\n# whoever holds it, however they spell the property.\n#\n# Say that. Precisely.\n"
@@ -619,6 +630,7 @@
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie-semantics",
           "@type": "sembook:TurtleWriterPanel",
+          "sembook:fetchUrl": "../datasets/end-state/lab-15-semantics.ttl",
           "sembook:label": "Semantics",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
           "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix schema: <http://schema.org/> .\n\n# ── Our ontology ── write some rules. Make them sound reasonable.\n#\n# Toppings go on pizzas. So what is the domain of ex:hasTopping?\n#\n# Everyone knows names are something people have. So what is the domain of schema:name?\n#\n# The reasoner will believe every rule you give it. That is the point of this lab.\n#\n# Now write one rule of your own that sounds reasonable. Predict what it\n# breaks before you parse.\n"

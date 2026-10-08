@@ -1,0 +1,39 @@
+# End state of Lab 5. Fetch loads this into the editor; Parse commits it.
+@prefix ex: <https://example.com/ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:title
+    rdfs:label "Title"@en-US ;
+    rdfs:comment "The title of a published work"@en-US .
+
+ex:published
+    rdfs:label "Published"@en-US ;
+    rdfs:comment "The year a work was first published"@en-US .
+
+ex:author
+    rdfs:label "Author"@en-US ;
+    rdfs:comment "Connects a work to the person who wrote it"@en-US .
+
+ex:name
+    rdfs:label "Name"@en-US ;
+    rdfs:comment "The name of a person or organization"@en-US .
+
+ex:affiliation
+    rdfs:label "Affiliation"@en-US ;
+    rdfs:comment "Connects a person to the organization they belong to"@en-US .
+
+ex:isbn
+    rdfs:label "ISBN"@en-US ;
+    rdfs:comment "International Standard Book Number"@en-US .
+
+ex:about
+    rdfs:label "About"@en-US ;
+    rdfs:comment "Connects a work to its subject"@en-US .
+
+ex:positionHeld
+    rdfs:label "Position held"@en-US ;
+    rdfs:comment "A role someone holds, such as a monarch's title"@en-US .
+
+ex:jobTitle
+    rdfs:label "Job title"@en-US ;
+    rdfs:comment "The title of someone's job"@en-US .

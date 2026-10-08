@@ -1,0 +1,13 @@
+{
+  "@context": {
+    "id": "@id",
+    "name": "https://example.com/ns#name",
+    "affiliation_id": {
+      "@id": "https://example.com/ns#affiliation",
+      "@type": "@id"
+    }
+  },
+  "id": "https://example.com/Author/Id/872",
+  "name": "Douglas Hofstadter",
+  "affiliation_id": "https://example.com/Org/Id/34"
+}

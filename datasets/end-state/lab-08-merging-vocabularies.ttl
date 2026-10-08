@@ -1,0 +1,14 @@
+# End state of Lab 8. Fetch loads this into the editor; Parse commits it.
+@prefix ex: <https://example.com/ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:title  rdfs:subPropertyOf schema:name .    # one-way: every title is a name (the Duke)
+ex:name   rdfs:subPropertyOf schema:name .
+ex:author rdfs:subPropertyOf schema:author .
+
+ex:Book   rdfs:subClassOf schema:Book .
+schema:Book rdfs:subClassOf ex:Book .         # classes: true both ways
+
+ex:isbn   rdfs:subPropertyOf schema:isbn .
+schema:isbn rdfs:subPropertyOf ex:isbn .      # equivalence, built by hand

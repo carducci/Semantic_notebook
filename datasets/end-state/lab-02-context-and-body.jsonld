@@ -1,0 +1,32 @@
+{
+  "@context": {
+    "title": "https://example.com/ns#title",
+    "isbn": "https://example.com/ns#isbn",
+    "name": "https://example.com/ns#name",
+    "about": {
+      "@id": "https://example.com/ns#about",
+      "@context": {
+        "title": "https://example.com/ns#positionHeld"
+      }
+    },
+    "author": {
+      "@id": "https://example.com/ns#author",
+      "@context": {
+        "title": "https://example.com/ns#jobTitle"
+      }
+    }
+  },
+  "@id": "https://example.com/Book/Id/8268",
+  "title": "Elizabeth the Queen: The Life of a Modern Monarch",
+  "isbn": "0812979796",
+  "about": {
+    "@id": "https://dbpedia.org/resource/Elizabeth_II",
+    "name": "Elizabeth Windsor",
+    "title": "Queen of the United Kingdom"
+  },
+  "author": {
+    "@id": "https://example.com/Author/Id/35626",
+    "name": "Sally Bedell Smith",
+    "title": "Biographer"
+  }
+}

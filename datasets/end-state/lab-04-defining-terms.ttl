@@ -1,0 +1,16 @@
+# End state of Lab 4. Fetch loads this into the editor; Parse commits it.
+@prefix ex: <https://example.com/ns#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema: <http://schema.org/> .
+
+ex:title a rdf:Property ; rdfs:range xsd:string .
+ex:published a rdf:Property ; rdfs:range schema:Integer .
+ex:name a rdf:Property ; rdfs:range schema:Text .
+ex:isbn a rdf:Property ; rdfs:range schema:Text .
+ex:positionHeld a rdf:Property ; rdfs:range schema:Text .
+ex:jobTitle a rdf:Property ; rdfs:range schema:Text .
+ex:author a rdf:Property .
+ex:affiliation a rdf:Property .
+ex:about a rdf:Property .

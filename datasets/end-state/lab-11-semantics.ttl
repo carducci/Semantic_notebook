@@ -1,0 +1,5 @@
+# End state of Lab 11. Fetch loads this into the editor; Parse commits it.
+@prefix ex: <https://example.com/ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+ex:locatedIn a owl:TransitiveProperty .

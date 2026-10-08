@@ -1,0 +1,14 @@
+# End state of Lab 6. Fetch loads this into the editor; Parse commits it.
+@prefix ex: <https://example.com/ns#> .
+@prefix schema: <http://schema.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:Book a rdfs:Class ;
+    rdfs:label "Book" ;
+    rdfs:comment "A published written work" ;
+    rdfs:subClassOf schema:CreativeWork .
+
+ex:Author a rdfs:Class ;
+    rdfs:subClassOf schema:Person .
+
+ex:Organization a rdfs:Class .

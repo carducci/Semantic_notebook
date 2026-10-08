@@ -181,7 +181,22 @@ export class SemPanelJsonLdSplit extends HTMLElement {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      const text = await response.text();
+      let text = await response.text();
+      // A fetched document that carries its own top-level @context (an end-state file,
+      // or any ordinary JSON-LD) is split across the two editors, because @context
+      // belongs in the context editor here. Plain JSON goes to the body untouched.
+      try {
+        const doc = JSON.parse(text);
+        if (doc && typeof doc === 'object' && !Array.isArray(doc) && doc['@context'] !== undefined) {
+          const { '@context': ctx, ...rest } = doc;
+          const ctxText = JSON.stringify({ '@context': ctx }, null, 2);
+          this._contextEditorView.dispatch({
+            changes: { from: 0, to: this._contextEditorView.state.doc.length, insert: ctxText }
+          });
+          this._contextContent = ctxText;
+          text = JSON.stringify(rest, null, 2);
+        }
+      } catch (e) { /* not JSON: leave it for the body editor to show the error on Parse */ }
       this._bodyEditorView.dispatch({
         changes: { from: 0, to: this._bodyEditorView.state.doc.length, insert: text }
       });

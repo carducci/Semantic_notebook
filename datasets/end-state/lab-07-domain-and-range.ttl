@@ -1,0 +1,7 @@
+# End state of Lab 7. Fetch loads this into the editor; Parse commits it.
+@prefix ex: <https://example.com/ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:isbn rdfs:domain ex:Book .
+ex:author rdfs:range ex:Author .
+ex:affiliation rdfs:range ex:Organization .

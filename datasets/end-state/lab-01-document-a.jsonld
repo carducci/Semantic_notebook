@@ -1,0 +1,15 @@
+{
+  "@context": {
+    "id": "@id",
+    "title": "https://example.com/ns#title",
+    "published": "https://example.com/ns#published",
+    "author_id": {
+      "@id": "https://example.com/ns#author",
+      "@type": "@id"
+    }
+  },
+  "id": "https://example.com/Book/Id/441",
+  "title": "Gödel, Escher, Bach",
+  "author_id": "https://example.com/Author/Id/872",
+  "published": 1979
+}

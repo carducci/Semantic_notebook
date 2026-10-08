@@ -1,0 +1,5 @@
+# End state of Lab 12. Fetch loads this into the editor; Parse commits it.
+@prefix schema: <http://schema.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+schema:isbn a owl:InverseFunctionalProperty .

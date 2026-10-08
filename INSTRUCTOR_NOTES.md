@@ -1034,6 +1034,31 @@ reasoning already happened*. Say the number after the room reads it.
 
 ## APPENDIX: Final state of every lab (catch-up blocks; verified headless)
 
+**One-click end states (Oct 8).** Every lab with typing now has its finished version in
+`datasets/end-state/`, pre-filled in that editor's Fetch box. Anyone behind clicks
+**Fetch** (loads the end state into the editor; Ctrl+Z undoes it), then **Parse**.
+It replays identically to typing: verified headless, the whole day through Lab 12
+produces the same 187 triples and the same query answers both ways.
+
+| Lab | Fetch box holds |
+|---|---|
+| 1 | `lab-01-document-a.jsonld` (Document A), `lab-01-document-b.jsonld` (Document B) |
+| 2 | `lab-02-context-and-body.jsonld` (the Fetch splits it: `@context` to the context editor, the rest to the body) |
+| 4 | `lab-04-defining-terms.ttl` |
+| 5 | `lab-05-labels-and-comments.ttl` |
+| 6 | `lab-06-classes-and-subclasses.ttl` |
+| 7 | `lab-07-domain-and-range.ttl` |
+| 8 | `lab-08-merging-vocabularies.ttl` |
+| 9, 12, 16 | the lab's own dataset (unchanged); Lab 12's Semantics box also holds `lab-12-semantics.ttl` |
+| 10 | `lab-10-semantics.ttl` (Data is already seeded) |
+| 11 | `lab-11-semantics.ttl` (Data is already seeded) |
+| 15 | `lab-15-semantics.ttl` (the two given rules only, not the room's own) |
+| 3, 13, 14 | nothing to fetch (parse the seed, or run the dropdowns) |
+
+Tell the room once: *the Fetch box holds the finished version; use it if you fall behind,
+not before.* The reps are the point. The inline blocks below are the same content, for
+reference or a paste.
+
 Use these to rescue anyone who fell behind: paste, Parse, move on. Parse is
 the only commit and reasoning is cumulative, so labs can be caught up in
 order. The ones later labs DEPEND on are marked **needed**.

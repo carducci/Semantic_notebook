@@ -1,0 +1,7 @@
+# End state of Lab 15. Fetch loads this into the editor; Parse commits it.
+@prefix ex: <https://example.com/ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+
+ex:hasTopping rdfs:domain ex:Pizza .
+schema:name rdfs:domain schema:Person .

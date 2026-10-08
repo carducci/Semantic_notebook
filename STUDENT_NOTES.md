@@ -305,13 +305,15 @@ Everything the room built today is one graph. SPARQL is how you talk to it.
 **Goal:** ask the day's graph real questions, in any vocabulary you like.
 
 Work the numbered sample queries in order. Watch for three things: the
-library's record answering in *your* vocabulary (nobody mapped it); one
-`DESCRIBE` returning a person in four dialects at once; and query 5's
-last column, where every fact knows *who said it*, including the inferred ones.
-Then run query 6 and notice what "excluding a source" doesn't do: nothing
-was deleted. Trust became part of the question.
+library's record answering in *your* vocabulary (nobody mapped it), and the
+same book showing up under two names with `sameAs` pointing at each other;
+one `DESCRIBE` returning a person in several dialects at once; query 5, where
+you only told the graph about one hotel; and query 6's first column, where
+every fact knows *who said it*, including the inferred ones. Then run query 7
+and notice what "excluding a source" doesn't do: nothing was deleted. Trust
+became part of the question.
 
-You're done when: you've run query 7, read what came back, and realized
+You're done when: you've run query 8, read what came back, and realized
 where you've been all day.
 
 ## Lab 14: Contexts on the Fly

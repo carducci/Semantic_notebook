@@ -526,7 +526,7 @@
             {
               "@type": "sembook:SampleQuery",
               "sembook:label": "2 · Books — in our vocabulary",
-              "sembook:sparql": "PREFIX ex: <https://example.com/ns#>\n\nSELECT ?book ?title WHERE {\n  ?book a ex:Book ;\n        ex:title ?title .\n}"
+              "sembook:sparql": "PREFIX ex: <https://example.com/ns#>\nPREFIX owl: <http://www.w3.org/2002/07/owl#>\n\n# Two rows, one book. SPARQL does not collapse owl:sameAs;\n# the graph just tells you, on every row, who the book is the same as.\nSELECT ?book ?title ?sameAs WHERE {\n  ?book a ex:Book ;\n        ex:title ?title .\n  OPTIONAL { ?book owl:sameAs ?sameAs }\n}"
             },
             {
               "@type": "sembook:SampleQuery",
@@ -540,17 +540,22 @@
             },
             {
               "@type": "sembook:SampleQuery",
-              "sembook:label": "5 · Everything about Elizabeth — and who said it",
+              "sembook:label": "5 · Where is Michael?",
+              "sembook:sparql": "PREFIX ex: <https://example.com/ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n\n# We told the graph one hotel. No path expression, no recursion:\n# the reasoner already closed the chain, so the query stays simple.\nSELECT ?place ?label WHERE {\n  <https://w3id.org/people/michael> ex:locatedIn ?place .\n  OPTIONAL { ?place rdfs:label ?label }\n}"
+            },
+            {
+              "@type": "sembook:SampleQuery",
+              "sembook:label": "6 · Everything about Elizabeth — and who said it",
               "sembook:sparql": "SELECT ?source ?p ?o WHERE {\n  GRAPH ?source {\n    <https://dbpedia.org/resource/Elizabeth_II> ?p ?o\n  }\n}\nORDER BY ?source"
             },
             {
               "@type": "sembook:SampleQuery",
-              "sembook:label": "6 · The same — without trusting DBpedia",
+              "sembook:label": "7 · The same — without trusting DBpedia",
               "sembook:sparql": "SELECT ?source ?p ?o WHERE {\n  GRAPH ?source {\n    <https://dbpedia.org/resource/Elizabeth_II> ?p ?o\n  }\n  FILTER(?source NOT IN (\n    <https://notebook.semantic.consulting/notebook1/#integration-for-free>,\n    <https://notebook.semantic.consulting/notebook1/#integration-for-free-inferred>,\n    <https://notebook.semantic.consulting/notebook1/#nature-of-relationships-inferred>\n  ))\n}\nORDER BY ?source"
             },
             {
               "@type": "sembook:SampleQuery",
-              "sembook:label": "7 · Query the notebook itself",
+              "sembook:label": "8 · Query the notebook itself",
               "sembook:sparql": "# Scope note: naming a GRAPH anywhere (even here) widens this query\n# to the ENTIRE dataset — including the default graph, where the\n# notebook's own definition lives. You have been inside one all day.\nPREFIX sembook: <https://notebook.semantic.consulting/vocab#>\n\nSELECT ?lab ?label WHERE {\n  ?lab a sembook:Lab ;\n       sembook:label ?label .\n}"
             }
           ]

@@ -118,6 +118,18 @@ export class SemPanelSparqlResult extends HTMLElement {
     return { table: true, turtle: false, graph: false }; // 'boolean' — ASK
   }
 
+  // Bindings arrive in engine order (often not the order the author wrote). Put the
+  // columns back in the order of the SELECT clause so the table reads like the query.
+  _orderBySelect(names, sparql) {
+    if (!sparql) return names;
+    const m = /select\s+(?:distinct\s+|reduced\s+)?([^{]*?)\s*(?:where\b|\{)/i.exec(sparql.replace(/#[^\n]*/g, ''));
+    if (!m) return names;
+    const order = [...m[1].matchAll(/[?$](\w+)/g)].map(x => x[1]);
+    if (!order.length) return names;
+    const rank = n => { const i = order.indexOf(n); return i < 0 ? order.length : i; };
+    return names.map((n, i) => ({ n, i })).sort((a, b) => rank(a.n) - rank(b.n) || a.i - b.i).map(x => x.n);
+  }
+
   _collectVarNames(bindings) {
     const seen = new Set();
     const names = [];
@@ -199,7 +211,7 @@ export class SemPanelSparqlResult extends HTMLElement {
       headers = ['subject', 'predicate', 'object'];
       rows = result.quads.map(q => [q.subject, q.predicate, q.object]);
     } else {
-      headers = this._collectVarNames(result.bindings);
+      headers = this._orderBySelect(this._collectVarNames(result.bindings), result.sparql);
       rows = result.bindings.map(b => headers.map(h => b.get(h)));
     }
 

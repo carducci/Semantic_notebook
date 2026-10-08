@@ -838,11 +838,11 @@ them here — the scheduled answer arrives.
 
 ## Lab 13 — Querying the Graph — BUILT & VERIFIED
 
-Seven sample queries in the dropdown, numbered in delivery order:
+Eight sample queries in the dropdown, numbered in delivery order (new Oct 7: query 5, and query 2's `sameAs` column):
 1. **It's all triples** — `SELECT ?s ?p ?o` (auto-scoped to the whole day,
    asserted + inferred; ~100+ rows).
 2. **Books — in our vocabulary** — the LIBRARY record answers `ex:title`,
-   a property it never asserted.
+   a property it never asserted. Query 2 also selects `?sameAs` (OPTIONAL): the two rows (8268 and BX-4471902) are ONE book and each row names its partner. SPARQL does not collapse `owl:sameAs`; the Lab 12 merge shows up here as two rows that point at each other. Beat: "Two rows, one book, and the graph tells you so on every row." (Entities collapses them visually; SPARQL stays honest.)
 3. **DESCRIBE Michael** — one node, many dialects (ex:, schema:, dbo:spouse,
    rdf). Verified Oct 7: his name, marriedTo Kate, bestFriendOf Draco,
    authorOf MSA, locatedIn Hyatt/Westminster/Colorado/DenverMetro, typed
@@ -855,16 +855,22 @@ Seven sample queries in the dropdown, numbered in delivery order:
    under two IRIs, the Lab 12 merge); query 4 returns THREE (those two plus
    MSA, which only has schema:name). GEB (441) is in neither: it has no
    isbn, so nothing ever typed it a Book.
-5. **Everything about Elizabeth — and who said it** — GRAPH ?source; rows
+5. **Where is Michael?** (NEW, the Energy Instruments lesson in miniature) —
+   `ex:locatedIn` on Michael returns four places (Hyatt Westminster,
+   Westminster, Colorado, Denver) though Lab 11 asserted only the Hyatt.
+   No path expression, no recursion; the query is simple because the
+   reasoning already happened. Deck link: slide 478 "the query is simple
+   because the reasoning already happened." Same shape as the BOM query.
+6. **Everything about Elizabeth — and who said it** — GRAPH ?source; rows
    grouped by origin, including `-inferred` graphs (derivations have
    provenance too).
-6. **The same — without trusting DBpedia** — FILTER NOT IN the two
+7. **The same — without trusting DBpedia** — FILTER NOT IN the two
    integration-for-free graphs plus Lab 10's inferred graph (Philip's
    `marriedTo` derives from DBpedia's `spouse` and lives there); only the room's facts remain. "Excluded,
    not deleted." Honest caveat if pressed: derivations that OTHER labs
    computed from excluded data live in those labs' inferred graphs — full
    truth-maintenance is real engineering; this shows the primitive.
-7. **Query the notebook itself** — returns all 15 labs from the default
+8. **Query the notebook itself** — returns all 15 labs from the default
    graph. (Mechanism: the leading comment mentions GRAPH, which switches
    off the automatic lab-scoping — documented in the comment itself.)
 

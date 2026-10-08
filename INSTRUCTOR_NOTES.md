@@ -664,8 +664,8 @@ reasoner is BGP-only and cannot run chains; slides-only.
 
 **Surface:** same dueling-writers + Local Graph shape.
 **Seed (Data):** UberConf `a schema:EducationalEvent`, `schema:performer` →
-Michael's w3id IRI, `schema:location` → Westin Westminster (`schema:Hotel`);
-`ex:locatedIn` chain: michael → Westin → Westminster → Colorado, plus
+Michael's w3id IRI, `schema:location` → Hyatt Westminster (`schema:Hotel`);
+`ex:locatedIn` chain: michael → Hyatt → Westminster → Colorado, plus
 Westminster → `ex:DenverMetro` (label: "Denver"). Semantics: breadcrumbs
 only ("…where am I? The graph does not know yet.").
 **The follow-along Turtle:** one line —
@@ -673,7 +673,7 @@ only ("…where am I? The graph does not know yet.").
 ex:locatedIn a owl:TransitiveProperty .
 ```
 **Payoff (verified):** five derived edges bloom at once — michael is in
-Westminster, in "Denver," in Colorado; the Westin too. One line of
+Westminster, in "Denver," in Colorado; the Hyatt too. One line of
 semantics; the graph closes the whole chain.
 **The Denver aside (lean, keep):** the conference ads say "Denver, CO" —
 Westminster isn't in Denver proper. `ex:DenverMetro` is a *different

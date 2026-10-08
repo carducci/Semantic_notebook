@@ -242,20 +242,29 @@ in that chain (hint: not you).
 ## Lab 10: The Nature of Relationships
 
 Two editors now: **Data** on the left, **Semantics** on the right. The data
-is one fact about Michael and Kate. One.
+is three facts about Michael: who he is married to, who his best friend is,
+and a book he wrote. Three, and nothing else.
 
 **Goal:** describe how a relationship *works*, and watch facts nobody typed
 become computable.
 
-Parse the data: two nodes, one edge. Now answer the Semantics panel's
-questions, one line at a time, parsing as you go: a husband is a kind of
-spouse (`rdfs:subPropertyOf`); marriage points both ways
-(`owl:SymmetricProperty`); *wife-of* is *husband-of* read backwards
-(`owl:inverseOf`). Watch the graph after each parse.
+Parse the data first: one node, three edges. Then answer the Semantics
+panel's questions one declaration at a time, parsing after each.
 
-You're done when: one asserted fact has become four known facts, and you can
-say which dotted edge came from which line of semantics. None of them is a
-guess; none can be hallucinated.
+1. **Marriage works both ways.** Declare `ex:marriedTo` an
+   `owl:SymmetricProperty` and look at Kate. Then look at Draco, and ask why
+   the graph left him alone.
+2. **Two ends of one relationship.** Some of our data says a book has an
+   author; some says a person wrote a book. Declare `ex:authorOf` the
+   `owl:inverseOf` `ex:author`, and find every author in the graph who now
+   has a work.
+3. **Two words for one thing.** DBpedia says `dbo:spouse`; we say
+   `ex:marriedTo`. Declare them `owl:equivalentProperty`, and look at
+   Elizabeth and Philip.
+
+You're done when: you can say which dotted edge came from which line of
+semantics, and which datasets learned something they never said. None of it
+is a guess; none of it can be hallucinated.
 
 ## Lab 11: Transitivity
 

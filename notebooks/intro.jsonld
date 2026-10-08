@@ -384,14 +384,14 @@
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Data",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col sem-divider-r",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n\n# ── Our data ── one fact. That is all we are going to say.\n\n<https://w3id.org/people/michael> ex:husbandOf ex:kate .\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n\n# ── Our data ── three facts about Michael. That is all we are going to say.\n\n<https://w3id.org/people/michael>\n    ex:marriedTo     ex:kate ;\n    ex:bestFriendOf  ex:draco ;\n    ex:authorOf      <https://catalog.example.net/book/979-8868804090> .\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships-semantics",
           "@type": "sembook:TurtleWriterPanel",
           "sembook:label": "Semantics",
           "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
-          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our ontology ── what do these relationships MEAN?\n#\n# A husband is… what, more generally?\n# Does the relationship point back?\n# And what is the word for the other direction?\n"
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n@prefix dbo: <https://dbpedia.org/ontology/> .\n\n# ── Our ontology ── what do these relationships MEAN?\n#\n# ex:marriedTo: if Michael is married to Kate, is Kate married to Michael?\n#   And ex:bestFriendOf: is Michael Draco's best friend? Should it be?\n#\n# ex:authorOf and ex:author: the same relationship, read from opposite ends.\n#   Some of our data says \"this book has an author.\" Some says \"this person wrote a book.\"\n#\n# dbo:spouse: DBpedia's word for the same thing as ex:marriedTo.\n#   Philip and Elizabeth have been in the graph since Lab 9.\n"
         },
         {
           "@id": "https://notebook.semantic.consulting/notebook1/#nature-of-relationships-tabs",

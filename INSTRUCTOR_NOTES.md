@@ -606,33 +606,59 @@ the previous one raises:
 6. **The old "Merging Graphs" placeholder is DELETED** — its content is Lab 9;
    the callout slide, retitled "Integration for Free," lives at the Prestige.
 
-## Lab 10 — The Nature of Relationships (OWL: symmetric / inverse / subproperty)
+## Lab 10 — The Nature of Relationships (OWL reasoning 1: symmetric / inverse / equivalent; deck slide 439, REBUILT Oct 7)
 
-**Surface:** dueling Turtle writers — **Data** (left) | **Semantics** (right)
-— over a single Local Graph tab. Separation of concerns made physical: the
-data never changes; you parse *meaning* and the graph grows.
-**Seed:** Data holds ONE fact: `<w3id:michael> ex:husbandOf ex:kate .`
-Semantics holds only the breadcrumb comments. Follow-along.
-**The follow-along Turtle (final state of the Semantics panel):**
+**Deck order:** the terms are introduced BEFORE the lab (slides 440-442:
+`owl:SymmetricProperty`, `owl:InverseOf`, `owl:propertyChainAxiom`), after
+the Kate / Draco intuition setup (slides 425-436: "Is Kate married to me?"
+yes, symmetric; "Am I Draco's best friend?" no, not symmetric). The room
+arrives at the lab already knowing the words; the lab is atomic follow-along.
+**Surface:** dueling Turtle writers, **Data** (left) | **Semantics** (right),
+over a single Local Graph tab. The data never changes; you parse *meaning*
+and the graph grows.
+**Seed (Data):** three facts about Michael's w3id IRI: `ex:marriedTo
+ex:kate`, `ex:bestFriendOf ex:draco`, `ex:authorOf <https://catalog.example.net/book/979-8868804090>`
+(the Lab 3 catalog book). **Seed (Semantics):** prefixes (`ex`, `owl`, `dbo`)
+and comments only; the comments name `ex:marriedTo`, `ex:bestFriendOf`,
+`ex:authorOf`/`ex:author`, and `dbo:spouse`.
+**Follow-along, final state of the Semantics panel (add one line, parse, repeat):**
 ```turtle
 @prefix ex: <https://example.com/ns#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dbo: <https://dbpedia.org/ontology/> .
 
-ex:husbandOf rdfs:subPropertyOf ex:marriedTo .
 ex:marriedTo a owl:SymmetricProperty .
-ex:wifeOf owl:inverseOf ex:husbandOf .
+ex:authorOf owl:inverseOf ex:author .
+dbo:spouse owl:equivalentProperty ex:marriedTo .
 ```
-**Staging:** parse Data first — two nodes, one edge, nothing else. Then add
-the semantics one line at a time, parsing after each: subPropertyOf →
-*michael marriedTo kate* (dotted); SymmetricProperty → *kate marriedTo
-michael*; inverseOf → *kate wifeOf michael*. **One asserted fact, three
-derived facts** (verified). "I said one thing. The graph now knows four."
-**Do NOT promise `owl:propertyChainAxiom`** (uncle = brother∘parent, etc.) —
-the notebook's reasoner is BGP-only and cannot run chains; it's a
-slides-only mention.
-**Delivery:** SQL strawman + can't-be-hallucinated + punctuation rule, every
-beat.
+**Verified headless (Labs 1-9 replayed first):**
+- Parse Data: michael with three edges (kate, draco, the book), nothing dotted.
+- Line 1 (symmetric): kate `marriedTo` michael, dotted. **Draco gets nothing**:
+  that is the slide-431 answer, "best friend isn't declared symmetric."
+- Line 2 (inverse): 872 `authorOf` 441 and 35626 `authorOf` 8268 (the
+  morning's book-centric data answers from the person's side), and the
+  catalog book gains `ex:author` michael. Michael is also typed Author and
+  Person (Lab 7's `ex:author rdfs:range ex:Author` fires on the derived
+  triple). **Dependency:** that last bit needs Lab 7's range line.
+- Line 3 (equivalent): Elizabeth and Philip each gain `marriedTo` and
+  `spouse` toward the other (DBpedia's one-way fact, both ways, in our
+  vocabulary). The equivalence runs both ways, so Michael and Kate also gain
+  `dbo:spouse` edges: our data now speaks DBpedia. The reasoner turns
+  `equivalentProperty` into `subPropertyOf` in both directions (a dotted
+  subPropertyOf loop on `spouse` is a harmless artifact).
+- The Local Graph gets busy by line 3; zoom or pan to Philip and Elizabeth.
+**The beat on `authorOf`:** "We don't just name things differently. We think
+about relationships differently." Half the datasets say *author* (work to
+person); half say *authorOf* (person to work). Both perspectives coexist.
+Real-world pair for a slide mention: `foaf:made` / `foaf:maker`.
+**Philip (deck 439 note: "call out Philip"; slide 443: "MULTIPLE DATASETS JUST
+GOT SMARTER"):** line 3 is the call-out. "Not our data enriched by theirs:
+every dataset in the graph now knows more, in every dialect, simultaneously.
+The graph knows more than you told it. The AI consuming this knows more
+than you told it, and these are facts that cannot be hallucinated."
+**Do NOT promise `owl:propertyChainAxiom`** (uncle = brother∘parent) — the
+reasoner is BGP-only and cannot run chains; slides-only.
+**Delivery:** SQL strawman + can't-be-hallucinated + punctuation rule, every beat.
 
 ## Lab 11 — Transitivity (the UberConf world)
 
@@ -668,19 +694,6 @@ question arises anyway (someone will invent FP in their head), it's a gift
 with a scheduled answer: "you've just discovered why provenance matters —
 hold that thought for the last lab."
 
-**Lab 10 coda — the Philip payoff (QUICK BONUS FACT, instructor-only beat):**
-after Kate's cascade: "…and remember Philip?" Add to the Semantics panel —
-`@prefix dbo: <https://dbpedia.org/ontology/> .` then
-`dbo:spouse a owl:SymmetricProperty .` and, for the cross-ontology kick,
-`dbo:spouse rdfs:subPropertyOf ex:marriedTo .` → parse → **switch to the
-Entity viewer**: Philip now carries an inferred `marriedTo` — DBpedia's
-fact, expressed in OUR vocabulary, derived by a rule typed seconds ago.
-**The significance to hit (needs its own vibrant slide):**
-**MULTIPLE DATASETS GOT SMARTER.** Not our data enriched by theirs — every
-dataset in the graph now knows more, in every dialect, simultaneously.
-Script: "The graph knows more than you told it. The AI consuming this knows
-more than you told it. These are new facts in the dataset — and they cannot
-be hallucinated."
 ## Lab 12 — Semantic Alignment (IFP — the identity climax) — BUILT
 
 **Surface:** left = JSON-LD panel, Fetch pre-filled with

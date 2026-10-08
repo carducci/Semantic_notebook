@@ -73,14 +73,34 @@ not skip it. Dashed ring → solid ring is the identity lesson; narrate the chan
 VALUES (`https://example.com/Book/Id/441`, `/Author/Id/872`, `/Org/Id/34`), including
 the references, in Lab 1b. Later labs' references (Lab 5 seed, cheatsheets) point at
 these IRIs.
-**End state — Document A (target, to be re-verified in the build pass):**
+### Lab 1 runbook (copy/paste; doubles as the test script; verified headless Oct 7)
+Replace the whole editor contents each time, then Parse (both documents).
+**1b: Document A and Document B (fully qualified ids). Expect: NOTHING changes**
+(dashed `?` node, the full IRI shows as a literal box; `id` is a magic string).
+```json
+{
+  "id": "https://example.com/Book/Id/441",
+  "title": "Gödel, Escher, Bach",
+  "author_id": "https://example.com/Author/Id/872",
+  "published": 1979
+}
+```
+```json
+{
+  "id": "https://example.com/Author/Id/872",
+  "name": "Douglas Hofstadter",
+  "affiliation_id": "https://example.com/Org/Id/34"
+}
+```
+**1c: Document A and Document B (context: `id` → `@id`, references as `@type: @id`).
+Expect: solid rings, and the book→author edge snaps into one graph.**
 ```json
 {
   "@context": {
     "id": "@id",
-    "title": "https://example.com/ns#title",
-    "published": "https://example.com/ns#published",
-    "author_id": { "@id": "https://example.com/ns#author", "@type": "@id" }
+    "author_id": {
+      "@type": "@id"
+    }
   },
   "id": "https://example.com/Book/Id/441",
   "title": "Gödel, Escher, Bach",
@@ -88,9 +108,54 @@ these IRIs.
   "published": 1979
 }
 ```
-**End state — Document B:** same context pattern (`name` →
-`https://example.com/ns#name`, `affiliation_id` → `ex:affiliation` with
-`"@type": "@id"`), `"id": "https://example.com/Author/Id/872"`, `"affiliation_id": "https://example.com/Org/Id/34"`.
+```json
+{
+  "@context": {
+    "id": "@id",
+    "affiliation_id": {
+      "@type": "@id"
+    }
+  },
+  "id": "https://example.com/Author/Id/872",
+  "name": "Douglas Hofstadter",
+  "affiliation_id": "https://example.com/Org/Id/34"
+}
+```
+**1d: Document A and Document B (final: terms minted).** Expect: same graph, terms are
+`https://example.com/ns#…` IRIs (Vocabulary tab in later labs; `ex:title`, `ex:published`,
+`ex:author`, `ex:name`, `ex:affiliation`).
+```json
+{
+  "@context": {
+    "id": "@id",
+    "title": "https://example.com/ns#title",
+    "published": "https://example.com/ns#published",
+    "author_id": {
+      "@id": "https://example.com/ns#author",
+      "@type": "@id"
+    }
+  },
+  "id": "https://example.com/Book/Id/441",
+  "title": "Gödel, Escher, Bach",
+  "author_id": "https://example.com/Author/Id/872",
+  "published": 1979
+}
+```
+```json
+{
+  "@context": {
+    "id": "@id",
+    "name": "https://example.com/ns#name",
+    "affiliation_id": {
+      "@id": "https://example.com/ns#affiliation",
+      "@type": "@id"
+    }
+  },
+  "id": "https://example.com/Author/Id/872",
+  "name": "Douglas Hofstadter",
+  "affiliation_id": "https://example.com/Org/Id/34"
+}
+```
 
 ## Lab 2 — Data and Context (deck Lab 2)
 
@@ -116,8 +181,10 @@ the room will meet at work.
 **Tabs:** Local Graph + Vocabulary only.
 **Gotchas:** keep everything in `ex:`, no schema.org here; the queen's
 DBpedia IRI is a plant for the merging lab, don't dwell on it.
-**End state — the completed @context (verified; Lab 11's merge depends on
-the isbn line):**
+### Lab 2 runbook (copy/paste; verified headless Oct 7)
+The seed body is already in the Body pane; the seed @context holds only `about` and
+`author` with empty nested contexts. Replace the `@context` pane with this, then Parse.
+**Final @context (Lab 11's merge depends on the isbn line; Lab 4 uses positionHeld/jobTitle):**
 ```json
 {
   "@context": {
@@ -126,12 +193,36 @@ the isbn line):**
     "name": "https://example.com/ns#name",
     "about": {
       "@id": "https://example.com/ns#about",
-      "@context": { "title": "https://example.com/ns#positionHeld" }
+      "@context": {
+        "title": "https://example.com/ns#positionHeld"
+      }
     },
     "author": {
       "@id": "https://example.com/ns#author",
-      "@context": { "title": "https://example.com/ns#jobTitle" }
+      "@context": {
+        "title": "https://example.com/ns#jobTitle"
+      }
     }
+  }
+}
+```
+Expect: Vocabulary tab, Properties · 9 (`title`, `published`, `author`, `name`,
+`affiliation`, `isbn`, `about`, `positionHeld`, `jobTitle`); nothing says `implied:`.
+Body (seed, unchanged, for reference):
+```json
+{
+  "@id": "https://example.com/Book/Id/8268",
+  "title": "Elizabeth the Queen: The Life of a Modern Monarch",
+  "isbn": "0812979796",
+  "about": {
+    "@id": "https://dbpedia.org/resource/Elizabeth_II",
+    "name": "Elizabeth Windsor",
+    "title": "Queen of the United Kingdom"
+  },
+  "author": {
+    "@id": "https://example.com/Author/Id/35626",
+    "name": "Sally Bedell Smith",
+    "title": "Biographer"
   }
 }
 ```

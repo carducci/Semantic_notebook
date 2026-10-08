@@ -159,13 +159,14 @@ read.
 **Goal:** descriptions are data too. A label is what we call a thing; a comment
 says what it means.
 
-Every term in your vocabulary is in the editor with a comment already written:
-the comment says what the term *means*. The label is empty. Fill it in: what
-do we *call* this thing, in words a person would say? The `@en-US` after each
-string says which language it's written in. Parse, then select a term in the
-Vocabulary tab and see what the graph now knows about it.
+Every term in your vocabulary is in the editor with a label already written:
+what we *call* it. Now say what it *means*. For each term, change the period
+at the end to a semicolon and write an `rdfs:comment` of your own on the next
+line, ending with a period. The `@en-US` after each string says which language
+it's written in. Parse, then select a term in the Vocabulary tab and see what
+the graph now knows about it.
 
-You're done when every term has a label you'd show a colleague.
+You're done when every term has a comment you'd show a colleague.
 
 ## Lab 6: Classes and Subclasses
 

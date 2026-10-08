@@ -310,19 +310,18 @@ ex:about a rdf:Property .
 
 ## Lab 5 — Labels and Comments (NEW Oct 7; slide Lab 5 "turtle writer")
 
-**Design (Michael, revised Oct 8):** a Turtle writer where the room supplies the
-`rdfs:label`; the `rdfs:comment` is already written for every term (the comment says
-what a term MEANS, the label says what we CALL it). The student's work is nine labels,
-typed into empty `""@en-US` strings (the earlier plan had them also write nine comments;
-cut as repetitive). The `@en-US` tag "because why not."
+**Design (Michael; restated Oct 8, I had it backwards for a day):** a Turtle writer
+where the label is SEEDED and the room writes the whole `rdfs:comment` triple
+themselves: change the period to a semicolon, add the `rdfs:comment` line, end with a
+period. This is practice WRITING A TRIPLE (punctuation and all), not filling in
+blanks. Nine terms, nine comments. The `@en-US` tag "because why not."
 **Seed (nine blocks, like this):**
 ```turtle
 ex:title
-    rdfs:label ""@en-US ;
-    rdfs:comment "The title of a published work"@en-US .
+    rdfs:label "Title"@en-US .
 ```
 (`title published author name affiliation isbn about positionHeld jobTitle`, in that order.)
-**Live arc:** fill each label; Parse; select a term in the Vocabulary tab and the
+**Live arc:** for each term, period to semicolon, then the `rdfs:comment` line; Parse; select a term in the Vocabulary tab and the
 detail pane shows label and comment next to the type and range from Lab 4. Same graph, more triples.
 **Tabs:** Vocabulary (default) + Local Graph.
 **Gotchas:** descriptive triples only (label, comment); no domain, no classes yet. The
@@ -1047,7 +1046,7 @@ order. The ones later labs DEPEND on are marked **needed**.
 author{title:jobTitle}).
 **Lab 3.** No edits; Parse the seed (the publisher's catalog book).
 **Lab 4.** The nine property declarations. See "Lab 4 runbook".
-**Lab 5.** Nine labels. Final state (comments are seeded, labels are the student's):
+**Lab 5.** Nine comments written by the student. Final state (labels are seeded, comments are the student's; wording is a suggestion):
 ```turtle
 ex:title        rdfs:label "Title"@en-US ;         rdfs:comment "The title of a published work"@en-US .
 ex:published    rdfs:label "Published"@en-US ;     rdfs:comment "The year a work was first published"@en-US .

@@ -778,7 +778,52 @@ client, connected via the API and KG — instantly understood the landscape.
 No prior knowledge. No custom prompt. No MCP. No custom tools. No generated
 SDK.
 
-## Lab 15 — Who Said That? (provenance — the capstone) — BUILT & VERIFIED
+## Lab 15 — Lying Liars Who Lie (bad rules; NEW Oct 7, before Who Said That)
+
+**Deck order (Michael, Oct 7):** slide 516 ("accuracy isn't truth", dark side of
+cascading knowledge). Verbal beat: the sundae becomes a pizza because of the
+`:hasTopping` attribute (domain Pizza). The lab is then the room writing bad
+rules. Lab 16 pays it off: provenance ignores the lab called "Lying Liars Who
+Lie." Two examples, two registers: this one is visceral and self-inflicted;
+CelebWatch/DBpedia (Lab 16) is the grounded, real-life one.
+**Why it works:** validity vs soundness. The reasoner guarantees the first
+(if the premises hold, the conclusion follows) and never the second (it does
+not check premises, and your axioms are premises). OWL justifies the
+inference; the "true" in justified true belief lives in the premises. Three
+tools, three questions: provenance (who said it), derivation (rules are
+retractable: delete the axiom, re-parse, the damage evaporates, unlike an ETL
+that copied bad rows), SHACL (what must be true; domain/range never reject,
+they only conclude).
+**Surface:** dueling Turtle writers, **Data** | **Semantics**, one Local Graph
+tab. (An Entities tab was tried and dropped: the single-class card layout is
+unreliable.)
+**Seed (Data):** `ex:HotFudgeSundae` (label, `ex:hasTopping` HotFudge, Cherry);
+`ex:Margherita a ex:Pizza` (hasTopping Basil, Mozzarella). Comment: "Every fact
+below is true." **Seed (Semantics):** prefixes (ex, rdfs, schema) plus comments
+posing the two questions (domain of `ex:hasTopping`, domain of `schema:name`).
+**Follow-along (add one line, parse, repeat):**
+```turtle
+ex:hasTopping rdfs:domain ex:Pizza .
+schema:name rdfs:domain schema:Person .
+```
+**Verified headless (Labs 1-12 replayed first):** line 1 types the sundae (and
+anything else with a hasTopping) as a Pizza, dotted. Line 2 reaches into the
+MORNING's data: GEB (441), Elizabeth the Queen (8268 and its twin BX-4471902)
+and Mastering Software Architecture become `schema:Person`, via
+title/name subPropertyOf schema:name from Lab 8 (cumulative reasoning,
+ADR-038). The Local Graph is a hairball by line 2; that is the point. GEB,
+untyped since Lab 7 because it has no isbn, now is a Person: the Chekhov
+payoff arrives for free, but Michael said let GEB fade, so only mention it if
+it lands.
+**Beat:** "Nothing in the data is wrong. Nothing in the rules is
+syntactically wrong. The reasoner did exactly what you told it, globally and
+retroactively. Valid is not sound."
+**Retraction (optional, 20 seconds):** delete the line, re-parse; the damage
+vanishes (verified: five Persons before, eight with the axiom, five after).
+That is the derivation-over-assertion argument made visible.
+**Payoff:** Lab 16 queries 5 to 7.
+
+## Lab 16 — Who Said That? (provenance — the capstone) — BUILT & VERIFIED
 
 **Surface:** fetch panel (left, pre-filled:
 `../datasets/elizabeth-gossip-record.jsonld` — "CelebWatch", a gossip site
@@ -799,6 +844,17 @@ queries:
    TRUE. Excluding the source dropped a true fact too: trust decisions are
    coarse, and that's exactly why provenance beats deletion — the receipts
    survive to be re-examined.
+5. **Who is a Person?** (NEW) → 10 rows: the real people plus the books Lab 15's
+   bad rule turned into people.
+6. **…says who?** (NEW) → the receipts: real persons come from
+   `domain-and-range-inferred`, `integration-for-free-inferred`,
+   `nature-of-relationships-inferred`; the books (441, 8268, BX-4471902,
+   979-8868804090) come from `lying-liars-who-lie-inferred`.
+7. **Ignore the liars** (NEW) → FILTER NOT IN the lying graph and its
+   -inferred companion: five honest persons, the books gone. "Excluded, not
+   deleted." Beat: this is the same move as excluding the tabloid, but now
+   the liar is YOU. (Skipping Lab 15 makes queries 5 to 7 return the honest
+   five everywhere; that is fine.)
 **This lab is the stage for the Turn script below** — run the beats over
 these queries, landing "Acceptance isn't storage. Acceptance is a
 query-time decision. …Belief. Justified. And now — TRUE, with receipts."
@@ -876,7 +932,7 @@ Eight sample queries in the dropdown, numbered in delivery order (new Oct 7: que
    not deleted." Honest caveat if pressed: derivations that OTHER labs
    computed from excluded data live in those labs' inferred graphs — full
    truth-maintenance is real engineering; this shows the primitive.
-8. **Query the notebook itself** — returns all 15 labs from the default
+8. **Query the notebook itself** — returns all 16 labs from the default
    graph. (Mechanism: the leading comment mentions GRAPH, which switches
    off the automatic lab-scoping — documented in the comment itself.)
 

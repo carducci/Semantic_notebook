@@ -330,7 +330,24 @@ You're done when: you can explain the difference between a class someone
 asserted, a class the reasoner derived, and a class you just made up, and
 why the graph is comfortable with all three.
 
-## Lab 15: Who Said That?
+## Lab 15: Lying Liars Who Lie
+
+A dessert menu, a pizza menu, and every fact on them is true. The rules
+are yours to write, so write bad ones.
+
+**Goal:** see that a reasoner believes your rules exactly as faithfully as it
+believes your data, and that "sounds reasonable" is not the same as "true."
+
+Parse the Data. Then, in Semantics, state that toppings belong to pizzas
+(`ex:hasTopping rdfs:domain ex:Pizza`) and that names are something people
+have (`schema:name rdfs:domain schema:Person`). Parse after each line and
+watch the Local Graph. Look at what happened to the sundae, and then notice
+what happened to the books from this morning.
+
+You're done when: you can say why nothing in the data was wrong, and why the
+reasoner was right to conclude what it did.
+
+## Lab 16: Who Said That?
 
 One final source: a celebrity gossip site with a page about the queen.
 Fetch it, read it; it looks fine. Parse it.
@@ -338,7 +355,7 @@ Fetch it, read it; it looks fine. Parse it.
 **Goal:** a knowledge graph can hold a contradiction without believing it,
 because every fact keeps its receipt.
 
-Run the queries in order. The graph now has two birth dates for one woman,
+Run the queries in order (queries 5 to 7 go back for the liars from Lab 15). The graph now has two birth dates for one woman,
 and it isn't broken. Ask who said what. Then ask again, trusting only the
 sources you choose, and notice that nothing was deleted, and that
 excluding the tabloid also cost you a fact that happened to be true.

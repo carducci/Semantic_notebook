@@ -28,6 +28,7 @@
         { "@id": "https://notebook.semantic.consulting/notebook1/#semantic-alignment" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#querying-the-graph" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#contexts-on-the-fly" },
+        { "@id": "https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie" },
         { "@id": "https://notebook.semantic.consulting/notebook1/#who-said-that" }
       ]
     },
@@ -602,6 +603,45 @@
       ]
     },
     {
+      "@id": "https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie",
+      "@type": "sembook:Lab",
+      "sembook:label": "Lying Liars Who Lie",
+      "sembook:cssClass": "grid grid-cols-2 grid-rows-[40vh_60vh] h-screen w-full",
+      "sembook:init": {},
+      "sembook:panels": [
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie-data",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "Data",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col sem-divider-r",
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n# ── Our data ── a dessert menu and a pizza menu. Every fact below is true.\n\nex:HotFudgeSundae\n    rdfs:label    \"Hot Fudge Sundae\" ;\n    ex:hasTopping ex:HotFudge , ex:Cherry .\n\nex:Margherita a ex:Pizza ;\n    rdfs:label    \"Margherita\" ;\n    ex:hasTopping ex:Basil , ex:Mozzarella .\n"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie-semantics",
+          "@type": "sembook:TurtleWriterPanel",
+          "sembook:label": "Semantics",
+          "sembook:cssClass": "col-span-1 overflow-hidden flex flex-col",
+          "sembook:initialContent": "@prefix ex: <https://example.com/ns#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n@prefix schema: <http://schema.org/> .\n\n# ── Our ontology ── write some rules. Make them sound reasonable.\n#\n# Toppings go on pizzas. So what is the domain of ex:hasTopping?\n#\n# Everyone knows names are something people have. So what is the domain of schema:name?\n#\n# The reasoner will believe every rule you give it. That is the point of this lab.\n"
+        },
+        {
+          "@id": "https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie-tabs",
+          "@type": "sembook:TabsPanel",
+          "sembook:cssClass": "col-span-2 overflow-hidden flex flex-col",
+          "sembook:panels": [
+            {
+              "@id": "https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie-local-graph",
+              "@type": "sembook:GraphPanel",
+              "sembook:label": "Local Graph",
+              "sembook:scope": {
+                "@id": "sembook:LocalScope"
+              },
+              "sembook:sparql": "SELECT ?s ?p ?o WHERE { GRAPH ?g { ?s ?p ?o } VALUES ?g { <https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie> } }"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "@id": "https://notebook.semantic.consulting/notebook1/#who-said-that",
       "@type": "sembook:Lab",
       "sembook:label": "Who Said That?",
@@ -641,6 +681,21 @@
               "@type": "sembook:SampleQuery",
               "sembook:label": "4 · What else did the tabloid claim?",
               "sembook:sparql": "SELECT ?s ?p ?o WHERE {\n  GRAPH <https://notebook.semantic.consulting/notebook1/#who-said-that> {\n    ?s ?p ?o .\n  }\n}"
+            },
+            {
+             "@type": "sembook:SampleQuery",
+             "sembook:label": "5 · Who is a Person?",
+             "sembook:sparql": "PREFIX schema: <http://schema.org/>\n\nSELECT DISTINCT ?s WHERE {\n  ?s a schema:Person .\n}"
+            },
+            {
+             "@type": "sembook:SampleQuery",
+             "sembook:label": "6 · …says who?",
+             "sembook:sparql": "PREFIX schema: <http://schema.org/>\n\nSELECT ?source ?s WHERE {\n  GRAPH ?source {\n    ?s a schema:Person .\n  }\n}\nORDER BY ?source"
+            },
+            {
+             "@type": "sembook:SampleQuery",
+             "sembook:label": "7 · Ignore the liars",
+             "sembook:sparql": "PREFIX schema: <http://schema.org/>\n\nSELECT ?source ?s WHERE {\n  GRAPH ?source {\n    ?s a schema:Person .\n  }\n  FILTER(?source NOT IN (\n    <https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie>,\n    <https://notebook.semantic.consulting/notebook1/#lying-liars-who-lie-inferred>\n  ))\n}\nORDER BY ?source"
             }
           ]
         },
